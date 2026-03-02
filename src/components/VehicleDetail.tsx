@@ -3,13 +3,14 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange,
+  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText,
 } from "lucide-react";
 import {
   Vehicle, getStatusColor, getVehicleImageUrl,
   getMaintenanceForVehicle, getReservationsForVehicle,
   getReservationStatusColor,
 } from "@/data/mockData";
+import { VehicleReportTabs } from "@/components/VehicleReportTabs";
 
 interface VehicleDetailProps {
   vehicle: Vehicle | null;
@@ -84,7 +85,7 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
           {/* Tabs for maintenance and reservations */}
           <Tabs defaultValue="onderhoud" className="w-full">
-            <TabsList className="w-full grid grid-cols-2">
+            <TabsList className="w-full grid grid-cols-3">
               <TabsTrigger value="onderhoud" className="gap-1.5">
                 <Wrench className="w-3.5 h-3.5" />
                 Onderhoud ({maintenance.length})
@@ -92,6 +93,10 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
               <TabsTrigger value="reserveringen" className="gap-1.5">
                 <CalendarRange className="w-3.5 h-3.5" />
                 Reserveringen ({reservations.length})
+              </TabsTrigger>
+              <TabsTrigger value="rapporten" className="gap-1.5">
+                <FileText className="w-3.5 h-3.5" />
+                Rapporten
               </TabsTrigger>
             </TabsList>
 
@@ -150,6 +155,10 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
                   </div>
                 ))
               )}
+            </TabsContent>
+
+            <TabsContent value="rapporten" className="mt-4">
+              <VehicleReportTabs voertuigId={vehicle.id} />
             </TabsContent>
           </Tabs>
         </div>

@@ -80,6 +80,42 @@ export type Database = {
         }
         Relationships: []
       }
+      eigendom_historie: {
+        Row: {
+          created_at: string
+          eigenaar_naam: string
+          eigenaar_type: string
+          eind_datum: string | null
+          id: string
+          notitie: string | null
+          start_datum: string
+          user_id: string
+          voertuig_id: string
+        }
+        Insert: {
+          created_at?: string
+          eigenaar_naam: string
+          eigenaar_type?: string
+          eind_datum?: string | null
+          id?: string
+          notitie?: string | null
+          start_datum: string
+          user_id: string
+          voertuig_id: string
+        }
+        Update: {
+          created_at?: string
+          eigenaar_naam?: string
+          eigenaar_type?: string
+          eind_datum?: string | null
+          id?: string
+          notitie?: string | null
+          start_datum?: string
+          user_id?: string
+          voertuig_id?: string
+        }
+        Relationships: []
+      }
       invoices: {
         Row: {
           bedrag: number
@@ -155,6 +191,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      schade_rapporten: {
+        Row: {
+          created_at: string
+          datum: string
+          ernst: string
+          herstel_datum: string | null
+          hersteld: boolean | null
+          id: string
+          kosten: number | null
+          locatie_schade: string | null
+          notitie: string | null
+          omschrijving: string
+          user_id: string
+          verzekerd: boolean | null
+          voertuig_id: string
+        }
+        Insert: {
+          created_at?: string
+          datum: string
+          ernst?: string
+          herstel_datum?: string | null
+          hersteld?: boolean | null
+          id?: string
+          kosten?: number | null
+          locatie_schade?: string | null
+          notitie?: string | null
+          omschrijving: string
+          user_id: string
+          verzekerd?: boolean | null
+          voertuig_id: string
+        }
+        Update: {
+          created_at?: string
+          datum?: string
+          ernst?: string
+          herstel_datum?: string | null
+          hersteld?: boolean | null
+          id?: string
+          kosten?: number | null
+          locatie_schade?: string | null
+          notitie?: string | null
+          omschrijving?: string
+          user_id?: string
+          verzekerd?: boolean | null
+          voertuig_id?: string
+        }
+        Relationships: []
+      }
+      service_historie: {
+        Row: {
+          created_at: string
+          datum: string
+          garage: string | null
+          id: string
+          kilometerstand: number | null
+          kosten: number | null
+          notitie: string | null
+          omschrijving: string
+          type: string
+          user_id: string
+          voertuig_id: string
+        }
+        Insert: {
+          created_at?: string
+          datum: string
+          garage?: string | null
+          id?: string
+          kilometerstand?: number | null
+          kosten?: number | null
+          notitie?: string | null
+          omschrijving: string
+          type?: string
+          user_id: string
+          voertuig_id: string
+        }
+        Update: {
+          created_at?: string
+          datum?: string
+          garage?: string | null
+          id?: string
+          kilometerstand?: number | null
+          kosten?: number | null
+          notitie?: string | null
+          omschrijving?: string
+          type?: string
+          user_id?: string
+          voertuig_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
