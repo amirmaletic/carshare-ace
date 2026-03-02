@@ -1,124 +1,86 @@
 
-# Contractensectie Uitbreiding
+# Automatische Data Koppelingen voor Contracten
 
 ## Overzicht
-De contractensectie wordt volledig uitgebreid met CRUD-functionaliteit, facturatiebeheer en database-opslag. De huidige mock-data wordt vervangen door een database-gedreven systeem met authenticatie.
+Drie externe datakoppelingen worden toegevoegd aan het contractformulier en contractbeheer: **RDW voertuigdata**, **KVK bedrijfsgegevens**, en **kilometerregistratie**.
 
 ---
 
-## 1. Database Setup
+## 1. RDW Voertuigdata in Contractformulier
 
-### Tabellen aanmaken
+De bestaande `KentekenSearch`-component gebruikt al de gratis RDW Open Data API. Deze functionaliteit wordt geintegreerd in het contractformulier.
 
-**contracts**
-- `id` (uuid, PK)
-- `user_id` (uuid, FK naar auth.users, NOT NULL)
-- `contract_nummer` (text, uniek)
-- `type` (enum: lease, verhuur, fietslease, ev-lease)
-- `voertuig_id` (text, nullable — referentie naar voertuig)
-- `klant_naam`, `klant_email` (text)
-- `bedrijf` (text, nullable)
-- `start_datum`, `eind_datum` (date)
-- `maandprijs` (numeric)
-- `status` (enum: actief, verlopen, opgezegd, concept)
-- `km_per_jaar` (integer, nullable)
-- `inclusief` (text[], services array)
-- `notities` (text, nullable)
-- `created_at`, `updated_at` (timestamptz)
+**Wat verandert:**
+- In het contractformulier komt een **kentekeninvoerveld** naast de voertuigselectie
+- Bij invoer van een kenteken worden automatisch de voertuiggegevens opgehaald via de RDW API (`opendata.rdw.nl`)
+- Opgehaalde data (merk, model, brandstof, APK-datum, catalogusprijs, CO2-uitstoot) wordt getoond als preview
+- Indien het voertuig al in het wagenpark zit, wordt het automatisch geselecteerd
+- In het contractdetail worden RDW-gegevens (APK-status, verzekeringsstatus) ook getoond
 
-**invoices**
-- `id` (uuid, PK)
-- `contract_id` (uuid, FK naar contracts)
-- `datum` (date)
-- `bedrag` (numeric)
-- `status` (enum: betaald, openstaand, te_laat, herinnering_verstuurd)
-- `created_at` (timestamptz)
-
-### RLS-policies
-- Gebruikers kunnen alleen hun eigen contracten en facturen lezen/schrijven
-- Policies op basis van `user_id = auth.uid()`
-
-### Seed data
-- De bestaande mock-data wordt als seed-migratie ingevoegd, gekoppeld aan de ingelogde gebruiker via een database trigger
+**Geen API-key nodig** — RDW Open Data is gratis en publiek toegankelijk.
 
 ---
 
-## 2. Authenticatie
+## 2. KVK Bedrijfsdata
 
-- Login- en registratiepagina toevoegen (`/auth`)
-- Beveiligde routes: gebruikers worden doorgestuurd naar `/auth` als ze niet ingelogd zijn
-- AuthProvider component voor sessie-management
+Bij het invullen van het bedrijfsveld wordt automatisch gezocht in de KVK API.
 
----
+**Wat verandert:**
+- Het bedrijfsveld krijgt een **autocomplete/zoekfunctie**
+- Bij typen wordt gezocht via een backend functie die de KVK API bevraagt
+- Resultaten tonen: bedrijfsnaam, KVK-nummer, adres, rechtsvorm
+- Bij selectie worden de gegevens automatisch ingevuld
+- Nieuwe velden in de `contracts`-tabel: `kvk_nummer` (text, nullable) en `bedrijf_adres` (text, nullable)
 
-## 3. Nieuw Contract Aanmaken
-
-- Formulier als dialog/drawer met velden:
-  - Contracttype selectie (autolease, verhuur, fietslease, EV lease)
-  - Klantnaam, e-mail, bedrijf (optioneel)
-  - Voertuigselectie uit bestaand wagenpark (of overslaan bij fietslease)
-  - Start- en einddatum met datumkiezer
-  - Maandprijs, km/jaar
-  - Inclusief-opties (checkboxes: onderhoud, verzekering, pechhulp, etc.)
-  - Notities
-- Validatie met Zod-schema
-- Contract wordt opgeslagen in database met status "concept"
+**API-key nodig:** De KVK API vereist een API-key. Er wordt een edge function aangemaakt die de key veilig bewaart. Je krijgt een verzoek om je KVK API-key in te voeren.
 
 ---
 
-## 4. Contracten Bewerken en Opzeggen
+## 3. Kilometerregistratie
 
-- Bewerkknop in contractdetail-dialog opent bewerkformulier (zelfde formulier als aanmaken, voorgevuld)
-- Opzeggen: bevestigingsdialog, status wordt gewijzigd naar "opgezegd"
-- Verlengen: einddatum aanpassen met bevestiging
-- Statuswijzigingen worden direct in de database bijgewerkt
+Een nieuwe tabel voor het bijhouden van kilometerstanden per contract.
 
----
-
-## 5. Facturatie en Betalingen
-
-- Tab "Facturen" in contractdetail uitbreiden met:
-  - Knop "Factuur toevoegen" (datum, bedrag, status)
-  - Status wijzigen per factuur (betaald markeren, herinnering versturen)
-- Overzicht openstaande/verlopen facturen op de contractenpagina
-- Visuele indicatoren voor betalingsstatus
-
----
-
-## 6. Data-laag Refactoring
-
-- React Query hooks aanmaken:
-  - `useContracts()` — ophalen met filters
-  - `useContract(id)` — enkel contract met facturen
-  - `useCreateContract()` — mutatie
-  - `useUpdateContract()` — mutatie
-  - `useDeleteContract()` — mutatie
-  - `useCreateInvoice()` / `useUpdateInvoice()` — factuurbeheer
-- Mock-data wordt vervangen door database-queries
-- Supabase client wordt gebruikt voor alle CRUD-operaties
+**Wat verandert:**
+- Nieuwe `kilometer_registraties`-tabel met: `contract_id`, `datum`, `kilometerstand`, `notitie`
+- In het contractdetail komt een nieuw tabblad "Kilometers" naast "Facturen"
+- Handmatige invoer van kilometerstanden met datum
+- Grafiek met kilometerverloop over tijd (via Recharts, al geinstalleerd)
+- Waarschuwing als het huidige verbruik boven het contractuele km/jaar-limiet uitkomt
+- Berekening van gemiddeld km/dag en verwacht jaareinde
 
 ---
 
 ## Technische Details
 
-### Bestanden die worden aangemaakt
-- `src/pages/Auth.tsx` — login/registratie pagina
-- `src/components/ContractForm.tsx` — formulier voor aanmaken/bewerken
-- `src/components/InvoiceForm.tsx` — factuur toevoegen/bewerken
-- `src/hooks/useContracts.ts` — React Query hooks voor contracten
-- `src/hooks/useInvoices.ts` — React Query hooks voor facturen
-- `src/hooks/useAuth.ts` — authenticatie hook
+### Database migratie
+- `contracts` tabel uitbreiden met `kvk_nummer` (text, nullable) en `bedrijf_adres` (text, nullable)
+- Nieuwe tabel `kilometer_registraties`:
+  - `id` (uuid, PK)
+  - `contract_id` (uuid, FK naar contracts)
+  - `user_id` (uuid, NOT NULL)
+  - `datum` (date)
+  - `kilometerstand` (integer)
+  - `notitie` (text, nullable)
+  - `created_at` (timestamptz)
+- RLS policies: gebruikers zien alleen eigen registraties
 
-### Bestanden die worden aangepast
-- `src/pages/Contracts.tsx` — data ophalen via hooks, CRUD-acties toevoegen
-- `src/App.tsx` — auth route en beveiligde routes
-- `src/data/mockData.ts` — contract mock-data kan behouden blijven als fallback
+### Edge function: `kvk-search`
+- Zoekt bedrijven via de KVK API
+- Vereist `KVK_API_KEY` als secret
+- Retourneert bedrijfsnaam, KVK-nummer, adres, rechtsvorm
+
+### Nieuwe/aangepaste bestanden
+- `supabase/functions/kvk-search/index.ts` -- edge function voor KVK API
+- `src/hooks/useKilometerRegistraties.ts` -- CRUD hooks voor km-registraties
+- `src/components/KilometerTab.tsx` -- tabblad met km-invoer en grafiek
+- `src/components/KvkSearch.tsx` -- autocomplete component voor bedrijfsgegevens
+- `src/components/ContractForm.tsx` -- RDW-integratie en KVK-autocomplete toevoegen
+- `src/pages/Contracts.tsx` -- km-tab toevoegen aan contractdetail
 
 ### Volgorde van implementatie
-1. Database migraties uitvoeren (tabellen + RLS + enums)
-2. Authenticatie pagina en provider toevoegen
-3. React Query hooks bouwen
-4. Contractformulier (aanmaken + bewerken)
-5. Contractdetail uitbreiden met bewerk/opzeg-acties
-6. Factuurbeheer in contractdetail
-7. Contractenpagina koppelen aan database
+1. Database migratie (nieuwe kolommen + km-tabel + RLS)
+2. KVK edge function + secret opvragen
+3. KVK autocomplete component bouwen
+4. RDW-lookup integreren in contractformulier
+5. Kilometerregistratie hooks + UI bouwen
+6. Km-tab met grafiek in contractdetail toevoegen
