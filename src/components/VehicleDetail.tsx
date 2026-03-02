@@ -1,0 +1,180 @@
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { StatusBadge } from "@/components/StatusBadge";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange,
+} from "lucide-react";
+import {
+  Vehicle, getStatusColor, getVehicleImageUrl,
+  getMaintenanceForVehicle, getReservationsForVehicle,
+  getReservationStatusColor,
+} from "@/data/mockData";
+
+interface VehicleDetailProps {
+  vehicle: Vehicle | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+function getMaintenanceStatusVariant(status: string) {
+  switch (status) {
+    case 'voltooid': return 'success' as const;
+    case 'in_uitvoering': return 'warning' as const;
+    case 'gepland': return 'info' as const;
+    default: return 'muted' as const;
+  }
+}
+
+const statusLabels: Record<string, string> = {
+  voltooid: 'Voltooid',
+  in_uitvoering: 'In uitvoering',
+  gepland: 'Gepland',
+};
+
+export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProps) {
+  if (!vehicle) return null;
+
+  const maintenance = getMaintenanceForVehicle(vehicle.id);
+  const reservations = getReservationsForVehicle(vehicle.id);
+  const imageUrl = getVehicleImageUrl(vehicle.merk, vehicle.model);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+        {/* Hero image */}
+        <div className="relative h-48 bg-gradient-to-br from-sidebar to-sidebar-accent overflow-hidden">
+          <img
+            src={imageUrl}
+            alt={`${vehicle.merk} ${vehicle.model}`}
+            className="absolute inset-0 w-full h-full object-contain object-center p-4 drop-shadow-lg"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-sidebar/90 to-transparent p-5">
+            <div className="flex items-end justify-between">
+              <div>
+                <h2 className="font-display font-bold text-xl text-sidebar-accent-foreground">
+                  {vehicle.merk} {vehicle.model}
+                </h2>
+                <p className="font-mono text-sm text-sidebar-foreground">{vehicle.kenteken}</p>
+              </div>
+              <StatusBadge status={vehicle.status} variant={getStatusColor(vehicle.status)} />
+            </div>
+          </div>
+        </div>
+
+        <div className="p-5 space-y-5">
+          {/* Quick info grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <QuickInfo icon={Calendar} label="Bouwjaar" value={String(vehicle.bouwjaar)} />
+            <QuickInfo icon={Fuel} label="Brandstof" value={vehicle.brandstof} />
+            <QuickInfo icon={Gauge} label="Kilometerstand" value={`${vehicle.kilometerstand.toLocaleString('nl-NL')} km`} />
+            <QuickInfo icon={Euro} label="Dagprijs" value={`€${vehicle.dagprijs}`} />
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <QuickInfo icon={MapPin} label="Kleur" value={vehicle.kleur} />
+            <QuickInfo icon={Shield} label="APK vervalt" value={vehicle.apkVervaldatum} />
+            <QuickInfo icon={Shield} label="Verzekering vervalt" value={vehicle.verzekeringsVervaldatum} />
+          </div>
+
+          <Separator />
+
+          {/* Tabs for maintenance and reservations */}
+          <Tabs defaultValue="onderhoud" className="w-full">
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="onderhoud" className="gap-1.5">
+                <Wrench className="w-3.5 h-3.5" />
+                Onderhoud ({maintenance.length})
+              </TabsTrigger>
+              <TabsTrigger value="reserveringen" className="gap-1.5">
+                <CalendarRange className="w-3.5 h-3.5" />
+                Reserveringen ({reservations.length})
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="onderhoud" className="mt-4 space-y-3">
+              {maintenance.length === 0 ? (
+                <EmptyState icon={Wrench} text="Geen onderhoudshistorie" />
+              ) : (
+                maintenance.map((m) => (
+                  <div key={m.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 animate-fade-in">
+                    <div className="p-2 rounded-md bg-warning/10 mt-0.5">
+                      <Wrench className="w-4 h-4 text-warning" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium text-sm text-foreground">{m.type}</p>
+                        <StatusBadge
+                          status={statusLabels[m.status] || m.status}
+                          variant={getMaintenanceStatusVariant(m.status)}
+                        />
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-0.5">{m.beschrijving}</p>
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+                        <span>{m.datum}</span>
+                        <span className="font-medium text-foreground">€{m.kosten}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="reserveringen" className="mt-4 space-y-3">
+              {reservations.length === 0 ? (
+                <EmptyState icon={CalendarRange} text="Geen reserveringen" />
+              ) : (
+                reservations.map((r) => (
+                  <div key={r.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 animate-fade-in">
+                    <div className="p-2 rounded-md bg-info/10 mt-0.5">
+                      <CalendarRange className="w-4 h-4 text-info" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium text-sm text-foreground">{r.klantNaam}</p>
+                        <StatusBadge status={r.status} variant={getReservationStatusColor(r.status)} />
+                      </div>
+                      <p className="text-sm text-muted-foreground mt-0.5">
+                        {r.startDatum} t/m {r.eindDatum}
+                      </p>
+                      <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
+                        <span className="font-medium text-foreground">€{r.totaalPrijs}</span>
+                        {r.extras.length > 0 && (
+                          <span>{r.extras.join(', ')}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function QuickInfo({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
+  return (
+    <div className="p-3 rounded-lg bg-muted/50">
+      <div className="flex items-center gap-1.5 mb-1">
+        <Icon className="w-3.5 h-3.5 text-muted-foreground" />
+        <span className="text-xs text-muted-foreground">{label}</span>
+      </div>
+      <p className="text-sm font-medium text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function EmptyState({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
+  return (
+    <div className="text-center py-8">
+      <Icon className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+      <p className="text-sm text-muted-foreground">{text}</p>
+    </div>
+  );
+}
