@@ -197,6 +197,7 @@ export type Database = {
           created_at: string
           datum: string
           ernst: string
+          fotos: string[] | null
           herstel_datum: string | null
           hersteld: boolean | null
           id: string
@@ -212,6 +213,7 @@ export type Database = {
           created_at?: string
           datum: string
           ernst?: string
+          fotos?: string[] | null
           herstel_datum?: string | null
           hersteld?: boolean | null
           id?: string
@@ -227,6 +229,7 @@ export type Database = {
           created_at?: string
           datum?: string
           ernst?: string
+          fotos?: string[] | null
           herstel_datum?: string | null
           hersteld?: boolean | null
           id?: string
