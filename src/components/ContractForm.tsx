@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { toast } from "@/hooks/use-toast";
 import { useCreateContract, useUpdateContract, type ContractWithInvoices, type CreateContractInput } from "@/hooks/useContracts";
 import { vehicles, type Vehicle } from "@/data/mockData";
+import { RdwLookup, type RdwVehicleInfo } from "@/components/RdwLookup";
+import { KvkSearch } from "@/components/KvkSearch";
 
 const contractSchema = z.object({
   contract_nummer: z.string().min(1, "Contractnummer is verplicht").max(50),
@@ -66,6 +68,9 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
 
   const [form, setForm] = useState(() => getInitialForm(editContract));
   const [freeKmPerDay, setFreeKmPerDay] = useState(0);
+  const [rdwInfo, setRdwInfo] = useState<RdwVehicleInfo | null>(null);
+  const [kvkNummer, setKvkNummer] = useState("");
+  const [bedrijfAdres, setBedrijfAdres] = useState("");
 
   function getInitialForm(c?: ContractWithInvoices | null) {
     return {
@@ -211,24 +216,38 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Bedrijf (optioneel)</Label>
-            <Input value={form.bedrijf} onChange={(e) => update("bedrijf", e.target.value)} />
-          </div>
+          <KvkSearch
+            value={form.bedrijf}
+            kvkNummer={kvkNummer}
+            bedrijfAdres={bedrijfAdres}
+            onChange={(bedrijf, kvk, adres) => {
+              update("bedrijf", bedrijf);
+              setKvkNummer(kvk);
+              setBedrijfAdres(adres);
+            }}
+          />
 
           {form.type !== "fietslease" && (
-            <div className="space-y-1.5">
-              <Label>Voertuig</Label>
-              <Select value={form.voertuig_id} onValueChange={(v) => update("voertuig_id", v)}>
-                <SelectTrigger><SelectValue placeholder="Selecteer voertuig" /></SelectTrigger>
-                <SelectContent>
-                  {vehicles.map((v) => (
-                    <SelectItem key={v.id} value={v.id}>
-                      {v.merk} {v.model} — {v.kenteken}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="space-y-3">
+              <RdwLookup onVehicleFound={(info) => {
+                setRdwInfo(info);
+                // Auto-select vehicle if kenteken matches one in fleet
+                const match = vehicles.find((v) => v.kenteken.replace(/[\s-]/g, "").toUpperCase() === info.kenteken);
+                if (match) update("voertuig_id", match.id);
+              }} />
+              <div className="space-y-1.5">
+                <Label>Voertuig</Label>
+                <Select value={form.voertuig_id} onValueChange={(v) => update("voertuig_id", v)}>
+                  <SelectTrigger><SelectValue placeholder="Selecteer voertuig" /></SelectTrigger>
+                  <SelectContent>
+                    {vehicles.map((v) => (
+                      <SelectItem key={v.id} value={v.id}>
+                        {v.merk} {v.model} — {v.kenteken}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           )}
 
