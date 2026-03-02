@@ -1,4 +1,5 @@
 import { AppSidebar } from "./AppSidebar";
+import { AiAssistant } from "./AiAssistant";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,6 +10,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
           {children}
         </div>
       </main>
+      <AiAssistant />
     </div>
   );
 }
