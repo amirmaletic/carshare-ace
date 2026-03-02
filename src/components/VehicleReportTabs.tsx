@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -6,7 +6,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, Users, Wrench, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, Users, Wrench, AlertTriangle, Camera, X, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
 import { toast } from "@/hooks/use-toast";
 import {
   useEigendomHistorie, useCreateEigendom, useDeleteEigendom,
@@ -245,6 +247,35 @@ function SchadeTab({ voertuigId }: { voertuigId: string }) {
   const [kosten, setKosten] = useState("");
   const [verzekerd, setVerzekerd] = useState(false);
   const [hersteld, setHersteld] = useState(false);
+  const [fotos, setFotos] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadPhoto = async (file: File) => {
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const path = `${voertuigId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("schade-fotos").upload(path, file);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from("schade-fotos").getPublicUrl(path);
+      setFotos((prev) => [...prev, publicUrl]);
+    } catch (err: any) {
+      toast({ title: "Upload mislukt", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) Array.from(files).forEach(uploadPhoto);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removePhoto = (url: string) => {
+    setFotos((prev) => prev.filter((f) => f !== url));
+  };
 
   const handleAdd = async () => {
     if (!omschrijving.trim()) {
@@ -263,10 +294,11 @@ function SchadeTab({ voertuigId }: { voertuigId: string }) {
         hersteld,
         herstel_datum: hersteld ? datum : null,
         notitie: null,
+        fotos,
       });
       toast({ title: "Schaderapport toegevoegd" });
       setShowForm(false);
-      setOmschrijving(""); setLocatie(""); setKosten(""); setVerzekerd(false); setHersteld(false);
+      setOmschrijving(""); setLocatie(""); setKosten(""); setVerzekerd(false); setHersteld(false); setFotos([]);
     } catch (err: any) {
       toast({ title: "Fout", description: err.message, variant: "destructive" });
     }
@@ -310,6 +342,42 @@ function SchadeTab({ voertuigId }: { voertuigId: string }) {
             <label className="flex items-center gap-2 text-sm"><Checkbox checked={verzekerd} onCheckedChange={(v) => setVerzekerd(!!v)} />Verzekerd</label>
             <label className="flex items-center gap-2 text-sm"><Checkbox checked={hersteld} onCheckedChange={(v) => setHersteld(!!v)} />Hersteld</label>
           </div>
+
+          {/* Photo upload */}
+          <div className="space-y-1.5">
+            <Label className="text-xs">Foto's</Label>
+            <div className="flex flex-wrap gap-2">
+              {fotos.map((url) => (
+                <div key={url} className="relative w-16 h-16 rounded-lg overflow-hidden border border-border group">
+                  <img src={url} alt="Schade" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removePhoto(url)}
+                    className="absolute top-0.5 right-0.5 p-0.5 rounded-full bg-destructive/80 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="w-16 h-16 rounded-lg border-2 border-dashed border-border hover:border-primary/50 flex items-center justify-center transition-colors"
+              >
+                {uploading ? <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" /> : <Camera className="w-4 h-4 text-muted-foreground" />}
+              </button>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileChange}
+            />
+          </div>
+
           <Button size="sm" onClick={handleAdd} disabled={createMut.isPending}>Opslaan</Button>
         </div>
       )}
@@ -320,22 +388,33 @@ function SchadeTab({ voertuigId }: { voertuigId: string }) {
         items.map((item) => {
           const e = ernstLabels[item.ernst] || { label: item.ernst, color: "bg-muted text-muted-foreground" };
           return (
-            <div key={item.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${e.color}`}>{e.label}</span>
-                  <span className="text-sm font-medium text-foreground">{item.omschrijving}</span>
+            <div key={item.id} className="p-3 rounded-lg bg-muted/50 space-y-2">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${e.color}`}>{e.label}</span>
+                    <span className="text-sm font-medium text-foreground">{item.omschrijving}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {item.datum} • €{Number(item.kosten).toLocaleString("nl-NL")}
+                    {item.locatie_schade ? ` • ${item.locatie_schade}` : ""}
+                    {item.verzekerd ? " • ✓ verzekerd" : ""}
+                    {item.hersteld ? " • ✓ hersteld" : " • ✗ niet hersteld"}
+                  </p>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {item.datum} • €{Number(item.kosten).toLocaleString("nl-NL")}
-                  {item.locatie_schade ? ` • ${item.locatie_schade}` : ""}
-                  {item.verzekerd ? " • ✓ verzekerd" : ""}
-                  {item.hersteld ? " • ✓ hersteld" : " • ✗ niet hersteld"}
-                </p>
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => deleteMut.mutate({ id: item.id, voertuigId })}>
+                  <Trash2 className="w-3 h-3" />
+                </Button>
               </div>
-              <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => deleteMut.mutate({ id: item.id, voertuigId })}>
-                <Trash2 className="w-3 h-3" />
-              </Button>
+              {item.fotos && item.fotos.length > 0 && (
+                <div className="flex gap-2 flex-wrap">
+                  {item.fotos.map((url, i) => (
+                    <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="block w-20 h-20 rounded-lg overflow-hidden border border-border hover:ring-2 ring-primary transition-all">
+                      <img src={url} alt={`Schade foto ${i + 1}`} className="w-full h-full object-cover" />
+                    </a>
+                  ))}
+                </div>
+              )}
             </div>
           );
         })

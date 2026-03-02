@@ -39,6 +39,7 @@ export interface SchadeRapport {
   verzekerd: boolean;
   hersteld: boolean;
   herstel_datum: string | null;
+  fotos: string[];
   notitie: string | null;
   created_at: string;
 }
