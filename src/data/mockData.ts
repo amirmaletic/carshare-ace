@@ -37,6 +37,34 @@ export interface MaintenanceRecord {
   status: 'gepland' | 'voltooid' | 'in_uitvoering';
 }
 
+export type ContractType = 'lease' | 'verhuur' | 'fietslease' | 'ev-lease';
+export type ContractStatus = 'actief' | 'verlopen' | 'opgezegd' | 'concept';
+
+export interface Contract {
+  id: string;
+  contractNummer: string;
+  type: ContractType;
+  voertuigId: string | null;
+  klantNaam: string;
+  klantEmail: string;
+  bedrijf?: string;
+  startDatum: string;
+  eindDatum: string;
+  maandprijs: number;
+  status: ContractStatus;
+  kmPerJaar?: number;
+  inclusief: string[];
+  facturen: Invoice[];
+  notities?: string;
+}
+
+export interface Invoice {
+  id: string;
+  datum: string;
+  bedrag: number;
+  status: 'betaald' | 'openstaand' | 'te_laat' | 'herinnering_verstuurd';
+}
+
 export function getVehicleImageUrl(merk: string, model: string): string {
   const make = encodeURIComponent(merk.toLowerCase());
   const modelFamily = encodeURIComponent(model.split(' ')[0].toLowerCase());
@@ -101,3 +129,124 @@ export function getReservationStatusColor(status: Reservation['status']) {
     default: return 'muted';
   }
 }
+
+export function getContractStatusColor(status: ContractStatus) {
+  switch (status) {
+    case 'actief': return 'success' as const;
+    case 'verlopen': return 'destructive' as const;
+    case 'opgezegd': return 'warning' as const;
+    case 'concept': return 'muted' as const;
+    default: return 'muted' as const;
+  }
+}
+
+export function getContractTypeLabel(type: ContractType): string {
+  switch (type) {
+    case 'lease': return 'Autolease';
+    case 'verhuur': return 'Verhuur';
+    case 'fietslease': return 'Fietslease';
+    case 'ev-lease': return 'EV Lease';
+  }
+}
+
+export function getContractTypeIcon(type: ContractType): string {
+  switch (type) {
+    case 'lease': return '🚗';
+    case 'verhuur': return '📋';
+    case 'fietslease': return '🚲';
+    case 'ev-lease': return '⚡';
+  }
+}
+
+export function getInvoiceStatusColor(status: Invoice['status']) {
+  switch (status) {
+    case 'betaald': return 'success' as const;
+    case 'openstaand': return 'info' as const;
+    case 'te_laat': return 'destructive' as const;
+    case 'herinnering_verstuurd': return 'warning' as const;
+    default: return 'muted' as const;
+  }
+}
+
+const invoicesBedrijfA: Invoice[] = [
+  { id: 'f1', datum: '2026-01-01', bedrag: 850, status: 'betaald' },
+  { id: 'f2', datum: '2026-02-01', bedrag: 850, status: 'betaald' },
+  { id: 'f3', datum: '2026-03-01', bedrag: 850, status: 'openstaand' },
+];
+
+const invoicesJan: Invoice[] = [
+  { id: 'f4', datum: '2025-12-01', bedrag: 395, status: 'betaald' },
+  { id: 'f5', datum: '2026-01-01', bedrag: 395, status: 'betaald' },
+  { id: 'f6', datum: '2026-02-01', bedrag: 395, status: 'te_laat' },
+  { id: 'f7', datum: '2026-03-01', bedrag: 395, status: 'herinnering_verstuurd' },
+];
+
+const invoicesFiets: Invoice[] = [
+  { id: 'f8', datum: '2026-01-01', bedrag: 75, status: 'betaald' },
+  { id: 'f9', datum: '2026-02-01', bedrag: 75, status: 'betaald' },
+  { id: 'f10', datum: '2026-03-01', bedrag: 75, status: 'betaald' },
+];
+
+const invoicesEV: Invoice[] = [
+  { id: 'f11', datum: '2026-01-01', bedrag: 695, status: 'betaald' },
+  { id: 'f12', datum: '2026-02-01', bedrag: 695, status: 'betaald' },
+  { id: 'f13', datum: '2026-03-01', bedrag: 695, status: 'openstaand' },
+];
+
+export const contracts: Contract[] = [
+  {
+    id: 'c1', contractNummer: 'LC-2025-001', type: 'lease', voertuigId: 'v4',
+    klantNaam: 'Bedrijf Van Dam B.V.', klantEmail: 'fleet@vandam.nl', bedrijf: 'Van Dam B.V.',
+    startDatum: '2025-06-01', eindDatum: '2029-05-31', maandprijs: 850, status: 'actief',
+    kmPerJaar: 30000, inclusief: ['Onderhoud', 'Verzekering', 'Pechhulp', 'Winterbanden'],
+    facturen: invoicesBedrijfA,
+  },
+  {
+    id: 'c2', contractNummer: 'LC-2025-002', type: 'lease', voertuigId: 'v6',
+    klantNaam: 'Jan Pietersen', klantEmail: 'jan.p@email.nl',
+    startDatum: '2025-09-01', eindDatum: '2028-08-31', maandprijs: 395, status: 'actief',
+    kmPerJaar: 20000, inclusief: ['Onderhoud', 'Banden'],
+    facturen: invoicesJan,
+    notities: 'Betalingsherinnering verstuurd op 15-02-2026',
+  },
+  {
+    id: 'c3', contractNummer: 'FC-2026-001', type: 'fietslease', voertuigId: null,
+    klantNaam: 'Emma de Groot', klantEmail: 'emma@email.nl', bedrijf: 'TechStart B.V.',
+    startDatum: '2026-01-15', eindDatum: '2029-01-14', maandprijs: 75, status: 'actief',
+    inclusief: ['Verzekering', 'Onderhoud', 'Pechhulp'],
+    facturen: invoicesFiets,
+    notities: 'VanMoof S5 — fietslease via werkgever',
+  },
+  {
+    id: 'c4', contractNummer: 'EV-2026-001', type: 'ev-lease', voertuigId: 'v2',
+    klantNaam: 'Groen Transport B.V.', klantEmail: 'lease@groentransport.nl', bedrijf: 'Groen Transport B.V.',
+    startDatum: '2026-02-01', eindDatum: '2030-01-31', maandprijs: 695, status: 'actief',
+    kmPerJaar: 25000, inclusief: ['Onderhoud', 'Verzekering', 'Laadpas', 'Pechhulp'],
+    facturen: invoicesEV,
+  },
+  {
+    id: 'c5', contractNummer: 'LC-2023-015', type: 'lease', voertuigId: 'v7',
+    klantNaam: 'Klaas Bakker', klantEmail: 'klaas@email.nl',
+    startDatum: '2023-03-01', eindDatum: '2026-02-28', maandprijs: 310, status: 'verlopen',
+    kmPerJaar: 15000, inclusief: ['Onderhoud'],
+    facturen: [],
+  },
+  {
+    id: 'c6', contractNummer: 'VC-2026-010', type: 'verhuur', voertuigId: 'v8',
+    klantNaam: 'Bouwbedrijf Jansen', klantEmail: 'info@jansen-bouw.nl', bedrijf: 'Jansen Bouw B.V.',
+    startDatum: '2026-02-01', eindDatum: '2026-08-31', maandprijs: 1200, status: 'actief',
+    inclusief: ['Verzekering', 'Pechhulp'],
+    facturen: [
+      { id: 'f14', datum: '2026-02-01', bedrag: 1200, status: 'betaald' },
+      { id: 'f15', datum: '2026-03-01', bedrag: 1200, status: 'openstaand' },
+    ],
+  },
+  {
+    id: 'c7', contractNummer: 'FC-2026-002', type: 'fietslease', voertuigId: null,
+    klantNaam: 'Mark Visser', klantEmail: 'mark@email.nl', bedrijf: 'DesignHub',
+    startDatum: '2026-03-01', eindDatum: '2029-02-28', maandprijs: 89, status: 'concept',
+    inclusief: ['Verzekering', 'Onderhoud'],
+    facturen: [],
+    notities: 'Gazelle Ultimate C8 — wacht op goedkeuring werkgever',
+  },
+];

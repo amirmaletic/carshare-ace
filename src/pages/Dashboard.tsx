@@ -1,7 +1,7 @@
-import { Car, CalendarRange, Wrench, Euro, TrendingUp, AlertTriangle, Clock } from "lucide-react";
+import { Car, CalendarRange, Wrench, Euro, TrendingUp, AlertTriangle, Clock, FileText, Bike } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
-import { vehicles, reservations, maintenanceRecords, getVehicleById, getStatusColor, getReservationStatusColor } from "@/data/mockData";
+import { vehicles, reservations, maintenanceRecords, contracts, getVehicleById, getStatusColor, getReservationStatusColor, getContractTypeIcon, getContractStatusColor } from "@/data/mockData";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 const revenueData = [
@@ -23,6 +23,9 @@ const statusCounts = [
 const activeReservations = reservations.filter(r => r.status === 'actief' || r.status === 'bevestigd');
 const totalRevenue = reservations.filter(r => r.status !== 'geannuleerd').reduce((sum, r) => sum + r.totaalPrijs, 0);
 const upcomingMaintenance = maintenanceRecords.filter(m => m.status === 'gepland').length;
+const activeContracts = contracts.filter(c => c.status === 'actief');
+const monthlyLeaseRevenue = activeContracts.reduce((sum, c) => sum + c.maandprijs, 0);
+const overdueInvoices = contracts.flatMap(c => c.facturen).filter(f => f.status === 'te_laat' || f.status === 'herinnering_verstuurd');
 
 export default function Dashboard() {
   return (
@@ -34,10 +37,11 @@ export default function Dashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <StatCard icon={Car} title="Totaal voertuigen" value={vehicles.length} subtitle={`${vehicles.filter(v => v.status === 'beschikbaar').length} beschikbaar`} trend={{ value: 12, label: 'vs vorige maand' }} />
+        <StatCard icon={FileText} title="Actieve contracten" value={activeContracts.length} subtitle={`€${monthlyLeaseRevenue.toLocaleString('nl-NL')}/mnd`} trend={{ value: 5, label: 'vs vorige maand' }} />
         <StatCard icon={CalendarRange} title="Actieve reserveringen" value={activeReservations.length} subtitle="Deze week" trend={{ value: 8, label: 'vs vorige week' }} />
-        <StatCard icon={Euro} title="Omzet deze maand" value={`€${totalRevenue.toLocaleString('nl-NL')}`} subtitle="Alle verhuurinkomsten" trend={{ value: 15, label: 'vs vorige maand' }} />
+        <StatCard icon={Euro} title="Omzet deze maand" value={`€${totalRevenue.toLocaleString('nl-NL')}`} subtitle="Verhuurinkomsten" trend={{ value: 15, label: 'vs vorige maand' }} />
         <StatCard icon={Wrench} title="Gepland onderhoud" value={upcomingMaintenance} subtitle="Komende 30 dagen" />
       </div>
 
@@ -125,6 +129,15 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">CD-234-EF (Ford Transit) — vervalt 01-05-2025</p>
               </div>
             </div>
+            {overdueInvoices.length > 0 && (
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-destructive/5 border border-destructive/15">
+                <AlertTriangle className="w-4 h-4 text-destructive mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">{overdueInvoices.length} openstaande facturen</p>
+                  <p className="text-xs text-muted-foreground">€{overdueInvoices.reduce((s, f) => s + f.bedrag, 0)} totaal — betalingsherinneringen verstuurd</p>
+                </div>
+              </div>
+            )}
             <div className="flex items-start gap-3 p-3 rounded-lg bg-info/5 border border-info/15">
               <Clock className="w-4 h-4 text-info mt-0.5 flex-shrink-0" />
               <div>

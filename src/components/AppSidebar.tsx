@@ -3,6 +3,7 @@ import {
   LayoutDashboard,
   Car,
   CalendarRange,
+  FileText,
   Wrench,
   BarChart3,
   Settings,
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Car, label: "Voertuigen", path: "/voertuigen" },
+  { icon: FileText, label: "Contracten", path: "/contracten" },
   { icon: CalendarRange, label: "Reserveringen", path: "/reserveringen" },
   { icon: Wrench, label: "Onderhoud", path: "/onderhoud" },
   { icon: BarChart3, label: "Rapportages", path: "/rapportages" },
