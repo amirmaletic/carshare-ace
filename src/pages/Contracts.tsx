@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ContractDocument } from "@/components/ContractDocument";
-import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle, Printer } from "lucide-react";
+import { KilometerTab } from "@/components/KilometerTab";
+import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle, Printer, Gauge } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -328,10 +329,14 @@ function ContractDetail({
             <Separator />
 
             <Tabs defaultValue="facturen">
-              <TabsList className="w-full grid grid-cols-1">
+              <TabsList className="w-full grid grid-cols-2">
                 <TabsTrigger value="facturen" className="gap-1.5">
                   <Euro className="w-3.5 h-3.5" />
                   Facturen ({contract.invoices.length})
+                </TabsTrigger>
+                <TabsTrigger value="kilometers" className="gap-1.5">
+                  <Gauge className="w-3.5 h-3.5" />
+                  Kilometers
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="facturen" className="mt-4 space-y-2">
@@ -361,6 +366,14 @@ function ContractDetail({
                     </div>
                   ))
                 )}
+              </TabsContent>
+              <TabsContent value="kilometers" className="mt-4">
+                <KilometerTab
+                  contractId={contract.id}
+                  kmPerJaar={contract.km_per_jaar}
+                  startDatum={contract.start_datum}
+                  eindDatum={contract.eind_datum}
+                />
               </TabsContent>
             </Tabs>
           </div>

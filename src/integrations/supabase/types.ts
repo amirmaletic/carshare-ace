@@ -17,6 +17,7 @@ export type Database = {
       contracts: {
         Row: {
           bedrijf: string | null
+          bedrijf_adres: string | null
           contract_nummer: string
           created_at: string
           eind_datum: string
@@ -25,6 +26,7 @@ export type Database = {
           klant_email: string
           klant_naam: string
           km_per_jaar: number | null
+          kvk_nummer: string | null
           maandprijs: number
           notities: string | null
           start_datum: string
@@ -36,6 +38,7 @@ export type Database = {
         }
         Insert: {
           bedrijf?: string | null
+          bedrijf_adres?: string | null
           contract_nummer: string
           created_at?: string
           eind_datum: string
@@ -44,6 +47,7 @@ export type Database = {
           klant_email: string
           klant_naam: string
           km_per_jaar?: number | null
+          kvk_nummer?: string | null
           maandprijs?: number
           notities?: string | null
           start_datum: string
@@ -55,6 +59,7 @@ export type Database = {
         }
         Update: {
           bedrijf?: string | null
+          bedrijf_adres?: string | null
           contract_nummer?: string
           created_at?: string
           eind_datum?: string
@@ -63,6 +68,7 @@ export type Database = {
           klant_email?: string
           klant_naam?: string
           km_per_jaar?: number | null
+          kvk_nummer?: string | null
           maandprijs?: number
           notities?: string | null
           start_datum?: string
@@ -105,6 +111,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "invoices_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kilometer_registraties: {
+        Row: {
+          contract_id: string
+          created_at: string
+          datum: string
+          id: string
+          kilometerstand: number
+          notitie: string | null
+          user_id: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          datum: string
+          id?: string
+          kilometerstand: number
+          notitie?: string | null
+          user_id: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          datum?: string
+          id?: string
+          kilometerstand?: number
+          notitie?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kilometer_registraties_contract_id_fkey"
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"

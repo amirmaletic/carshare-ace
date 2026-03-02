@@ -1,1 +1,4 @@
 project_id = "wqqebuxglxphivghekyz"
+
+[functions.kvk-search]
+verify_jwt = false
