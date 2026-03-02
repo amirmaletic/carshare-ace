@@ -14,7 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      contracts: {
+        Row: {
+          bedrijf: string | null
+          contract_nummer: string
+          created_at: string
+          eind_datum: string
+          id: string
+          inclusief: string[]
+          klant_email: string
+          klant_naam: string
+          km_per_jaar: number | null
+          maandprijs: number
+          notities: string | null
+          start_datum: string
+          status: Database["public"]["Enums"]["contract_status"]
+          type: Database["public"]["Enums"]["contract_type"]
+          updated_at: string
+          user_id: string
+          voertuig_id: string | null
+        }
+        Insert: {
+          bedrijf?: string | null
+          contract_nummer: string
+          created_at?: string
+          eind_datum: string
+          id?: string
+          inclusief?: string[]
+          klant_email: string
+          klant_naam: string
+          km_per_jaar?: number | null
+          maandprijs?: number
+          notities?: string | null
+          start_datum: string
+          status?: Database["public"]["Enums"]["contract_status"]
+          type: Database["public"]["Enums"]["contract_type"]
+          updated_at?: string
+          user_id: string
+          voertuig_id?: string | null
+        }
+        Update: {
+          bedrijf?: string | null
+          contract_nummer?: string
+          created_at?: string
+          eind_datum?: string
+          id?: string
+          inclusief?: string[]
+          klant_email?: string
+          klant_naam?: string
+          km_per_jaar?: number | null
+          maandprijs?: number
+          notities?: string | null
+          start_datum?: string
+          status?: Database["public"]["Enums"]["contract_status"]
+          type?: Database["public"]["Enums"]["contract_type"]
+          updated_at?: string
+          user_id?: string
+          voertuig_id?: string | null
+        }
+        Relationships: []
+      }
+      invoices: {
+        Row: {
+          bedrag: number
+          contract_id: string
+          created_at: string
+          datum: string
+          id: string
+          status: Database["public"]["Enums"]["invoice_status"]
+          user_id: string
+        }
+        Insert: {
+          bedrag?: number
+          contract_id: string
+          created_at?: string
+          datum: string
+          id?: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          user_id: string
+        }
+        Update: {
+          bedrag?: number
+          contract_id?: string
+          created_at?: string
+          datum?: string
+          id?: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +120,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      contract_status: "actief" | "verlopen" | "opgezegd" | "concept"
+      contract_type: "lease" | "verhuur" | "fietslease" | "ev-lease"
+      invoice_status:
+        | "betaald"
+        | "openstaand"
+        | "te_laat"
+        | "herinnering_verstuurd"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +253,15 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      contract_status: ["actief", "verlopen", "opgezegd", "concept"],
+      contract_type: ["lease", "verhuur", "fietslease", "ev-lease"],
+      invoice_status: [
+        "betaald",
+        "openstaand",
+        "te_laat",
+        "herinnering_verstuurd",
+      ],
+    },
   },
 } as const
