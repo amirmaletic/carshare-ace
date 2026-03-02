@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle } from "lucide-react";
+import { ContractDocument } from "@/components/ContractDocument";
+import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle, Printer } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -239,6 +240,7 @@ function ContractDetail({
   const updateInvoice = useUpdateInvoice();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
+  const [documentOpen, setDocumentOpen] = useState(false);
 
   if (!contract) return null;
   const vehicle = contract.voertuig_id ? getVehicleById(contract.voertuig_id) : null;
@@ -276,6 +278,9 @@ function ContractDetail({
 
           {/* Action buttons */}
           <div className="flex gap-2 flex-wrap">
+            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setDocumentOpen(true)}>
+              <Printer className="w-3.5 h-3.5" /> Contract genereren
+            </Button>
             {contract.status !== "opgezegd" && contract.status !== "verlopen" && (
               <>
                 <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(contract)}>
@@ -382,6 +387,9 @@ function ContractDetail({
 
       {/* Invoice form */}
       <InvoiceForm open={invoiceFormOpen} onOpenChange={setInvoiceFormOpen} contractId={contract.id} />
+
+      {/* Contract document */}
+      <ContractDocument contract={contract} open={documentOpen} onOpenChange={setDocumentOpen} />
     </>
   );
 }
