@@ -37,6 +37,12 @@ export interface MaintenanceRecord {
   status: 'gepland' | 'voltooid' | 'in_uitvoering';
 }
 
+export function getVehicleImageUrl(merk: string, model: string): string {
+  const make = encodeURIComponent(merk.toLowerCase());
+  const modelFamily = encodeURIComponent(model.split(' ')[0].toLowerCase());
+  return `https://cdn.imagin.studio/getimage?customer=hrjavascript-masede&make=${make}&modelFamily=${modelFamily}&paintId=pspc0040&angle=01`;
+}
+
 export const vehicles: Vehicle[] = [
   { id: 'v1', kenteken: 'AB-123-CD', merk: 'Volkswagen', model: 'Golf 8', bouwjaar: 2023, brandstof: 'Benzine', kilometerstand: 15420, status: 'beschikbaar', apkVervaldatum: '2025-11-15', verzekeringsVervaldatum: '2026-01-01', dagprijs: 45, categorie: 'Stadsauto', kleur: 'Zwart' },
   { id: 'v2', kenteken: 'EF-456-GH', merk: 'Tesla', model: 'Model 3', bouwjaar: 2024, brandstof: 'Elektrisch', kilometerstand: 8200, status: 'verhuurd', apkVervaldatum: '2026-03-20', verzekeringsVervaldatum: '2026-06-01', dagprijs: 75, categorie: 'Elektrisch', kleur: 'Wit' },
@@ -47,6 +53,14 @@ export const vehicles: Vehicle[] = [
   { id: 'v7', kenteken: 'YZ-901-AB', merk: 'Toyota', model: 'Yaris', bouwjaar: 2022, brandstof: 'Hybride', kilometerstand: 31200, status: 'beschikbaar', apkVervaldatum: '2025-09-20', verzekeringsVervaldatum: '2025-11-01', dagprijs: 35, categorie: 'Stadsauto', kleur: 'Rood' },
   { id: 'v8', kenteken: 'CD-234-EF', merk: 'Ford', model: 'Transit', bouwjaar: 2020, brandstof: 'Diesel', kilometerstand: 98500, status: 'verhuurd', apkVervaldatum: '2025-05-01', verzekeringsVervaldatum: '2025-08-01', dagprijs: 55, categorie: 'Bestelwagen', kleur: 'Blauw' },
 ];
+
+export function getMaintenanceForVehicle(vehicleId: string): MaintenanceRecord[] {
+  return maintenanceRecords.filter(m => m.voertuigId === vehicleId);
+}
+
+export function getReservationsForVehicle(vehicleId: string): Reservation[] {
+  return reservations.filter(r => r.voertuigId === vehicleId);
+}
 
 export const reservations: Reservation[] = [
   { id: 'r1', voertuigId: 'v2', klantNaam: 'Jan de Vries', klantEmail: 'jan@email.nl', startDatum: '2026-03-01', eindDatum: '2026-03-07', status: 'actief', totaalPrijs: 525, extras: ['GPS', 'Verzekering+'] },

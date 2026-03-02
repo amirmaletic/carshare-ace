@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { Search, Plus, Filter, Car, Fuel, Gauge } from "lucide-react";
+import { Search, Plus, Car, Fuel, Gauge } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { KentekenSearch } from "@/components/KentekenSearch";
-import { vehicles, getStatusColor } from "@/data/mockData";
+import { VehicleDetail } from "@/components/VehicleDetail";
+import { vehicles, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 
 const categories = ['Alle', 'Stadsauto', 'SUV', 'Bestelwagen', 'Luxe', 'Elektrisch'] as const;
@@ -12,6 +13,8 @@ const categories = ['Alle', 'Stadsauto', 'SUV', 'Bestelwagen', 'Luxe', 'Elektris
 export default function Vehicles() {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("Alle");
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+  const [detailOpen, setDetailOpen] = useState(false);
 
   const filtered = vehicles.filter(v => {
     const matchesSearch =
@@ -21,6 +24,11 @@ export default function Vehicles() {
     const matchesCategory = activeCategory === "Alle" || v.categorie === activeCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const openVehicle = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setDetailOpen(true);
+  };
 
   return (
     <div className="space-y-6">
@@ -72,12 +80,26 @@ export default function Vehicles() {
         {filtered.map((vehicle, i) => (
           <div
             key={vehicle.id}
-            className="glass-card rounded-xl overflow-hidden hover:shadow-md transition-shadow animate-fade-in"
+            onClick={() => openVehicle(vehicle)}
+            className="glass-card rounded-xl overflow-hidden hover:shadow-md transition-all cursor-pointer hover:-translate-y-0.5 animate-fade-in"
             style={{ animationDelay: `${i * 60}ms` }}
           >
-            {/* Header with gradient */}
-            <div className="h-28 bg-gradient-to-br from-sidebar to-sidebar-accent flex items-center justify-center">
-              <Car className="w-12 h-12 text-sidebar-foreground/40" />
+            {/* Car image */}
+            <div className="h-36 bg-gradient-to-br from-sidebar to-sidebar-accent relative overflow-hidden">
+              <img
+                src={getVehicleImageUrl(vehicle.merk, vehicle.model)}
+                alt={`${vehicle.merk} ${vehicle.model}`}
+                className="absolute inset-0 w-full h-full object-contain object-center p-3 drop-shadow-md"
+                loading="lazy"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (fallback) fallback.style.display = 'flex';
+                }}
+              />
+              <div className="absolute inset-0 items-center justify-center hidden">
+                <Car className="w-12 h-12 text-sidebar-foreground/40" />
+              </div>
             </div>
 
             <div className="p-5 space-y-3">
@@ -113,6 +135,13 @@ export default function Vehicles() {
           <p className="text-muted-foreground">Geen voertuigen gevonden</p>
         </div>
       )}
+
+      {/* Vehicle detail dialog */}
+      <VehicleDetail
+        vehicle={selectedVehicle}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+      />
     </div>
   );
 }
