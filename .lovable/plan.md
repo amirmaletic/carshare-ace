@@ -1,86 +1,93 @@
 
-# Automatische Data Koppelingen voor Contracten
 
-## Overzicht
-Drie externe datakoppelingen worden toegevoegd aan het contractformulier en contractbeheer: **RDW voertuigdata**, **KVK bedrijfsgegevens**, en **kilometerregistratie**.
+## Plan: Kostenberekening, AI-assistent en Mobiele App
 
----
-
-## 1. RDW Voertuigdata in Contractformulier
-
-De bestaande `KentekenSearch`-component gebruikt al de gratis RDW Open Data API. Deze functionaliteit wordt geintegreerd in het contractformulier.
-
-**Wat verandert:**
-- In het contractformulier komt een **kentekeninvoerveld** naast de voertuigselectie
-- Bij invoer van een kenteken worden automatisch de voertuiggegevens opgehaald via de RDW API (`opendata.rdw.nl`)
-- Opgehaalde data (merk, model, brandstof, APK-datum, catalogusprijs, CO2-uitstoot) wordt getoond als preview
-- Indien het voertuig al in het wagenpark zit, wordt het automatisch geselecteerd
-- In het contractdetail worden RDW-gegevens (APK-status, verzekeringsstatus) ook getoond
-
-**Geen API-key nodig** — RDW Open Data is gratis en publiek toegankelijk.
+Dit plan voegt drie grote features toe aan FleetFlow: een kostenmodule met prognoses, een AI-assistent voor slimme aanbevelingen, en PWA-ondersteuning voor mobiel gebruik.
 
 ---
 
-## 2. KVK Bedrijfsdata
+### 1. Kostenberekening en Prognoses
 
-Bij het invullen van het bedrijfsveld wordt automatisch gezocht in de KVK API.
+**Nieuwe pagina: `/kosten`**
 
-**Wat verandert:**
-- Het bedrijfsveld krijgt een **autocomplete/zoekfunctie**
-- Bij typen wordt gezocht via een backend functie die de KVK API bevraagt
-- Resultaten tonen: bedrijfsnaam, KVK-nummer, adres, rechtsvorm
-- Bij selectie worden de gegevens automatisch ingevuld
-- Nieuwe velden in de `contracts`-tabel: `kvk_nummer` (text, nullable) en `bedrijf_adres` (text, nullable)
+Een dedicated kostenpagina met:
+- **Kostenberekening per voertuig**: Berekent totale kosten op basis van bestaande data uit `service_historie`, `schade_rapporten`, contractgegevens (maandprijs), en kilometerregistraties
+- **Kosten per km**: Automatisch berekend uit totale kosten / gereden kilometers
+- **Prognoses (6-12 maanden)**: Lineaire trendanalyse op basis van historische kosten, getoond in een lijndiagram
+- **Vergelijking lease vs. koop**: Simpele vergelijkingswidget waar je parameters invult (aanschafprijs, afschrijving, verwachte onderhoudskosten) en vergelijkt met de huidige leaseprijs
+- **Dashboard-kaarten**: TCO (Total Cost of Ownership) per voertuig, gemiddelde kosten/km, prognose komende maand
 
-**API-key nodig:** De KVK API vereist een API-key. Er wordt een edge function aangemaakt die de key veilig bewaart. Je krijgt een verzoek om je KVK API-key in te voeren.
+**Wijzigingen:**
+- Nieuw bestand: `src/pages/Kosten.tsx` - Kostenoverzicht met grafieken (recharts)
+- Nieuw bestand: `src/hooks/useKostenBerekening.ts` - Hook die data aggregeert uit contracts, service_historie, schade_rapporten
+- Update: `src/App.tsx` - Route `/kosten` toevoegen
+- Update: `src/components/AppSidebar.tsx` - Menu-item "Kosten" toevoegen
 
----
-
-## 3. Kilometerregistratie
-
-Een nieuwe tabel voor het bijhouden van kilometerstanden per contract.
-
-**Wat verandert:**
-- Nieuwe `kilometer_registraties`-tabel met: `contract_id`, `datum`, `kilometerstand`, `notitie`
-- In het contractdetail komt een nieuw tabblad "Kilometers" naast "Facturen"
-- Handmatige invoer van kilometerstanden met datum
-- Grafiek met kilometerverloop over tijd (via Recharts, al geinstalleerd)
-- Waarschuwing als het huidige verbruik boven het contractuele km/jaar-limiet uitkomt
-- Berekening van gemiddeld km/dag en verwacht jaareinde
+Geen database-wijzigingen nodig; alle berekeningen worden gedaan op basis van bestaande tabellen.
 
 ---
 
-## Technische Details
+### 2. AI-assistent voor Aanbevelingen
 
-### Database migratie
-- `contracts` tabel uitbreiden met `kvk_nummer` (text, nullable) en `bedrijf_adres` (text, nullable)
-- Nieuwe tabel `kilometer_registraties`:
-  - `id` (uuid, PK)
-  - `contract_id` (uuid, FK naar contracts)
-  - `user_id` (uuid, NOT NULL)
-  - `datum` (date)
-  - `kilometerstand` (integer)
-  - `notitie` (text, nullable)
-  - `created_at` (timestamptz)
-- RLS policies: gebruikers zien alleen eigen registraties
+**Chatinterface in de sidebar of als floating widget**
 
-### Edge function: `kvk-search`
-- Zoekt bedrijven via de KVK API
-- Vereist `KVK_API_KEY` als secret
-- Retourneert bedrijfsnaam, KVK-nummer, adres, rechtsvorm
+Een AI-assistent die Lovable AI (Gemini) gebruikt om aanbevelingen te geven over:
+- Beste voertuig voor een klant (op basis van budget, km-behoefte, type gebruik)
+- Onderhoudsplanning suggesties (op basis van servicehistorie en km-stand)
+- Lease-opties vergelijken en adviseren
+- Kostenbesparing tips
 
-### Nieuwe/aangepaste bestanden
-- `supabase/functions/kvk-search/index.ts` -- edge function voor KVK API
-- `src/hooks/useKilometerRegistraties.ts` -- CRUD hooks voor km-registraties
-- `src/components/KilometerTab.tsx` -- tabblad met km-invoer en grafiek
-- `src/components/KvkSearch.tsx` -- autocomplete component voor bedrijfsgegevens
-- `src/components/ContractForm.tsx` -- RDW-integratie en KVK-autocomplete toevoegen
-- `src/pages/Contracts.tsx` -- km-tab toevoegen aan contractdetail
+**Wijzigingen:**
+- Nieuw bestand: `supabase/functions/ai-assistant/index.ts` - Edge function die Lovable AI Gateway aanroept met context over het wagenpark
+- Nieuw bestand: `src/components/AiAssistant.tsx` - Floating chatwidget met streaming berichten
+- Nieuw bestand: `src/hooks/useAiChat.ts` - Hook voor SSE streaming chat
+- Update: `src/components/AppLayout.tsx` - AI-assistent widget toevoegen
+- Update: `supabase/config.toml` - Functie registreren
+
+De assistent krijgt een system prompt met context over FleetFlow (wagenpark, contracten, kosten) zodat antwoorden relevant zijn.
+
+---
+
+### 3. Mobiele App (PWA)
+
+**Installeerbare web-app voor telefoon en tablet**
+
+De app wordt een Progressive Web App (PWA) zodat gebruikers hem kunnen installeren op hun telefoon vanuit de browser. Dit geeft:
+- Installatie op homescreen (ziet eruit als een echte app)
+- Werkt offline (cached pagina's)
+- Snelle laadtijden
+- Geen app store nodig
+
+**Wijzigingen:**
+- Installatie van `vite-plugin-pwa` dependency
+- Update: `vite.config.ts` - PWA plugin configureren met manifest
+- Update: `index.html` - Meta tags voor mobiel (viewport, theme-color, apple-touch-icon)
+- Nieuw bestand: `public/manifest.json` - App manifest met naam, iconen, kleuren
+- Nieuw bestand: `src/pages/Install.tsx` - Installatiepagina met instructies
+- PWA iconen aanmaken in `public/`
+
+---
+
+### Technische Details
+
+**Kostenmodule**
+- Gebruikt `useContracts`, `useServiceHistorie`, `useSchadeRapporten` hooks om data te aggregeren
+- Prognose: simpel lineair gemiddelde over de laatste 6 maanden, geextrapoleerd
+- Grafieken via recharts (al geinstalleerd)
+
+**AI-assistent**
+- Gebruikt `LOVABLE_API_KEY` (al geconfigureerd) via Lovable AI Gateway
+- Model: `google/gemini-3-flash-preview` (snel en goedkoop)
+- SSE streaming voor realtime antwoorden
+- System prompt bevat context over wagenpark-management in het Nederlands
+
+**PWA**
+- `vite-plugin-pwa` met workbox voor service worker
+- `navigateFallbackDenylist: [/^\/~oauth/]` voor OAuth compatibiliteit
+- Manifest met FleetFlow branding
 
 ### Volgorde van implementatie
-1. Database migratie (nieuwe kolommen + km-tabel + RLS)
-2. KVK edge function + secret opvragen
-3. KVK autocomplete component bouwen
-4. RDW-lookup integreren in contractformulier
-5. Kilometerregistratie hooks + UI bouwen
-6. Km-tab met grafiek in contractdetail toevoegen
+1. Kostenberekening pagina (geen backend-wijzigingen nodig)
+2. AI-assistent (edge function + UI widget)
+3. PWA configuratie (build tooling)
+
