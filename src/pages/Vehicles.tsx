@@ -3,6 +3,7 @@ import { Search, Plus, Filter, Car, Fuel, Gauge } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
+import { KentekenSearch } from "@/components/KentekenSearch";
 import { vehicles, getStatusColor } from "@/data/mockData";
 import { cn } from "@/lib/utils";
 
@@ -28,10 +29,13 @@ export default function Vehicles() {
           <h1 className="text-3xl font-display font-bold text-foreground">Voertuigen</h1>
           <p className="text-muted-foreground mt-1">{vehicles.length} voertuigen in je vloot</p>
         </div>
-        <Button className="gap-2">
-          <Plus className="w-4 h-4" />
-          Voertuig toevoegen
-        </Button>
+        <div className="flex gap-2">
+          <KentekenSearch />
+          <Button className="gap-2">
+            <Plus className="w-4 h-4" />
+            Voertuig toevoegen
+          </Button>
+        </div>
       </div>
 
       {/* Search & Filters */}
