@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
 import { useCreateContract, useUpdateContract, type ContractWithInvoices, type CreateContractInput } from "@/hooks/useContracts";
-import { vehicles } from "@/data/mockData";
+import { vehicles, type Vehicle } from "@/data/mockData";
 
 const contractSchema = z.object({
   contract_nummer: z.string().min(1, "Contractnummer is verplicht").max(50),
@@ -26,7 +26,32 @@ const contractSchema = z.object({
   notities: z.string().max(1000).nullable(),
 });
 
-const serviceOptions = ["Onderhoud", "Verzekering", "Pechhulp", "Winterbanden", "Banden", "Laadpas"];
+// Default free km/day per vehicle category
+const defaultKmPerDayByCategory: Record<Vehicle["categorie"], number> = {
+  Stadsauto: 100,
+  SUV: 150,
+  Bestelwagen: 200,
+  Luxe: 120,
+  Elektrisch: 130,
+};
+
+// Type prefix mapping for auto-generated contract numbers
+const typePrefixMap: Record<string, string> = {
+  lease: "LC",
+  verhuur: "VC",
+  fietslease: "FC",
+  "ev-lease": "EV",
+};
+
+function generateContractNummer(type: string): string {
+  const prefix = typePrefixMap[type] || "XX";
+  const year = new Date().getFullYear();
+  const rand = Math.floor(Math.random() * 900 + 100);
+  return `${prefix}-${year}-${rand}`;
+}
+
+const serviceOptions = ["Onderhoud", "Verzekering", "Pechhulp", "Winterbanden", "Banden", "Laadpas", "Gratis km/dag"];
+const defaultServices = ["Onderhoud", "Verzekering"];
 
 interface ContractFormProps {
   open: boolean;
@@ -40,11 +65,12 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
   const updateMutation = useUpdateContract();
 
   const [form, setForm] = useState(() => getInitialForm(editContract));
+  const [freeKmPerDay, setFreeKmPerDay] = useState(0);
 
   function getInitialForm(c?: ContractWithInvoices | null) {
     return {
-      contract_nummer: c?.contract_nummer ?? "",
-      type: c?.type ?? "lease" as const,
+      contract_nummer: c?.contract_nummer ?? generateContractNummer("lease"),
+      type: c?.type ?? ("lease" as const),
       klant_naam: c?.klant_naam ?? "",
       klant_email: c?.klant_email ?? "",
       bedrijf: c?.bedrijf ?? "",
@@ -53,7 +79,7 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
       eind_datum: c?.eind_datum ?? "",
       maandprijs: c?.maandprijs ?? 0,
       km_per_jaar: c?.km_per_jaar ?? 0,
-      inclusief: c?.inclusief ?? [],
+      inclusief: c?.inclusief ?? [...defaultServices],
       notities: c?.notities ?? "",
     };
   }
@@ -64,6 +90,25 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
     setPrevEdit(editContract?.id);
     setForm(getInitialForm(editContract));
   }
+
+  // Auto-generate contract nummer when type changes (only for new contracts)
+  useEffect(() => {
+    if (!isEdit) {
+      setForm((f) => ({ ...f, contract_nummer: generateContractNummer(f.type) }));
+    }
+  }, [form.type, isEdit]);
+
+  // Update free km/day when vehicle changes
+  useEffect(() => {
+    const vehicle = vehicles.find((v) => v.id === form.voertuig_id);
+    if (vehicle) {
+      setFreeKmPerDay(defaultKmPerDayByCategory[vehicle.categorie] ?? 100);
+    } else if (form.type === "fietslease") {
+      setFreeKmPerDay(50);
+    } else {
+      setFreeKmPerDay(0);
+    }
+  }, [form.voertuig_id, form.type]);
 
   const update = (key: string, value: unknown) => setForm((f) => ({ ...f, [key]: value }));
 
@@ -79,6 +124,14 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Build inclusief with km info if enabled
+    const inclusiefFinal = [...form.inclusief];
+    const hasKm = inclusiefFinal.includes("Gratis km/dag");
+    if (hasKm) {
+      const idx = inclusiefFinal.indexOf("Gratis km/dag");
+      inclusiefFinal[idx] = `Gratis ${freeKmPerDay} km/dag`;
+    }
+
     const input: CreateContractInput = {
       contract_nummer: form.contract_nummer.trim(),
       type: form.type as CreateContractInput["type"],
@@ -91,7 +144,7 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
       maandprijs: form.maandprijs,
       status: isEdit ? (editContract!.status as CreateContractInput["status"]) : "concept",
       km_per_jaar: form.km_per_jaar || null,
-      inclusief: form.inclusief,
+      inclusief: inclusiefFinal,
       notities: form.notities.trim() || null,
     };
 
@@ -116,6 +169,7 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
+  const selectedVehicle = vehicles.find((v) => v.id === form.voertuig_id);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -129,7 +183,8 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Contractnummer</Label>
-              <Input value={form.contract_nummer} onChange={(e) => update("contract_nummer", e.target.value)} required />
+              <Input value={form.contract_nummer} readOnly className="bg-muted/50 font-mono text-muted-foreground" />
+              <p className="text-xs text-muted-foreground">Automatisch gegenereerd</p>
             </div>
             <div className="space-y-1.5">
               <Label>Type</Label>
@@ -202,16 +257,45 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
           <div className="space-y-2">
             <Label>Inclusief</Label>
             <div className="flex flex-wrap gap-3">
-              {serviceOptions.map((s) => (
-                <label key={s} className="flex items-center gap-2 text-sm">
-                  <Checkbox
-                    checked={form.inclusief.includes(s)}
-                    onCheckedChange={() => toggleService(s)}
-                  />
-                  {s}
-                </label>
-              ))}
+              {serviceOptions.map((s) => {
+                const isDefault = defaultServices.includes(s);
+                const isKm = s === "Gratis km/dag";
+                return (
+                  <label key={s} className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      checked={form.inclusief.includes(s)}
+                      onCheckedChange={() => toggleService(s)}
+                      disabled={isDefault && !isEdit}
+                    />
+                    <span>
+                      {isKm && form.inclusief.includes(s) && freeKmPerDay > 0
+                        ? `Gratis ${freeKmPerDay} km/dag`
+                        : s}
+                      {isDefault && !isEdit && (
+                        <span className="text-xs text-muted-foreground ml-1">(standaard)</span>
+                      )}
+                    </span>
+                  </label>
+                );
+              })}
             </div>
+            {form.inclusief.includes("Gratis km/dag") && (
+              <div className="flex items-center gap-2 mt-2">
+                <Label className="text-xs">Gratis km/dag:</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={freeKmPerDay}
+                  onChange={(e) => setFreeKmPerDay(Number(e.target.value))}
+                  className="w-24 h-8 text-sm"
+                />
+                {selectedVehicle && (
+                  <span className="text-xs text-muted-foreground">
+                    Standaard voor {selectedVehicle.categorie}: {defaultKmPerDayByCategory[selectedVehicle.categorie]} km
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="space-y-1.5">
