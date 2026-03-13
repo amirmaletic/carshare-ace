@@ -1,3 +1,12 @@
+import volkswagenGolf from '@/assets/vehicles/volkswagen-golf.png';
+import teslaModel3 from '@/assets/vehicles/tesla-model3.png';
+import bmwX3 from '@/assets/vehicles/bmw-x3.png';
+import mercedesEklasse from '@/assets/vehicles/mercedes-eklasse.png';
+import renaultKangoo from '@/assets/vehicles/renault-kangoo.png';
+import audiA4 from '@/assets/vehicles/audi-a4.png';
+import toyotaYaris from '@/assets/vehicles/toyota-yaris.png';
+import fordTransit from '@/assets/vehicles/ford-transit.png';
+
 export interface Vehicle {
   id: string;
   kenteken: string;
