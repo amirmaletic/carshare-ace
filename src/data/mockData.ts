@@ -132,7 +132,8 @@ export const vehicles: Vehicle[] = [
   { id: 'v16', kenteken: 'IJ-678-KL', merk: 'Porsche', model: 'Cayenne S', bouwjaar: 2023, brandstof: 'Hybride', kilometerstand: 14200, status: 'beschikbaar', apkVervaldatum: '2026-05-15', verzekeringsVervaldatum: '2026-08-01', dagprijs: 150, categorie: 'Luxe', kleur: 'Zwart' },
   { id: 'v17', kenteken: 'MN-901-OP', merk: 'Porsche', model: 'Taycan 4S', bouwjaar: 2024, brandstof: 'Elektrisch', kilometerstand: 7800, status: 'gereserveerd', apkVervaldatum: '2026-10-20', verzekeringsVervaldatum: '2027-01-01', dagprijs: 175, categorie: 'Elektrisch', kleur: 'Wit' },
 ];
-export function getMaintenanceForVehicle(vehicleId: string): MaintenanceRecord[] {
+
+
   return maintenanceRecords.filter(m => m.voertuigId === vehicleId);
 }
 
