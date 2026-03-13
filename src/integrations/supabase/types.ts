@@ -285,6 +285,45 @@ export type Database = {
         }
         Relationships: []
       }
+      terugmeldingen: {
+        Row: {
+          bon_url: string | null
+          created_at: string
+          datum: string
+          id: string
+          kilometerstand: number
+          notitie: string | null
+          user_id: string
+          voertuig_id: string
+          voertuig_kenteken: string
+          voertuig_naam: string
+        }
+        Insert: {
+          bon_url?: string | null
+          created_at?: string
+          datum?: string
+          id?: string
+          kilometerstand: number
+          notitie?: string | null
+          user_id: string
+          voertuig_id: string
+          voertuig_kenteken: string
+          voertuig_naam: string
+        }
+        Update: {
+          bon_url?: string | null
+          created_at?: string
+          datum?: string
+          id?: string
+          kilometerstand?: number
+          notitie?: string | null
+          user_id?: string
+          voertuig_id?: string
+          voertuig_kenteken?: string
+          voertuig_naam?: string
+        }
+        Relationships: []
+      }
       voertuigen: {
         Row: {
           apk_vervaldatum: string | null
