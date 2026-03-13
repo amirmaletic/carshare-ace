@@ -234,12 +234,7 @@ export default function Vehicles() {
               <p className="text-muted-foreground">Geen voertuigen gevonden</p>
             </div>
           )}
-        </TabsContent>
-
-        <TabsContent value="terugmelden">
-          <VehicleReturnTab />
-        </TabsContent>
-      </Tabs>
+      </div>
 
       <VehicleDetail vehicle={selectedVehicle} open={detailOpen} onOpenChange={setDetailOpen} />
       <VehicleForm open={formOpen} onOpenChange={setFormOpen} />

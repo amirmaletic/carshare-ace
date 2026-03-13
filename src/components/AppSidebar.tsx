@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Car, label: "Voertuigen", path: "/voertuigen" },
+  { icon: RotateCcw, label: "Terugmelden", path: "/terugmelden" },
   { icon: FileText, label: "Contracten", path: "/contracten" },
   { icon: CalendarRange, label: "Reserveringen", path: "/reserveringen" },
   { icon: Wrench, label: "Onderhoud", path: "/onderhoud" },

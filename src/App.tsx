@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "./pages/Dashboard";
 import Vehicles from "./pages/Vehicles";
+import Terugmelden from "./pages/Terugmelden";
 import Contracts from "./pages/Contracts";
 import Reservations from "./pages/Reservations";
 import Maintenance from "./pages/Maintenance";
