@@ -1,16 +1,30 @@
 import { useState } from "react";
-import { Search, Plus, Car, Fuel, Gauge } from "lucide-react";
+import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X } from "lucide-react";
+import { format } from "date-fns";
+import { nl } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { StatusBadge } from "@/components/StatusBadge";
 import { KentekenSearch } from "@/components/KentekenSearch";
 import { VehicleDetail } from "@/components/VehicleDetail";
 import { VehicleForm } from "@/components/VehicleForm";
-import { vehicles as mockVehicles, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
+import { vehicles as mockVehicles, reservations, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
 
 const categories = ['Alle', 'Stadsauto', 'SUV', 'Bestelwagen', 'Luxe', 'Elektrisch'] as const;
+
+function isVehicleAvailable(vehicleId: string, from: Date, to: Date): boolean {
+  return !reservations.some(r => {
+    if (r.voertuigId !== vehicleId) return false;
+    if (r.status === 'voltooid' || r.status === 'geannuleerd') return false;
+    const rStart = new Date(r.startDatum);
+    const rEnd = new Date(r.eindDatum);
+    return rStart <= to && rEnd >= from;
+  });
+}
 
 export default function Vehicles() {
   const [search, setSearch] = useState("");
@@ -18,6 +32,8 @@ export default function Vehicles() {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
   const { voertuigen: dbVoertuigen } = useVoertuigen();
 
@@ -40,13 +56,18 @@ export default function Vehicles() {
 
   const allVehicles = [...mockVehicles, ...dbAsVehicles];
 
+  const hasDateFilter = dateFrom && dateTo && dateFrom <= dateTo;
+
   const filtered = allVehicles.filter(v => {
     const matchesSearch =
       v.kenteken.toLowerCase().includes(search.toLowerCase()) ||
       v.merk.toLowerCase().includes(search.toLowerCase()) ||
       v.model.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = activeCategory === "Alle" || v.categorie === activeCategory;
-    return matchesSearch && matchesCategory;
+    const matchesAvailability = !hasDateFilter || (
+      v.status !== 'onderhoud' && isVehicleAvailable(v.id, dateFrom, dateTo)
+    );
+    return matchesSearch && matchesCategory && matchesAvailability;
   });
 
   const openVehicle = (vehicle: Vehicle) => {
@@ -91,6 +112,66 @@ export default function Vehicles() {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Date range filter */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <CalendarRange className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">Beschikbaar van</span>
+        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}>
+              {dateFrom ? format(dateFrom, "d MMM yyyy", { locale: nl }) : "Startdatum"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dateFrom}
+              onSelect={setDateFrom}
+              initialFocus
+              className="p-3 pointer-events-auto"
+              locale={nl}
+            />
+          </PopoverContent>
+        </Popover>
+        <span className="text-sm text-muted-foreground">t/m</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateTo && "text-muted-foreground")}>
+              {dateTo ? format(dateTo, "d MMM yyyy", { locale: nl }) : "Einddatum"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dateTo}
+              onSelect={setDateTo}
+              disabled={(date) => dateFrom ? date < dateFrom : false}
+              initialFocus
+              className="p-3 pointer-events-auto"
+              locale={nl}
+            />
+          </PopoverContent>
+        </Popover>
+        {hasDateFilter && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}
+            className="gap-1 text-muted-foreground"
+          >
+            <X className="w-3 h-3" />
+            Wis periode
+          </Button>
+        )}
+        {hasDateFilter && (
+          <span className="text-sm text-muted-foreground ml-auto">
+            {filtered.length} beschikbaar
+          </span>
+        )}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
