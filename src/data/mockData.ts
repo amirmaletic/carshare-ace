@@ -272,7 +272,7 @@ export const contracts: Contract[] = [
     notities: 'VanMoof S5 — fietslease via werkgever',
   },
   {
-    id: 'c4', contractNummer: 'EV-2026-001', type: 'ev-lease', voertuigId: 'v2',
+    id: 'c4', contractNummer: 'EV-2026-001', type: 'ev-lease', voertuigId: 'v5',
     klantNaam: 'Groen Transport B.V.', klantEmail: 'lease@groentransport.nl', bedrijf: 'Groen Transport B.V.',
     startDatum: '2026-02-01', eindDatum: '2030-01-31', maandprijs: 695, status: 'actief',
     kmPerJaar: 25000, inclusief: ['Onderhoud', 'Verzekering', 'Laadpas', 'Pechhulp'],
