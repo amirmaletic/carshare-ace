@@ -325,7 +325,7 @@ export default function Terugmelden() {
                   <p className="text-xs text-muted-foreground font-mono">{t.voertuig_kenteken}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-foreground">{t.kilometerstand.toLocaleString("nl-NL")} km</p>
+                  <p className="text-sm font-medium text-foreground">{(t.kilometerstand ?? 0).toLocaleString("nl-NL")} km</p>
                   <p className="text-xs text-muted-foreground">
                     {format(new Date(t.created_at), "d MMM yyyy", { locale: nl })}
                   </p>
