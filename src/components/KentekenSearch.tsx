@@ -231,6 +231,7 @@ export function KentekenSearch() {
               <Plus className="w-4 h-4" />
               {adding ? "Toevoegen..." : "Toevoegen aan wagenpark"}
             </Button>
+          </div>
         )}
 
         {!vehicleData && !loading && (
