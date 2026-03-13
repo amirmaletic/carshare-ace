@@ -56,13 +56,18 @@ export default function Vehicles() {
 
   const allVehicles = [...mockVehicles, ...dbAsVehicles];
 
+  const hasDateFilter = dateFrom && dateTo && dateFrom <= dateTo;
+
   const filtered = allVehicles.filter(v => {
     const matchesSearch =
       v.kenteken.toLowerCase().includes(search.toLowerCase()) ||
       v.merk.toLowerCase().includes(search.toLowerCase()) ||
       v.model.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = activeCategory === "Alle" || v.categorie === activeCategory;
-    return matchesSearch && matchesCategory;
+    const matchesAvailability = !hasDateFilter || (
+      v.status !== 'onderhoud' && isVehicleAvailable(v.id, dateFrom, dateTo)
+    );
+    return matchesSearch && matchesCategory && matchesAvailability;
   });
 
   const openVehicle = (vehicle: Vehicle) => {
