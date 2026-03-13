@@ -175,6 +175,39 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Terugmeldingen per medewerker */}
+      <div className="clean-card p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-foreground">Terugmeldingen per medewerker</h3>
+          <RotateCcw className="w-4 h-4 text-muted-foreground" />
+        </div>
+        {medewerkerStats.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nog geen terugmeldingen geregistreerd</p>
+        ) : (
+          <div className="space-y-3">
+            {medewerkerStats.map((m, i) => (
+              <div key={m.email} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
+                <div className="p-2 rounded-lg bg-muted">
+                  <User className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{m.email}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-2 rounded-full bg-primary/20 w-24">
+                    <div
+                      className="h-2 rounded-full bg-primary transition-all"
+                      style={{ width: `${Math.min((m.count / Math.max(...medewerkerStats.map(s => s.count))) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-semibold text-foreground w-8 text-right">{m.count}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
