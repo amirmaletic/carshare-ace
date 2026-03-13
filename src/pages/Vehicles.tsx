@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { KentekenSearch } from "@/components/KentekenSearch";
 import { VehicleDetail } from "@/components/VehicleDetail";
-import { vehicles, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
+import { VehicleForm } from "@/components/VehicleForm";
+import { vehicles as mockVehicles, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
+import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
 
 const categories = ['Alle', 'Stadsauto', 'SUV', 'Bestelwagen', 'Luxe', 'Elektrisch'] as const;
@@ -15,8 +17,30 @@ export default function Vehicles() {
   const [activeCategory, setActiveCategory] = useState<string>("Alle");
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
 
-  const filtered = vehicles.filter(v => {
+  const { voertuigen: dbVoertuigen } = useVoertuigen();
+
+  // Merge DB vehicles into the Vehicle shape
+  const dbAsVehicles: Vehicle[] = dbVoertuigen.map((v) => ({
+    id: v.id,
+    kenteken: v.kenteken,
+    merk: v.merk,
+    model: v.model,
+    bouwjaar: v.bouwjaar,
+    brandstof: v.brandstof as Vehicle["brandstof"],
+    kilometerstand: v.kilometerstand,
+    status: v.status as Vehicle["status"],
+    apkVervaldatum: v.apk_vervaldatum || "",
+    verzekeringsVervaldatum: v.verzekering_vervaldatum || "",
+    dagprijs: Number(v.dagprijs),
+    categorie: v.categorie as Vehicle["categorie"],
+    kleur: v.kleur,
+  }));
+
+  const allVehicles = [...mockVehicles, ...dbAsVehicles];
+
+  const filtered = allVehicles.filter(v => {
     const matchesSearch =
       v.kenteken.toLowerCase().includes(search.toLowerCase()) ||
       v.merk.toLowerCase().includes(search.toLowerCase()) ||
@@ -35,11 +59,11 @@ export default function Vehicles() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Voertuigen</h1>
-          <p className="text-muted-foreground mt-1">{vehicles.length} voertuigen in je vloot</p>
+          <p className="text-muted-foreground mt-1">{allVehicles.length} voertuigen in je vloot</p>
         </div>
         <div className="flex gap-2">
           <KentekenSearch />
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => setFormOpen(true)}>
             <Plus className="w-4 h-4" />
             Voertuig toevoegen
           </Button>
@@ -129,6 +153,7 @@ export default function Vehicles() {
       )}
 
       <VehicleDetail vehicle={selectedVehicle} open={detailOpen} onOpenChange={setDetailOpen} />
+      <VehicleForm open={formOpen} onOpenChange={setFormOpen} />
     </div>
   );
 }
