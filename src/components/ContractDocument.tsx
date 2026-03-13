@@ -96,7 +96,7 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground uppercase tracking-wider">Contractnummer</p>
-              <p className="text-lg font-display font-semibold font-mono">{contract.contract_nummer}</p>
+              <p className="text-lg font-semibold font-mono">{contract.contract_nummer}</p>
               <p className="text-xs text-muted-foreground">Datum: {today}</p>
             </div>
           </div>

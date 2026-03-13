@@ -54,7 +54,7 @@ export default function Auth() {
           <div className="mx-auto mb-3 p-3 rounded-xl bg-primary/10 w-fit">
             <Car className="w-8 h-8 text-primary" />
           </div>
-          <CardTitle className="font-display text-2xl">
+          <CardTitle className="text-2xl">
             {isLogin ? "Inloggen" : "Account aanmaken"}
           </CardTitle>
           <CardDescription>
