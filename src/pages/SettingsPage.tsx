@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Shield, Bell, Database, Building2, Save, LogOut } from "lucide-react";
+import { Settings, Shield, Bell, Database, Building2, Save, LogOut, KeyRound } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import AutorisatieTab from "@/components/settings/AutorisatieTab";
 
 interface BedrijfsInstellingen {
   bedrijfsnaam: string;
@@ -115,12 +116,15 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="bedrijf" className="max-w-3xl">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="bedrijf" className="gap-1.5 text-xs sm:text-sm">
             <Building2 className="w-4 h-4 hidden sm:block" /> Bedrijf
           </TabsTrigger>
           <TabsTrigger value="notificaties" className="gap-1.5 text-xs sm:text-sm">
             <Bell className="w-4 h-4 hidden sm:block" /> Meldingen
+          </TabsTrigger>
+          <TabsTrigger value="autorisatie" className="gap-1.5 text-xs sm:text-sm">
+            <KeyRound className="w-4 h-4 hidden sm:block" /> Autorisatie
           </TabsTrigger>
           <TabsTrigger value="algemeen" className="gap-1.5 text-xs sm:text-sm">
             <Settings className="w-4 h-4 hidden sm:block" /> Algemeen
@@ -284,6 +288,11 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Autorisatie */}
+        <TabsContent value="autorisatie" className="space-y-4 mt-4">
+          <AutorisatieTab />
         </TabsContent>
 
         {/* Algemeen */}
