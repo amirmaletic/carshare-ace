@@ -141,7 +141,11 @@ const vehicleImageMap: Record<string, string> = {
 
 export function getVehicleImageUrl(merk: string, model: string): string {
   const key = `${merk.toLowerCase()}-${model.split(' ')[0].toLowerCase()}`;
-  return vehicleImageMap[key] || '';
+  if (vehicleImageMap[key]) return vehicleImageMap[key];
+  // Fallback: Imagin Studio API for any VAG model not in the local map
+  const make = encodeURIComponent(merk.toLowerCase());
+  const modelFamily = encodeURIComponent(model.split(' ')[0].toLowerCase());
+  return `https://cdn.imagin.studio/getimage?customer=hrjavascript-masede&make=${make}&modelFamily=${modelFamily}&paintId=pspc0040&angle=01`;
 }
 
 export const vehicles: Vehicle[] = [
