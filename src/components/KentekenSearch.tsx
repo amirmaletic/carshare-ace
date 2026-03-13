@@ -187,11 +187,50 @@ export function KentekenSearch() {
             </div>
 
             {/* Add to fleet button */}
-            <Button className="w-full gap-2 mt-2">
+            <Button
+              className="w-full gap-2 mt-2"
+              disabled={adding || !user}
+              onClick={() => {
+                if (!vehicleData || !user) return;
+                setAdding(true);
+                const brandstof = brandstofData?.brandstof_omschrijving || vehicleData.brandstof_omschrijving || "Benzine";
+                const bouwjaarStr = vehicleData.datum_eerste_toelating;
+                const bouwjaar = bouwjaarStr && bouwjaarStr.length >= 4 ? parseInt(bouwjaarStr.slice(0, 4)) : new Date().getFullYear();
+                
+                const brandstofMap: Record<string, string> = {
+                  "Benzine": "Benzine", "Diesel": "Diesel", "Elektriciteit": "Elektrisch",
+                };
+                const mappedBrandstof = brandstofMap[brandstof] || "Benzine";
+                const isElektrisch = mappedBrandstof === "Elektrisch";
+
+                addVoertuig.mutate({
+                  kenteken: vehicleData.kenteken,
+                  merk: vehicleData.merk,
+                  model: vehicleData.handelsbenaming || "",
+                  bouwjaar,
+                  brandstof: mappedBrandstof,
+                  kilometerstand: 0,
+                  dagprijs: 0,
+                  categorie: isElektrisch ? "Elektrisch" : "Stadsauto",
+                  kleur: vehicleData.eerste_kleur || "Onbekend",
+                  status: "beschikbaar",
+                  apk_vervaldatum: vehicleData.vervaldatum_apk ? `${vehicleData.vervaldatum_apk.slice(0,4)}-${vehicleData.vervaldatum_apk.slice(4,6)}-${vehicleData.vervaldatum_apk.slice(6,8)}` : null,
+                  verzekering_vervaldatum: null,
+                }, {
+                  onSuccess: () => {
+                    setAdding(false);
+                    setOpen(false);
+                    setVehicleData(null);
+                    setBrandstofData(null);
+                    setQuery("");
+                  },
+                  onError: () => setAdding(false),
+                });
+              }}
+            >
               <Plus className="w-4 h-4" />
-              Toevoegen aan wagenpark
+              {adding ? "Toevoegen..." : "Toevoegen aan wagenpark"}
             </Button>
-          </div>
         )}
 
         {!vehicleData && !loading && (
