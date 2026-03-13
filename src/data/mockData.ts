@@ -133,7 +133,7 @@ export const vehicles: Vehicle[] = [
   { id: 'v17', kenteken: 'MN-901-OP', merk: 'Porsche', model: 'Taycan 4S', bouwjaar: 2024, brandstof: 'Elektrisch', kilometerstand: 7800, status: 'gereserveerd', apkVervaldatum: '2026-10-20', verzekeringsVervaldatum: '2027-01-01', dagprijs: 175, categorie: 'Elektrisch', kleur: 'Wit' },
 ];
 
-
+export function getMaintenanceForVehicle(vehicleId: string): MaintenanceRecord[] {
   return maintenanceRecords.filter(m => m.voertuigId === vehicleId);
 }
 
@@ -142,19 +142,22 @@ export function getReservationsForVehicle(vehicleId: string): Reservation[] {
 }
 
 export const reservations: Reservation[] = [
-  { id: 'r1', voertuigId: 'v2', klantNaam: 'Jan de Vries', klantEmail: 'jan@email.nl', startDatum: '2026-03-01', eindDatum: '2026-03-07', status: 'actief', totaalPrijs: 525, extras: ['GPS', 'Verzekering+'] },
-  { id: 'r2', voertuigId: 'v6', klantNaam: 'Maria Jansen', klantEmail: 'maria@email.nl', startDatum: '2026-03-05', eindDatum: '2026-03-10', status: 'bevestigd', totaalPrijs: 300, extras: ['Kinderzitje'] },
-  { id: 'r3', voertuigId: 'v8', klantNaam: 'Peter Bakker', klantEmail: 'peter@email.nl', startDatum: '2026-02-25', eindDatum: '2026-03-04', status: 'actief', totaalPrijs: 440, extras: [] },
+  { id: 'r1', voertuigId: 'v2', klantNaam: 'Jan de Vries', klantEmail: 'jan@email.nl', startDatum: '2026-03-01', eindDatum: '2026-03-07', status: 'actief', totaalPrijs: 245, extras: ['GPS', 'Verzekering+'] },
+  { id: 'r2', voertuigId: 'v8', klantNaam: 'Maria Jansen', klantEmail: 'maria@email.nl', startDatum: '2026-03-05', eindDatum: '2026-03-10', status: 'bevestigd', totaalPrijs: 300, extras: ['Kinderzitje'] },
+  { id: 'r3', voertuigId: 'v4', klantNaam: 'Peter Bakker', klantEmail: 'peter@email.nl', startDatum: '2026-02-25', eindDatum: '2026-03-04', status: 'actief', totaalPrijs: 440, extras: [] },
   { id: 'r4', voertuigId: 'v1', klantNaam: 'Sophie Mulder', klantEmail: 'sophie@email.nl', startDatum: '2026-02-15', eindDatum: '2026-02-20', status: 'voltooid', totaalPrijs: 225, extras: ['GPS'] },
-  { id: 'r5', voertuigId: 'v4', klantNaam: 'Thomas van Dijk', klantEmail: 'thomas@email.nl', startDatum: '2026-03-10', eindDatum: '2026-03-15', status: 'bevestigd', totaalPrijs: 475, extras: ['Verzekering+', 'GPS'] },
-  { id: 'r6', voertuigId: 'v7', klantNaam: 'Lisa de Boer', klantEmail: 'lisa@email.nl', startDatum: '2026-01-10', eindDatum: '2026-01-15', status: 'voltooid', totaalPrijs: 175, extras: [] },
+  { id: 'r5', voertuigId: 'v10', klantNaam: 'Thomas van Dijk', klantEmail: 'thomas@email.nl', startDatum: '2026-03-10', eindDatum: '2026-03-15', status: 'bevestigd', totaalPrijs: 600, extras: ['Verzekering+', 'GPS'] },
+  { id: 'r6', voertuigId: 'v15', klantNaam: 'Lisa de Boer', klantEmail: 'lisa@email.nl', startDatum: '2026-01-10', eindDatum: '2026-01-15', status: 'voltooid', totaalPrijs: 275, extras: [] },
+  { id: 'r7', voertuigId: 'v17', klantNaam: 'Henk Smit', klantEmail: 'henk@email.nl', startDatum: '2026-03-15', eindDatum: '2026-03-20', status: 'bevestigd', totaalPrijs: 875, extras: ['Verzekering+'] },
+  { id: 'r8', voertuigId: 'v12', klantNaam: 'Anna Dekker', klantEmail: 'anna@email.nl', startDatum: '2026-03-08', eindDatum: '2026-03-12', status: 'bevestigd', totaalPrijs: 240, extras: ['GPS'] },
 ];
 
 export const maintenanceRecords: MaintenanceRecord[] = [
-  { id: 'm1', voertuigId: 'v3', type: 'Onderhoud', datum: '2026-03-02', beschrijving: 'Grote beurt + remblokken', kosten: 650, status: 'in_uitvoering' },
-  { id: 'm2', voertuigId: 'v5', type: 'APK', datum: '2026-06-25', beschrijving: 'Jaarlijkse APK keuring', kosten: 85, status: 'gepland' },
+  { id: 'm1', voertuigId: 'v6', type: 'Onderhoud', datum: '2026-03-02', beschrijving: 'Grote beurt + remblokken', kosten: 650, status: 'in_uitvoering' },
+  { id: 'm2', voertuigId: 'v11', type: 'APK', datum: '2026-06-25', beschrijving: 'Jaarlijkse APK keuring', kosten: 85, status: 'gepland' },
   { id: 'm3', voertuigId: 'v1', type: 'Bandenwissel', datum: '2026-04-01', beschrijving: 'Winterbanden → zomerbanden', kosten: 120, status: 'gepland' },
-  { id: 'm4', voertuigId: 'v8', type: 'Reparatie', datum: '2026-02-20', beschrijving: 'Distributieriem vervangen', kosten: 890, status: 'voltooid' },
+  { id: 'm4', voertuigId: 'v4', type: 'Reparatie', datum: '2026-02-20', beschrijving: 'Distributieriem vervangen', kosten: 890, status: 'voltooid' },
+  { id: 'm5', voertuigId: 'v9', type: 'Onderhoud', datum: '2026-05-15', beschrijving: 'Kleine beurt + olie verversen', kosten: 280, status: 'gepland' },
 ];
 
 export function getVehicleById(id: string) {
