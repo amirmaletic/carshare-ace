@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Shield, Bell, Database, Building2, Save, LogOut } from "lucide-react";
+import { Settings, Shield, Bell, Database, Building2, Save, LogOut, KeyRound } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
