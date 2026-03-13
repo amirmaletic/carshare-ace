@@ -1,11 +1,20 @@
 import volkswagenGolf from '@/assets/vehicles/volkswagen-golf.png';
-import teslaModel3 from '@/assets/vehicles/tesla-model3.png';
-import bmwX3 from '@/assets/vehicles/bmw-x3.png';
-import mercedesEklasse from '@/assets/vehicles/mercedes-eklasse.png';
-import renaultKangoo from '@/assets/vehicles/renault-kangoo.png';
+import volkswagenPolo from '@/assets/vehicles/volkswagen-polo.png';
+import volkswagenTiguan from '@/assets/vehicles/volkswagen-tiguan.png';
+import volkswagenTransporter from '@/assets/vehicles/volkswagen-transporter.png';
+import volkswagenId4 from '@/assets/vehicles/volkswagen-id4.png';
+import volkswagenPassat from '@/assets/vehicles/volkswagen-passat.png';
+import audiA3 from '@/assets/vehicles/audi-a3.png';
 import audiA4 from '@/assets/vehicles/audi-a4.png';
-import toyotaYaris from '@/assets/vehicles/toyota-yaris.png';
-import fordTransit from '@/assets/vehicles/ford-transit.png';
+import audiQ5 from '@/assets/vehicles/audi-q5.png';
+import audiEtron from '@/assets/vehicles/audi-etron.png';
+import skodaOctavia from '@/assets/vehicles/skoda-octavia.png';
+import skodaKodiaq from '@/assets/vehicles/skoda-kodiaq.png';
+import seatLeon from '@/assets/vehicles/seat-leon.png';
+import cupraFormentor from '@/assets/vehicles/cupra-formentor.png';
+import cupraBorn from '@/assets/vehicles/cupra-born.png';
+import porscheCayenne from '@/assets/vehicles/porsche-cayenne.png';
+import porscheTaycan from '@/assets/vehicles/porsche-taycan.png';
 
 export interface Vehicle {
   id: string;
@@ -74,34 +83,55 @@ export interface Invoice {
   status: 'betaald' | 'openstaand' | 'te_laat' | 'herinnering_verstuurd';
 }
 
-
 const vehicleImageMap: Record<string, string> = {
   'volkswagen-golf': volkswagenGolf,
-  'tesla-model': teslaModel3,
-  'bmw-x3': bmwX3,
-  'mercedes-benz-e-klasse': mercedesEklasse,
-  'renault-kangoo': renaultKangoo,
+  'volkswagen-polo': volkswagenPolo,
+  'volkswagen-tiguan': volkswagenTiguan,
+  'volkswagen-transporter': volkswagenTransporter,
+  'volkswagen-id.4': volkswagenId4,
+  'volkswagen-passat': volkswagenPassat,
+  'audi-a3': audiA3,
   'audi-a4': audiA4,
-  'toyota-yaris': toyotaYaris,
-  'ford-transit': fordTransit,
+  'audi-q5': audiQ5,
+  'audi-e-tron': audiEtron,
+  'škoda-octavia': skodaOctavia,
+  'škoda-kodiaq': skodaKodiaq,
+  'seat-leon': seatLeon,
+  'cupra-formentor': cupraFormentor,
+  'cupra-born': cupraBorn,
+  'porsche-cayenne': porscheCayenne,
+  'porsche-taycan': porscheTaycan,
 };
 
 export function getVehicleImageUrl(merk: string, model: string): string {
   const key = `${merk.toLowerCase()}-${model.split(' ')[0].toLowerCase()}`;
-  return vehicleImageMap[key] || vehicleImageMap[Object.keys(vehicleImageMap).find(k => key.includes(k) || k.includes(key.split('-')[0])) || ''] || '';
+  return vehicleImageMap[key] || '';
 }
 
 export const vehicles: Vehicle[] = [
+  // Volkswagen
   { id: 'v1', kenteken: 'AB-123-CD', merk: 'Volkswagen', model: 'Golf 8', bouwjaar: 2023, brandstof: 'Benzine', kilometerstand: 15420, status: 'beschikbaar', apkVervaldatum: '2025-11-15', verzekeringsVervaldatum: '2026-01-01', dagprijs: 45, categorie: 'Stadsauto', kleur: 'Zwart' },
-  { id: 'v2', kenteken: 'EF-456-GH', merk: 'Tesla', model: 'Model 3', bouwjaar: 2024, brandstof: 'Elektrisch', kilometerstand: 8200, status: 'verhuurd', apkVervaldatum: '2026-03-20', verzekeringsVervaldatum: '2026-06-01', dagprijs: 75, categorie: 'Elektrisch', kleur: 'Wit' },
-  { id: 'v3', kenteken: 'IJ-789-KL', merk: 'BMW', model: 'X3', bouwjaar: 2022, brandstof: 'Diesel', kilometerstand: 42000, status: 'onderhoud', apkVervaldatum: '2025-08-10', verzekeringsVervaldatum: '2025-12-15', dagprijs: 65, categorie: 'SUV', kleur: 'Blauw' },
-  { id: 'v4', kenteken: 'MN-012-OP', merk: 'Mercedes-Benz', model: 'E-Klasse', bouwjaar: 2023, brandstof: 'Hybride', kilometerstand: 22100, status: 'beschikbaar', apkVervaldatum: '2026-02-28', verzekeringsVervaldatum: '2026-05-01', dagprijs: 95, categorie: 'Luxe', kleur: 'Zilver' },
-  { id: 'v5', kenteken: 'QR-345-ST', merk: 'Renault', model: 'Kangoo', bouwjaar: 2021, brandstof: 'Diesel', kilometerstand: 67800, status: 'beschikbaar', apkVervaldatum: '2025-06-30', verzekeringsVervaldatum: '2025-09-01', dagprijs: 40, categorie: 'Bestelwagen', kleur: 'Wit' },
-  { id: 'v6', kenteken: 'UV-678-WX', merk: 'Audi', model: 'A4 Avant', bouwjaar: 2023, brandstof: 'Benzine', kilometerstand: 18500, status: 'gereserveerd', apkVervaldatum: '2026-01-15', verzekeringsVervaldatum: '2026-04-01', dagprijs: 60, categorie: 'Luxe', kleur: 'Grijs' },
-  { id: 'v7', kenteken: 'YZ-901-AB', merk: 'Toyota', model: 'Yaris', bouwjaar: 2022, brandstof: 'Hybride', kilometerstand: 31200, status: 'beschikbaar', apkVervaldatum: '2025-09-20', verzekeringsVervaldatum: '2025-11-01', dagprijs: 35, categorie: 'Stadsauto', kleur: 'Rood' },
-  { id: 'v8', kenteken: 'CD-234-EF', merk: 'Ford', model: 'Transit', bouwjaar: 2020, brandstof: 'Diesel', kilometerstand: 98500, status: 'verhuurd', apkVervaldatum: '2025-05-01', verzekeringsVervaldatum: '2025-08-01', dagprijs: 55, categorie: 'Bestelwagen', kleur: 'Blauw' },
+  { id: 'v2', kenteken: 'EF-456-GH', merk: 'Volkswagen', model: 'Polo TSI', bouwjaar: 2022, brandstof: 'Benzine', kilometerstand: 28300, status: 'verhuurd', apkVervaldatum: '2025-09-10', verzekeringsVervaldatum: '2026-02-01', dagprijs: 35, categorie: 'Stadsauto', kleur: 'Wit' },
+  { id: 'v3', kenteken: 'IJ-789-KL', merk: 'Volkswagen', model: 'Tiguan R-Line', bouwjaar: 2024, brandstof: 'Hybride', kilometerstand: 5200, status: 'beschikbaar', apkVervaldatum: '2026-08-20', verzekeringsVervaldatum: '2026-12-01', dagprijs: 65, categorie: 'SUV', kleur: 'Grijs' },
+  { id: 'v4', kenteken: 'MN-012-OP', merk: 'Volkswagen', model: 'Transporter T6.1', bouwjaar: 2021, brandstof: 'Diesel', kilometerstand: 72400, status: 'verhuurd', apkVervaldatum: '2025-06-30', verzekeringsVervaldatum: '2025-09-01', dagprijs: 55, categorie: 'Bestelwagen', kleur: 'Wit' },
+  { id: 'v5', kenteken: 'QR-345-ST', merk: 'Volkswagen', model: 'ID.4 Pro', bouwjaar: 2024, brandstof: 'Elektrisch', kilometerstand: 8100, status: 'beschikbaar', apkVervaldatum: '2026-10-15', verzekeringsVervaldatum: '2027-01-01', dagprijs: 70, categorie: 'Elektrisch', kleur: 'Blauw' },
+  { id: 'v6', kenteken: 'UV-678-WX', merk: 'Volkswagen', model: 'Passat Variant', bouwjaar: 2023, brandstof: 'Diesel', kilometerstand: 34600, status: 'onderhoud', apkVervaldatum: '2026-03-20', verzekeringsVervaldatum: '2026-06-01', dagprijs: 55, categorie: 'Luxe', kleur: 'Blauw' },
+  // Audi
+  { id: 'v7', kenteken: 'YZ-901-AB', merk: 'Audi', model: 'A3 Sportback', bouwjaar: 2023, brandstof: 'Benzine', kilometerstand: 19800, status: 'beschikbaar', apkVervaldatum: '2026-01-15', verzekeringsVervaldatum: '2026-04-01', dagprijs: 55, categorie: 'Stadsauto', kleur: 'Rood' },
+  { id: 'v8', kenteken: 'CD-234-EF', merk: 'Audi', model: 'A4 Avant', bouwjaar: 2023, brandstof: 'Benzine', kilometerstand: 18500, status: 'gereserveerd', apkVervaldatum: '2026-01-15', verzekeringsVervaldatum: '2026-04-01', dagprijs: 60, categorie: 'Luxe', kleur: 'Grijs' },
+  { id: 'v9', kenteken: 'GH-567-IJ', merk: 'Audi', model: 'Q5 Sportback', bouwjaar: 2024, brandstof: 'Hybride', kilometerstand: 4300, status: 'beschikbaar', apkVervaldatum: '2026-11-20', verzekeringsVervaldatum: '2027-02-01', dagprijs: 85, categorie: 'SUV', kleur: 'Zwart' },
+  { id: 'v10', kenteken: 'KL-890-MN', merk: 'Audi', model: 'e-tron GT', bouwjaar: 2024, brandstof: 'Elektrisch', kilometerstand: 6700, status: 'verhuurd', apkVervaldatum: '2026-09-10', verzekeringsVervaldatum: '2026-12-01', dagprijs: 120, categorie: 'Elektrisch', kleur: 'Zilver' },
+  // Škoda
+  { id: 'v11', kenteken: 'OP-123-QR', merk: 'Škoda', model: 'Octavia Combi', bouwjaar: 2022, brandstof: 'Benzine', kilometerstand: 41200, status: 'beschikbaar', apkVervaldatum: '2025-10-05', verzekeringsVervaldatum: '2026-01-01', dagprijs: 40, categorie: 'Stadsauto', kleur: 'Zilver' },
+  { id: 'v12', kenteken: 'ST-456-UV', merk: 'Škoda', model: 'Kodiaq RS', bouwjaar: 2023, brandstof: 'Diesel', kilometerstand: 22500, status: 'gereserveerd', apkVervaldatum: '2026-04-15', verzekeringsVervaldatum: '2026-07-01', dagprijs: 60, categorie: 'SUV', kleur: 'Groen' },
+  // SEAT / CUPRA
+  { id: 'v13', kenteken: 'WX-789-YZ', merk: 'SEAT', model: 'Leon FR', bouwjaar: 2022, brandstof: 'Benzine', kilometerstand: 35800, status: 'beschikbaar', apkVervaldatum: '2025-12-20', verzekeringsVervaldatum: '2026-03-01', dagprijs: 42, categorie: 'Stadsauto', kleur: 'Blauw' },
+  { id: 'v14', kenteken: 'AB-012-CD', merk: 'CUPRA', model: 'Formentor VZ', bouwjaar: 2024, brandstof: 'Hybride', kilometerstand: 3200, status: 'beschikbaar', apkVervaldatum: '2026-12-01', verzekeringsVervaldatum: '2027-03-01', dagprijs: 75, categorie: 'SUV', kleur: 'Koper' },
+  { id: 'v15', kenteken: 'EF-345-GH', merk: 'CUPRA', model: 'Born 58 kWh', bouwjaar: 2024, brandstof: 'Elektrisch', kilometerstand: 5600, status: 'verhuurd', apkVervaldatum: '2026-11-10', verzekeringsVervaldatum: '2027-02-01', dagprijs: 55, categorie: 'Elektrisch', kleur: 'Wit' },
+  // Porsche
+  { id: 'v16', kenteken: 'IJ-678-KL', merk: 'Porsche', model: 'Cayenne S', bouwjaar: 2023, brandstof: 'Hybride', kilometerstand: 14200, status: 'beschikbaar', apkVervaldatum: '2026-05-15', verzekeringsVervaldatum: '2026-08-01', dagprijs: 150, categorie: 'Luxe', kleur: 'Zwart' },
+  { id: 'v17', kenteken: 'MN-901-OP', merk: 'Porsche', model: 'Taycan 4S', bouwjaar: 2024, brandstof: 'Elektrisch', kilometerstand: 7800, status: 'gereserveerd', apkVervaldatum: '2026-10-20', verzekeringsVervaldatum: '2027-01-01', dagprijs: 175, categorie: 'Elektrisch', kleur: 'Wit' },
 ];
-
 export function getMaintenanceForVehicle(vehicleId: string): MaintenanceRecord[] {
   return maintenanceRecords.filter(m => m.voertuigId === vehicleId);
 }
