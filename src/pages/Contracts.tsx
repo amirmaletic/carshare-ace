@@ -134,7 +134,7 @@ export default function Contracts() {
       </div>
 
       {/* Contracts table */}
-      <div className="glass-card rounded-xl overflow-hidden">
+      <div className="clean-card overflow-hidden">
         {isLoading ? (
           <div className="p-6 space-y-4">
             {[...Array(4)].map((_, i) => (
