@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import AutorisatieTab from "@/components/settings/AutorisatieTab";
 
 interface BedrijfsInstellingen {
   bedrijfsnaam: string;
