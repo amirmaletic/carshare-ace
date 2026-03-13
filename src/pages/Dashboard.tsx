@@ -1,8 +1,11 @@
-import { Car, CalendarRange, Wrench, Euro, TrendingUp, AlertTriangle, Clock, FileText, Bike } from "lucide-react";
+import { Car, CalendarRange, Wrench, Euro, TrendingUp, AlertTriangle, Clock, FileText, Bike, RotateCcw, User } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { vehicles, reservations, maintenanceRecords, contracts, getVehicleById, getStatusColor, getReservationStatusColor, getContractTypeIcon, getContractStatusColor } from "@/data/mockData";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const revenueData = [
   { maand: 'Okt', omzet: 4200 },

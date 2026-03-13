@@ -150,6 +150,7 @@ export default function Terugmelden() {
         kilometerstand: kmNum,
         bon_url: bonUrl,
         notitie: notitie.trim() || null,
+        medewerker_email: user.email || null,
       });
       if (error) throw error;
 
