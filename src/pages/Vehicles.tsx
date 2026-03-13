@@ -32,6 +32,8 @@ export default function Vehicles() {
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
 
   const { voertuigen: dbVoertuigen } = useVoertuigen();
 
