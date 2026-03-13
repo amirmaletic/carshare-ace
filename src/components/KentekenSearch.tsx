@@ -63,8 +63,11 @@ export function KentekenSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [adding, setAdding] = useState(false);
   const [vehicleData, setVehicleData] = useState<RDWVehicleData | null>(null);
   const [brandstofData, setBrandstofData] = useState<RDWBrandstofData | null>(null);
+  const { addVoertuig } = useVoertuigen();
+  const { user } = useAuth();
 
   const handleSearch = async () => {
     const kenteken = formatKenteken(query);
