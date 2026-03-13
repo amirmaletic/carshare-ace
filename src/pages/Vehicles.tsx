@@ -34,7 +34,7 @@ export default function Vehicles() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Voertuigen</h1>
+          <h1 className="text-2xl font-bold text-foreground">Voertuigen</h1>
           <p className="text-muted-foreground mt-1">{vehicles.length} voertuigen in je vloot</p>
         </div>
         <div className="flex gap-2">
@@ -46,16 +46,10 @@ export default function Vehicles() {
         </div>
       </div>
 
-      {/* Search & Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Zoek op kenteken, merk of model..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="pl-10"
-          />
+          <Input placeholder="Zoek op kenteken, merk of model..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
         </div>
         <div className="flex gap-2 flex-wrap">
           {categories.map(cat => (
@@ -75,21 +69,19 @@ export default function Vehicles() {
         </div>
       </div>
 
-      {/* Vehicle grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((vehicle, i) => (
           <div
             key={vehicle.id}
             onClick={() => openVehicle(vehicle)}
-            className="glass-card rounded-xl overflow-hidden hover:shadow-md transition-all cursor-pointer hover:-translate-y-0.5 animate-fade-in"
+            className="clean-card overflow-hidden hover:shadow-md transition-all cursor-pointer hover:-translate-y-0.5 animate-fade-in"
             style={{ animationDelay: `${i * 60}ms` }}
           >
-            {/* Car image */}
-            <div className="h-36 bg-gradient-to-br from-sidebar to-sidebar-accent relative overflow-hidden">
+            <div className="h-36 bg-muted relative overflow-hidden">
               <img
                 src={getVehicleImageUrl(vehicle.merk, vehicle.model)}
                 alt={`${vehicle.merk} ${vehicle.model}`}
-                className="absolute inset-0 w-full h-full object-contain object-center p-3 drop-shadow-md"
+                className="absolute inset-0 w-full h-full object-contain object-center p-3"
                 loading="lazy"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
@@ -98,20 +90,20 @@ export default function Vehicles() {
                 }}
               />
               <div className="absolute inset-0 items-center justify-center hidden">
-                <Car className="w-12 h-12 text-sidebar-foreground/40" />
+                <Car className="w-12 h-12 text-muted-foreground/40" />
               </div>
             </div>
 
             <div className="p-5 space-y-3">
               <div className="flex items-start justify-between">
                 <div>
-                  <h3 className="font-display font-semibold text-foreground">{vehicle.merk} {vehicle.model}</h3>
+                  <h3 className="font-semibold text-foreground">{vehicle.merk} {vehicle.model}</h3>
                   <p className="text-sm text-muted-foreground font-mono">{vehicle.kenteken}</p>
                 </div>
                 <StatusBadge status={vehicle.status} variant={getStatusColor(vehicle.status)} />
               </div>
 
-              <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border/50">
+              <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
                 <div className="text-center">
                   <Fuel className="w-3.5 h-3.5 text-muted-foreground mx-auto mb-1" />
                   <p className="text-xs text-muted-foreground">{vehicle.brandstof}</p>
@@ -136,12 +128,7 @@ export default function Vehicles() {
         </div>
       )}
 
-      {/* Vehicle detail dialog */}
-      <VehicleDetail
-        vehicle={selectedVehicle}
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-      />
+      <VehicleDetail vehicle={selectedVehicle} open={detailOpen} onOpenChange={setDetailOpen} />
     </div>
   );
 }

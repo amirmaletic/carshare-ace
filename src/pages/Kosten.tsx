@@ -12,7 +12,6 @@ import { useState } from "react";
 export default function Kosten() {
   const { data, isLoading } = useKostenBerekening();
 
-  // Lease vs koop vergelijking state
   const [aanschafprijs, setAanschafprijs] = useState(30000);
   const [afschrijvingJaar, setAfschrijvingJaar] = useState(5);
   const [verwachtOnderhoud, setVerwachtOnderhoud] = useState(200);
@@ -25,7 +24,7 @@ export default function Kosten() {
     return (
       <div className="space-y-8">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Kostenberekening</h1>
+          <h1 className="text-2xl font-bold text-foreground">Kostenberekening</h1>
           <p className="text-muted-foreground mt-1">Laden...</p>
         </div>
         <div className="flex items-center justify-center h-64">
@@ -37,7 +36,6 @@ export default function Kosten() {
 
   const samenvatting = data!;
 
-  // Prognose data (6 maanden vooruit)
   const prognoseData = [
     ...samenvatting.maandOverzicht,
     ...Array.from({ length: 6 }, (_, i) => ({
@@ -52,11 +50,10 @@ export default function Kosten() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Kostenberekening</h1>
+        <h1 className="text-2xl font-bold text-foreground">Kostenberekening</h1>
         <p className="text-muted-foreground mt-1">TCO, kosten per km en prognoses voor je wagenpark</p>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Euro} title="Totale TCO" value={`€${Math.round(samenvatting.totaalTCO).toLocaleString("nl-NL")}`} subtitle={`${samenvatting.aantalVoertuigen} voertuigen`} />
         <StatCard icon={Calculator} title="Gem. kosten/km" value={samenvatting.gemiddeldeKostenPerKm ? `€${samenvatting.gemiddeldeKostenPerKm.toFixed(2)}` : "—"} subtitle="Over alle voertuigen" />
@@ -64,12 +61,10 @@ export default function Kosten() {
         <StatCard icon={Car} title="Voertuigen met data" value={samenvatting.aantalVoertuigen} subtitle="Actieve contracten" />
       </div>
 
-      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Kosten per maand */}
-        <Card className="glass-card">
+        <Card>
           <CardHeader>
-            <CardTitle className="font-display text-lg">Kosten per maand</CardTitle>
+            <CardTitle className="text-lg">Kosten per maand</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
@@ -87,10 +82,9 @@ export default function Kosten() {
           </CardContent>
         </Card>
 
-        {/* Prognose */}
-        <Card className="glass-card">
+        <Card>
           <CardHeader>
-            <CardTitle className="font-display text-lg">Kostenprognose (6 maanden)</CardTitle>
+            <CardTitle className="text-lg">Kostenprognose (6 maanden)</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
@@ -106,10 +100,9 @@ export default function Kosten() {
         </Card>
       </div>
 
-      {/* Lease vs Koop vergelijking */}
-      <Card className="glass-card">
+      <Card>
         <CardHeader>
-          <CardTitle className="font-display text-lg">Lease vs. Koop vergelijking</CardTitle>
+          <CardTitle className="text-lg">Lease vs. Koop vergelijking</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -135,15 +128,15 @@ export default function Kosten() {
               </div>
             </div>
             <div className="flex flex-col justify-center space-y-4">
-              <div className="glass-card rounded-xl p-6 text-center">
+              <div className="clean-card p-6 text-center">
                 <p className="text-sm text-muted-foreground">Koop kosten per maand</p>
-                <p className="text-3xl font-display font-bold text-foreground mt-1">€{Math.round(koopPerMaand).toLocaleString("nl-NL")}</p>
+                <p className="text-3xl font-bold text-foreground mt-1">€{Math.round(koopPerMaand).toLocaleString("nl-NL")}</p>
               </div>
-              <div className="glass-card rounded-xl p-6 text-center">
+              <div className="clean-card p-6 text-center">
                 <p className="text-sm text-muted-foreground">Lease kosten per maand</p>
-                <p className="text-3xl font-display font-bold text-foreground mt-1">€{Math.round(huidigeLease).toLocaleString("nl-NL")}</p>
+                <p className="text-3xl font-bold text-foreground mt-1">€{Math.round(huidigeLease).toLocaleString("nl-NL")}</p>
               </div>
-              <div className={`rounded-xl p-4 text-center ${verschil > 0 ? "bg-success/10 border border-success/20" : "bg-destructive/10 border border-destructive/20"}`}>
+              <div className={`rounded-xl p-4 text-center ${verschil > 0 ? "bg-success/10 border border-success/15" : "bg-destructive/10 border border-destructive/15"}`}>
                 <p className="text-sm text-muted-foreground">
                   {verschil > 0 ? "Koop is goedkoper" : "Lease is goedkoper"}
                 </p>
@@ -156,10 +149,9 @@ export default function Kosten() {
         </CardContent>
       </Card>
 
-      {/* Kosten per voertuig tabel */}
-      <Card className="glass-card">
+      <Card>
         <CardHeader>
-          <CardTitle className="font-display text-lg">Kosten per voertuig</CardTitle>
+          <CardTitle className="text-lg">Kosten per voertuig</CardTitle>
         </CardHeader>
         <CardContent>
           {samenvatting.voertuigKosten.length === 0 ? (
@@ -180,7 +172,7 @@ export default function Kosten() {
                 </thead>
                 <tbody>
                   {samenvatting.voertuigKosten.map(v => (
-                    <tr key={v.voertuigId} className="border-b border-border/50">
+                    <tr key={v.voertuigId} className="border-b border-border">
                       <td className="py-3 px-2 font-medium text-foreground">{v.voertuigId.slice(0, 8)}</td>
                       <td className="py-3 px-2 text-muted-foreground">{v.klantNaam ?? "—"}</td>
                       <td className="py-3 px-2 text-right text-foreground">€{Math.round(v.leaseKosten).toLocaleString("nl-NL")}</td>
