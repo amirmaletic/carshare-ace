@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/AppLayout";
 import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "./pages/Dashboard";
 import Vehicles from "./pages/Vehicles";
+import Terugmelden from "./pages/Terugmelden";
 import Contracts from "./pages/Contracts";
 import Reservations from "./pages/Reservations";
 import Maintenance from "./pages/Maintenance";
@@ -43,6 +44,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
           <Route path="/voertuigen" element={<ProtectedRoute><AppLayout><Vehicles /></AppLayout></ProtectedRoute>} />
+          <Route path="/terugmelden" element={<ProtectedRoute><AppLayout><Terugmelden /></AppLayout></ProtectedRoute>} />
           <Route path="/contracten" element={<ProtectedRoute><AppLayout><Contracts /></AppLayout></ProtectedRoute>} />
           <Route path="/reserveringen" element={<ProtectedRoute><AppLayout><Reservations /></AppLayout></ProtectedRoute>} />
           <Route path="/onderhoud" element={<ProtectedRoute><AppLayout><Maintenance /></AppLayout></ProtectedRoute>} />

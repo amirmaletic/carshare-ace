@@ -1,17 +1,15 @@
 import { useState } from "react";
-import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X, RotateCcw } from "lucide-react";
+import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/StatusBadge";
 import { KentekenSearch } from "@/components/KentekenSearch";
 import { VehicleDetail } from "@/components/VehicleDetail";
 import { VehicleForm } from "@/components/VehicleForm";
-import { VehicleReturnTab } from "@/components/VehicleReturnTab";
 import { vehicles as mockVehicles, reservations, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
@@ -93,19 +91,8 @@ export default function Vehicles() {
         </div>
       </div>
 
-      <Tabs defaultValue="vloot" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="vloot" className="gap-2">
-            <Car className="w-4 h-4" />
-            Vloot
-          </TabsTrigger>
-          <TabsTrigger value="terugmelden" className="gap-2">
-            <RotateCcw className="w-4 h-4" />
-            Terugmelden
-          </TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="vloot" className="space-y-6">
+      <div className="space-y-6">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -247,12 +234,7 @@ export default function Vehicles() {
               <p className="text-muted-foreground">Geen voertuigen gevonden</p>
             </div>
           )}
-        </TabsContent>
-
-        <TabsContent value="terugmelden">
-          <VehicleReturnTab />
-        </TabsContent>
-      </Tabs>
+      </div>
 
       <VehicleDetail vehicle={selectedVehicle} open={detailOpen} onOpenChange={setDetailOpen} />
       <VehicleForm open={formOpen} onOpenChange={setFormOpen} />
