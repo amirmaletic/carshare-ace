@@ -1,3 +1,12 @@
+import volkswagenGolf from '@/assets/vehicles/volkswagen-golf.png';
+import teslaModel3 from '@/assets/vehicles/tesla-model3.png';
+import bmwX3 from '@/assets/vehicles/bmw-x3.png';
+import mercedesEklasse from '@/assets/vehicles/mercedes-eklasse.png';
+import renaultKangoo from '@/assets/vehicles/renault-kangoo.png';
+import audiA4 from '@/assets/vehicles/audi-a4.png';
+import toyotaYaris from '@/assets/vehicles/toyota-yaris.png';
+import fordTransit from '@/assets/vehicles/ford-transit.png';
+
 export interface Vehicle {
   id: string;
   kenteken: string;
@@ -65,10 +74,21 @@ export interface Invoice {
   status: 'betaald' | 'openstaand' | 'te_laat' | 'herinnering_verstuurd';
 }
 
+
+const vehicleImageMap: Record<string, string> = {
+  'volkswagen-golf': volkswagenGolf,
+  'tesla-model': teslaModel3,
+  'bmw-x3': bmwX3,
+  'mercedes-benz-e-klasse': mercedesEklasse,
+  'renault-kangoo': renaultKangoo,
+  'audi-a4': audiA4,
+  'toyota-yaris': toyotaYaris,
+  'ford-transit': fordTransit,
+};
+
 export function getVehicleImageUrl(merk: string, model: string): string {
-  const make = encodeURIComponent(merk.toLowerCase());
-  const modelFamily = encodeURIComponent(model.split(' ')[0].toLowerCase());
-  return `https://cdn.imagin.studio/getimage?customer=hrjavascript-masede&make=${make}&modelFamily=${modelFamily}&paintId=pspc0040&angle=01`;
+  const key = `${merk.toLowerCase()}-${model.split(' ')[0].toLowerCase()}`;
+  return vehicleImageMap[key] || vehicleImageMap[Object.keys(vehicleImageMap).find(k => key.includes(k) || k.includes(key.split('-')[0])) || ''] || '';
 }
 
 export const vehicles: Vehicle[] = [
