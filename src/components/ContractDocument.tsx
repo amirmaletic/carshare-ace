@@ -74,7 +74,7 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2">
             <Printer className="w-5 h-5" />
             Contract document
           </DialogTitle>
