@@ -153,7 +153,14 @@ export default function Terugmelden() {
       });
       if (error) throw error;
 
+      // Update vehicle km + status in voertuigen table (if it exists there)
+      await supabase
+        .from("voertuigen")
+        .update({ kilometerstand: kmNum, status: "beschikbaar" })
+        .eq("id", matchedVehicle.id);
+
       queryClient.invalidateQueries({ queryKey: ["terugmeldingen"] });
+      queryClient.invalidateQueries({ queryKey: ["voertuigen"] });
       toast.success("Voertuig succesvol teruggemeld");
       setMatchedVehicle(null);
       setKentekenQuery("");
