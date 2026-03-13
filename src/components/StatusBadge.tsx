@@ -6,11 +6,11 @@ interface StatusBadgeProps {
 }
 
 const variantStyles: Record<string, string> = {
-  success: "bg-success/15 text-success border-success/20",
-  info: "bg-info/15 text-info border-info/20",
-  warning: "bg-warning/15 text-warning border-warning/20",
-  destructive: "bg-destructive/15 text-destructive border-destructive/20",
-  primary: "bg-primary/15 text-primary border-primary/20",
+  success: "bg-success/10 text-success border-success/15",
+  info: "bg-info/10 text-info border-info/15",
+  warning: "bg-warning/10 text-warning border-warning/15",
+  destructive: "bg-destructive/10 text-destructive border-destructive/15",
+  primary: "bg-primary/10 text-primary border-primary/15",
   muted: "bg-muted text-muted-foreground border-border",
 };
 
