@@ -93,147 +93,166 @@ export default function Vehicles() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Zoek op kenteken, merk of model..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={cn(
-                "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                activeCategory === cat
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-secondary text-secondary-foreground hover:bg-accent"
-              )}
-            >
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
+      <Tabs defaultValue="vloot" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="vloot" className="gap-2">
+            <Car className="w-4 h-4" />
+            Vloot
+          </TabsTrigger>
+          <TabsTrigger value="terugmelden" className="gap-2">
+            <RotateCcw className="w-4 h-4" />
+            Terugmelden
+          </TabsTrigger>
+        </TabsList>
 
-      {/* Date range filter */}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
-          <CalendarRange className="w-4 h-4 text-muted-foreground" />
-          <span className="text-sm font-medium text-foreground">Beschikbaar van</span>
-        </div>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}>
-              {dateFrom ? format(dateFrom, "d MMM yyyy", { locale: nl }) : "Startdatum"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={dateFrom}
-              onSelect={setDateFrom}
-              initialFocus
-              className="p-3 pointer-events-auto"
-              locale={nl}
-            />
-          </PopoverContent>
-        </Popover>
-        <span className="text-sm text-muted-foreground">t/m</span>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateTo && "text-muted-foreground")}>
-              {dateTo ? format(dateTo, "d MMM yyyy", { locale: nl }) : "Einddatum"}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={dateTo}
-              onSelect={setDateTo}
-              disabled={(date) => dateFrom ? date < dateFrom : false}
-              initialFocus
-              className="p-3 pointer-events-auto"
-              locale={nl}
-            />
-          </PopoverContent>
-        </Popover>
-        {hasDateFilter && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}
-            className="gap-1 text-muted-foreground"
-          >
-            <X className="w-3 h-3" />
-            Wis periode
-          </Button>
-        )}
-        {hasDateFilter && (
-          <span className="text-sm text-muted-foreground ml-auto">
-            {filtered.length} beschikbaar
-          </span>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filtered.map((vehicle, i) => (
-          <div
-            key={vehicle.id}
-            onClick={() => openVehicle(vehicle)}
-            className="clean-card overflow-hidden hover:shadow-md transition-all cursor-pointer hover:-translate-y-0.5 animate-fade-in"
-            style={{ animationDelay: `${i * 60}ms` }}
-          >
-            <div className="h-36 bg-muted relative overflow-hidden">
-              <img
-                src={getVehicleImageUrl(vehicle.merk, vehicle.model)}
-                alt={`${vehicle.merk} ${vehicle.model}`}
-                className="absolute inset-0 w-full h-full object-contain object-center p-3"
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-              <div className="absolute inset-0 items-center justify-center hidden">
-                <Car className="w-12 h-12 text-muted-foreground/40" />
-              </div>
+        <TabsContent value="vloot" className="space-y-6">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input placeholder="Zoek op kenteken, merk of model..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
             </div>
-
-            <div className="p-5 space-y-3">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold text-foreground">{vehicle.merk} {vehicle.model}</h3>
-                  <p className="text-sm text-muted-foreground font-mono">{vehicle.kenteken}</p>
-                </div>
-                <StatusBadge status={vehicle.status} variant={getStatusColor(vehicle.status)} />
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
-                <div className="text-center">
-                  <Fuel className="w-3.5 h-3.5 text-muted-foreground mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">{vehicle.brandstof}</p>
-                </div>
-                <div className="text-center">
-                  <Gauge className="w-3.5 h-3.5 text-muted-foreground mx-auto mb-1" />
-                  <p className="text-xs text-muted-foreground">{(vehicle.kilometerstand / 1000).toFixed(0)}k km</p>
-                </div>
-                <div className="text-center">
-                  <span className="text-xs font-medium text-primary">€{vehicle.dagprijs}/dag</span>
-                </div>
-              </div>
+            <div className="flex gap-2 flex-wrap">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
+                    activeCategory === cat
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground hover:bg-accent"
+                  )}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
           </div>
-        ))}
-      </div>
 
-      {filtered.length === 0 && (
-        <div className="text-center py-12">
-          <Car className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-          <p className="text-muted-foreground">Geen voertuigen gevonden</p>
-        </div>
-      )}
+          {/* Date range filter */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <CalendarRange className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-foreground">Beschikbaar van</span>
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}>
+                  {dateFrom ? format(dateFrom, "d MMM yyyy", { locale: nl }) : "Startdatum"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dateFrom}
+                  onSelect={setDateFrom}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                  locale={nl}
+                />
+              </PopoverContent>
+            </Popover>
+            <span className="text-sm text-muted-foreground">t/m</span>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateTo && "text-muted-foreground")}>
+                  {dateTo ? format(dateTo, "d MMM yyyy", { locale: nl }) : "Einddatum"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={dateTo}
+                  onSelect={setDateTo}
+                  disabled={(date) => dateFrom ? date < dateFrom : false}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                  locale={nl}
+                />
+              </PopoverContent>
+            </Popover>
+            {hasDateFilter && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}
+                className="gap-1 text-muted-foreground"
+              >
+                <X className="w-3 h-3" />
+                Wis periode
+              </Button>
+            )}
+            {hasDateFilter && (
+              <span className="text-sm text-muted-foreground ml-auto">
+                {filtered.length} beschikbaar
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {filtered.map((vehicle, i) => (
+              <div
+                key={vehicle.id}
+                onClick={() => openVehicle(vehicle)}
+                className="clean-card overflow-hidden hover:shadow-md transition-all cursor-pointer hover:-translate-y-0.5 animate-fade-in"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <div className="h-36 bg-muted relative overflow-hidden">
+                  <img
+                    src={getVehicleImageUrl(vehicle.merk, vehicle.model)}
+                    alt={`${vehicle.merk} ${vehicle.model}`}
+                    className="absolute inset-0 w-full h-full object-contain object-center p-3"
+                    loading="lazy"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (fallback) fallback.style.display = 'flex';
+                    }}
+                  />
+                  <div className="absolute inset-0 items-center justify-center hidden">
+                    <Car className="w-12 h-12 text-muted-foreground/40" />
+                  </div>
+                </div>
+
+                <div className="p-5 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold text-foreground">{vehicle.merk} {vehicle.model}</h3>
+                      <p className="text-sm text-muted-foreground font-mono">{vehicle.kenteken}</p>
+                    </div>
+                    <StatusBadge status={vehicle.status} variant={getStatusColor(vehicle.status)} />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
+                    <div className="text-center">
+                      <Fuel className="w-3.5 h-3.5 text-muted-foreground mx-auto mb-1" />
+                      <p className="text-xs text-muted-foreground">{vehicle.brandstof}</p>
+                    </div>
+                    <div className="text-center">
+                      <Gauge className="w-3.5 h-3.5 text-muted-foreground mx-auto mb-1" />
+                      <p className="text-xs text-muted-foreground">{(vehicle.kilometerstand / 1000).toFixed(0)}k km</p>
+                    </div>
+                    <div className="text-center">
+                      <span className="text-xs font-medium text-primary">€{vehicle.dagprijs}/dag</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="text-center py-12">
+              <Car className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-muted-foreground">Geen voertuigen gevonden</p>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="terugmelden">
+          <VehicleReturnTab />
+        </TabsContent>
+      </Tabs>
 
       <VehicleDetail vehicle={selectedVehicle} open={detailOpen} onOpenChange={setDetailOpen} />
       <VehicleForm open={formOpen} onOpenChange={setFormOpen} />
