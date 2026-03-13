@@ -110,7 +110,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">Instellingen</h1>
+        <h1 className="text-2xl font-bold text-foreground">Instellingen</h1>
         <p className="text-muted-foreground mt-1">Beheer je account en applicatie-instellingen</p>
       </div>
 

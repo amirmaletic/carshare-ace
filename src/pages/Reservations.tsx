@@ -25,7 +25,7 @@ export default function Reservations() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Reserveringen</h1>
+          <h1 className="text-2xl font-bold text-foreground">Reserveringen</h1>
           <p className="text-muted-foreground mt-1">{reservations.length} totale reserveringen</p>
         </div>
         <Button className="gap-2">
@@ -34,7 +34,6 @@ export default function Reservations() {
         </Button>
       </div>
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -55,12 +54,11 @@ export default function Reservations() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="glass-card rounded-xl overflow-hidden">
+      <div className="clean-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-border/50">
+              <tr className="border-b border-border">
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Klant</th>
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Voertuig</th>
                 <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Periode</th>
@@ -69,11 +67,11 @@ export default function Reservations() {
                 <th className="text-right px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/30">
+            <tbody className="divide-y divide-border">
               {filtered.map((r, i) => {
                 const vehicle = getVehicleById(r.voertuigId);
                 return (
-                  <tr key={r.id} className="hover:bg-muted/30 transition-colors animate-fade-in" style={{ animationDelay: `${i * 50}ms` }}>
+                  <tr key={r.id} className="hover:bg-muted/50 transition-colors animate-fade-in" style={{ animationDelay: `${i * 50}ms` }}>
                     <td className="px-5 py-4">
                       <p className="font-medium text-sm text-foreground">{r.klantNaam}</p>
                       <p className="text-xs text-muted-foreground">{r.klantEmail}</p>

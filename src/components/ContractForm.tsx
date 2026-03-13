@@ -180,7 +180,7 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display">
+          <DialogTitle>
             {isEdit ? "Contract bewerken" : "Nieuw contract"}
           </DialogTitle>
         </DialogHeader>

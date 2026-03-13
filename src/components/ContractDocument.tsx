@@ -74,7 +74,7 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2">
             <Printer className="w-5 h-5" />
             Contract document
           </DialogTitle>
@@ -91,12 +91,12 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
           {/* Header */}
           <div className="flex justify-between items-start mb-8 pb-4 border-b-2 border-primary">
             <div>
-              <h1 className="text-2xl font-display font-bold text-primary">FleetManager</h1>
+              <h1 className="text-2xl font-bold text-primary">FleetManager</h1>
               <p className="text-xs text-muted-foreground">Wagenpark & Leasebeheer</p>
             </div>
             <div className="text-right">
               <p className="text-xs text-muted-foreground uppercase tracking-wider">Contractnummer</p>
-              <p className="text-lg font-display font-semibold font-mono">{contract.contract_nummer}</p>
+              <p className="text-lg font-semibold font-mono">{contract.contract_nummer}</p>
               <p className="text-xs text-muted-foreground">Datum: {today}</p>
             </div>
           </div>

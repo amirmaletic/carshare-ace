@@ -23,7 +23,7 @@ export default function Maintenance() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Onderhoud</h1>
+          <h1 className="text-2xl font-bold text-foreground">Onderhoud</h1>
           <p className="text-muted-foreground mt-1">Plan en beheer onderhoud, APK en reparaties</p>
         </div>
         <Button className="gap-2">
@@ -36,7 +36,7 @@ export default function Maintenance() {
         {maintenanceRecords.map((m, i) => {
           const vehicle = getVehicleById(m.voertuigId);
           return (
-            <div key={m.id} className="glass-card rounded-xl p-5 flex flex-col sm:flex-row sm:items-center gap-4 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
+            <div key={m.id} className="clean-card p-5 flex flex-col sm:flex-row sm:items-center gap-4 animate-fade-in" style={{ animationDelay: `${i * 60}ms` }}>
               <div className="p-2.5 rounded-lg bg-warning/10 self-start">
                 <Wrench className="w-5 h-5 text-warning" />
               </div>

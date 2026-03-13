@@ -117,7 +117,7 @@ export function KentekenSearch() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-display flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2">
             <Car className="w-5 h-5 text-primary" />
             Kenteken opzoeken
           </DialogTitle>
@@ -148,7 +148,7 @@ export function KentekenSearch() {
                 <Car className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="font-display font-bold text-lg">
+                <p className="font-bold text-lg">
                   {vehicleData.merk} {vehicleData.handelsbenaming}
                 </p>
                 <p className="font-mono text-sm text-sidebar-foreground">

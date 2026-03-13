@@ -41,7 +41,7 @@ export function InvoiceForm({ open, onOpenChange, contractId }: InvoiceFormProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-display">Factuur toevoegen</DialogTitle>
+          <DialogTitle>Factuur toevoegen</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">

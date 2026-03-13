@@ -70,7 +70,7 @@ export default function Contracts() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Contracten & Lease</h1>
+          <h1 className="text-2xl font-bold text-foreground">Contracten & Lease</h1>
           <p className="text-muted-foreground mt-1">{contracts.length} contracten — {activeContracts.length} actief</p>
         </div>
         <Button className="gap-2" onClick={openCreate}>
@@ -81,30 +81,30 @@ export default function Contracts() {
 
       {/* Stats row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="glass-card rounded-xl p-4 flex items-center gap-3">
+        <div className="clean-card p-4 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-success/10">
             <Euro className="w-5 h-5 text-success" />
           </div>
           <div>
-            <p className="text-lg font-display font-bold text-foreground">€{totalMonthlyRevenue.toLocaleString("nl-NL")}</p>
+            <p className="text-lg font-bold text-foreground">€{totalMonthlyRevenue.toLocaleString("nl-NL")}</p>
             <p className="text-xs text-muted-foreground">Maandelijkse lease-omzet</p>
           </div>
         </div>
-        <div className="glass-card rounded-xl p-4 flex items-center gap-3">
+        <div className="clean-card p-4 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/10">
             <FileText className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <p className="text-lg font-display font-bold text-foreground">{activeContracts.length}</p>
+            <p className="text-lg font-bold text-foreground">{activeContracts.length}</p>
             <p className="text-xs text-muted-foreground">Actieve contracten</p>
           </div>
         </div>
-        <div className="glass-card rounded-xl p-4 flex items-center gap-3">
+        <div className="clean-card p-4 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-destructive/10">
             <AlertCircle className="w-5 h-5 text-destructive" />
           </div>
           <div>
-            <p className="text-lg font-display font-bold text-foreground">€{totalOverdue.toLocaleString("nl-NL")}</p>
+            <p className="text-lg font-bold text-foreground">€{totalOverdue.toLocaleString("nl-NL")}</p>
             <p className="text-xs text-muted-foreground">{overdueInvoices.length} openstaande herinneringen</p>
           </div>
         </div>
@@ -134,7 +134,7 @@ export default function Contracts() {
       </div>
 
       {/* Contracts table */}
-      <div className="glass-card rounded-xl overflow-hidden">
+      <div className="clean-card overflow-hidden">
         {isLoading ? (
           <div className="p-6 space-y-4">
             {[...Array(4)].map((_, i) => (
@@ -271,7 +271,7 @@ function ContractDetail({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-display flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2">
               <span className="text-xl">{getContractTypeIcon(contract.type)}</span>
               {contract.contract_nummer}
             </DialogTitle>
