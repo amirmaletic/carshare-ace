@@ -1,15 +1,17 @@
 import { useState } from "react";
-import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X } from "lucide-react";
+import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatusBadge } from "@/components/StatusBadge";
 import { KentekenSearch } from "@/components/KentekenSearch";
 import { VehicleDetail } from "@/components/VehicleDetail";
 import { VehicleForm } from "@/components/VehicleForm";
+import { VehicleReturnTab } from "@/components/VehicleReturnTab";
 import { vehicles as mockVehicles, reservations, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
