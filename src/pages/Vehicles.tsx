@@ -114,7 +114,64 @@ export default function Vehicles() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {/* Date range filter */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
+          <CalendarRange className="w-4 h-4 text-muted-foreground" />
+          <span className="text-sm font-medium text-foreground">Beschikbaar van</span>
+        </div>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}>
+              {dateFrom ? format(dateFrom, "d MMM yyyy", { locale: nl }) : "Startdatum"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dateFrom}
+              onSelect={setDateFrom}
+              initialFocus
+              className="p-3 pointer-events-auto"
+              locale={nl}
+            />
+          </PopoverContent>
+        </Popover>
+        <span className="text-sm text-muted-foreground">t/m</span>
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateTo && "text-muted-foreground")}>
+              {dateTo ? format(dateTo, "d MMM yyyy", { locale: nl }) : "Einddatum"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dateTo}
+              onSelect={setDateTo}
+              disabled={(date) => dateFrom ? date < dateFrom : false}
+              initialFocus
+              className="p-3 pointer-events-auto"
+              locale={nl}
+            />
+          </PopoverContent>
+        </Popover>
+        {hasDateFilter && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => { setDateFrom(undefined); setDateTo(undefined); }}
+            className="gap-1 text-muted-foreground"
+          >
+            <X className="w-3 h-3" />
+            Wis periode
+          </Button>
+        )}
+        {hasDateFilter && (
+          <span className="text-sm text-muted-foreground ml-auto">
+            {filtered.length} beschikbaar
+          </span>
+        )}
         {filtered.map((vehicle, i) => (
           <div
             key={vehicle.id}
