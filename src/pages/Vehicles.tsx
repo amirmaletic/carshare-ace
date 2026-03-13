@@ -91,19 +91,8 @@ export default function Vehicles() {
         </div>
       </div>
 
-      <Tabs defaultValue="vloot" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="vloot" className="gap-2">
-            <Car className="w-4 h-4" />
-            Vloot
-          </TabsTrigger>
-          <TabsTrigger value="terugmelden" className="gap-2">
-            <RotateCcw className="w-4 h-4" />
-            Terugmelden
-          </TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="vloot" className="space-y-6">
+      <div className="space-y-6">
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
