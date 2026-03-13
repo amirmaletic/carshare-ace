@@ -1,0 +1,1 @@
+ALTER TABLE public.terugmeldingen ADD COLUMN IF NOT EXISTS medewerker_email TEXT;
