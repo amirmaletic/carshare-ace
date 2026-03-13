@@ -1,8 +1,11 @@
-import { Car, CalendarRange, Wrench, Euro, TrendingUp, AlertTriangle, Clock, FileText, Bike } from "lucide-react";
+import { Car, CalendarRange, Wrench, Euro, TrendingUp, AlertTriangle, Clock, FileText, Bike, RotateCcw, User } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { vehicles, reservations, maintenanceRecords, contracts, getVehicleById, getStatusColor, getReservationStatusColor, getContractTypeIcon, getContractStatusColor } from "@/data/mockData";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const revenueData = [
   { maand: 'Okt', omzet: 4200 },
@@ -28,6 +31,31 @@ const monthlyLeaseRevenue = activeContracts.reduce((sum, c) => sum + c.maandprij
 const overdueInvoices = contracts.flatMap(c => c.facturen).filter(f => f.status === 'te_laat' || f.status === 'herinnering_verstuurd');
 
 export default function Dashboard() {
+  const { user } = useAuth();
+
+  const { data: terugmeldingen = [] } = useQuery({
+    queryKey: ["terugmeldingen"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("terugmeldingen")
+        .select("medewerker_email, id")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as { medewerker_email: string | null; id: string }[];
+    },
+    enabled: !!user,
+  });
+
+  // Group by medewerker
+  const terugmeldingenPerMedewerker = terugmeldingen.reduce<Record<string, number>>((acc, t) => {
+    const key = t.medewerker_email || "Onbekend";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const medewerkerStats = Object.entries(terugmeldingenPerMedewerker)
+    .map(([email, count]) => ({ email, count }))
+    .sort((a, b) => b.count - a.count);
+
   return (
     <div className="space-y-8">
       <div>
@@ -146,6 +174,39 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Terugmeldingen per medewerker */}
+      <div className="clean-card p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-semibold text-foreground">Terugmeldingen per medewerker</h3>
+          <RotateCcw className="w-4 h-4 text-muted-foreground" />
+        </div>
+        {medewerkerStats.length === 0 ? (
+          <p className="text-sm text-muted-foreground">Nog geen terugmeldingen geregistreerd</p>
+        ) : (
+          <div className="space-y-3">
+            {medewerkerStats.map((m, i) => (
+              <div key={m.email} className="flex items-center gap-3 animate-fade-in" style={{ animationDelay: `${i * 40}ms` }}>
+                <div className="p-2 rounded-lg bg-muted">
+                  <User className="w-4 h-4 text-muted-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground truncate">{m.email}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-2 rounded-full bg-primary/20 w-24">
+                    <div
+                      className="h-2 rounded-full bg-primary transition-all"
+                      style={{ width: `${Math.min((m.count / Math.max(...medewerkerStats.map(s => s.count))) * 100, 100)}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-semibold text-foreground w-8 text-right">{m.count}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

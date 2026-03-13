@@ -292,6 +292,7 @@ export type Database = {
           datum: string
           id: string
           kilometerstand: number
+          medewerker_email: string | null
           notitie: string | null
           user_id: string
           voertuig_id: string
@@ -304,6 +305,7 @@ export type Database = {
           datum?: string
           id?: string
           kilometerstand: number
+          medewerker_email?: string | null
           notitie?: string | null
           user_id: string
           voertuig_id: string
@@ -316,6 +318,7 @@ export type Database = {
           datum?: string
           id?: string
           kilometerstand?: number
+          medewerker_email?: string | null
           notitie?: string | null
           user_id?: string
           voertuig_id?: string
