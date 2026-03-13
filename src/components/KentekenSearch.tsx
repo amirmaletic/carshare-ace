@@ -1,13 +1,11 @@
 import { useState } from "react";
-import { Search, Car, Loader2, Plus, X } from "lucide-react";
+import { Search, Car, Loader2, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 interface RDWVehicleData {
   kenteken: string;
