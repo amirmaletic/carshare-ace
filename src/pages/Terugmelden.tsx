@@ -176,12 +176,68 @@ export default function Terugmelden() {
     }
   };
 
+  // Group terugmeldingen by date
+  const terugmeldingenByDate = terugmeldingen.reduce<Record<string, Terugmelding[]>>((acc, t) => {
+    const dateKey = format(new Date(t.created_at), "yyyy-MM-dd");
+    if (!acc[dateKey]) acc[dateKey] = [];
+    acc[dateKey].push(t);
+    return acc;
+  }, {});
+
+  const sortedDates = Object.keys(terugmeldingenByDate).sort((a, b) => b.localeCompare(a)).slice(0, 7);
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Terugmelden</h1>
         <p className="text-muted-foreground mt-1">Meld een voertuig terug met kilometerstand en bon</p>
       </div>
+
+      {/* Quick overview: recent returns by date */}
+      {sortedDates.length > 0 && (
+        <div className="clean-card p-5 space-y-3">
+          <h2 className="font-semibold text-foreground flex items-center gap-2">
+            <Car className="w-5 h-5 text-primary" />
+            Recent teruggekomen voertuigen
+          </h2>
+          <div className="space-y-3">
+            {sortedDates.map(dateKey => (
+              <div key={dateKey}>
+                <p className="text-xs font-medium text-muted-foreground mb-1.5">
+                  {format(new Date(dateKey), "EEEE d MMMM yyyy", { locale: nl })}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {terugmeldingenByDate[dateKey].map(t => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 hover:bg-muted transition-colors text-left"
+                      onClick={() => {
+                        setKentekenQuery(t.voertuig_kenteken);
+                        const found = allVehicles.find(v =>
+                          v.kenteken.replace(/[\s-]/g, "").toUpperCase() === t.voertuig_kenteken.replace(/[\s-]/g, "").toUpperCase()
+                        );
+                        if (found) {
+                          const minKm = getMinKm(found.id, found.km);
+                          setMatchedVehicle({ id: found.id, label: found.label, kenteken: found.kenteken, laatsteKm: minKm });
+                          setKilometerstand("");
+                          setKmError("");
+                        }
+                      }}
+                    >
+                      <Car className="w-3.5 h-3.5 text-primary shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">{t.voertuig_naam}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{t.voertuig_kenteken} · {(t.kilometerstand ?? 0).toLocaleString("nl-NL")} km</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Search by kenteken */}
       <div className="clean-card p-6 space-y-5">
