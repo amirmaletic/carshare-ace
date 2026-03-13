@@ -31,6 +31,31 @@ const monthlyLeaseRevenue = activeContracts.reduce((sum, c) => sum + c.maandprij
 const overdueInvoices = contracts.flatMap(c => c.facturen).filter(f => f.status === 'te_laat' || f.status === 'herinnering_verstuurd');
 
 export default function Dashboard() {
+  const { user } = useAuth();
+
+  const { data: terugmeldingen = [] } = useQuery({
+    queryKey: ["terugmeldingen"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("terugmeldingen")
+        .select("medewerker_email, id")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as { medewerker_email: string | null; id: string }[];
+    },
+    enabled: !!user,
+  });
+
+  // Group by medewerker
+  const terugmeldingenPerMedewerker = terugmeldingen.reduce<Record<string, number>>((acc, t) => {
+    const key = t.medewerker_email || "Onbekend";
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const medewerkerStats = Object.entries(terugmeldingenPerMedewerker)
+    .map(([email, count]) => ({ email, count }))
+    .sort((a, b) => b.count - a.count);
+
   return (
     <div className="space-y-8">
       <div>
