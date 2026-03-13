@@ -1,16 +1,30 @@
 import { useState } from "react";
-import { Search, Plus, Car, Fuel, Gauge } from "lucide-react";
+import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X } from "lucide-react";
+import { format } from "date-fns";
+import { nl } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { StatusBadge } from "@/components/StatusBadge";
 import { KentekenSearch } from "@/components/KentekenSearch";
 import { VehicleDetail } from "@/components/VehicleDetail";
 import { VehicleForm } from "@/components/VehicleForm";
-import { vehicles as mockVehicles, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
+import { vehicles as mockVehicles, reservations, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
 
 const categories = ['Alle', 'Stadsauto', 'SUV', 'Bestelwagen', 'Luxe', 'Elektrisch'] as const;
+
+function isVehicleAvailable(vehicleId: string, from: Date, to: Date): boolean {
+  return !reservations.some(r => {
+    if (r.voertuigId !== vehicleId) return false;
+    if (r.status === 'voltooid' || r.status === 'geannuleerd') return false;
+    const rStart = new Date(r.startDatum);
+    const rEnd = new Date(r.eindDatum);
+    return rStart <= to && rEnd >= from;
+  });
+}
 
 export default function Vehicles() {
   const [search, setSearch] = useState("");
