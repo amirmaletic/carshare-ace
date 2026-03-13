@@ -116,12 +116,15 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="bedrijf" className="max-w-3xl">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="bedrijf" className="gap-1.5 text-xs sm:text-sm">
             <Building2 className="w-4 h-4 hidden sm:block" /> Bedrijf
           </TabsTrigger>
           <TabsTrigger value="notificaties" className="gap-1.5 text-xs sm:text-sm">
             <Bell className="w-4 h-4 hidden sm:block" /> Meldingen
+          </TabsTrigger>
+          <TabsTrigger value="autorisatie" className="gap-1.5 text-xs sm:text-sm">
+            <KeyRound className="w-4 h-4 hidden sm:block" /> Autorisatie
           </TabsTrigger>
           <TabsTrigger value="algemeen" className="gap-1.5 text-xs sm:text-sm">
             <Settings className="w-4 h-4 hidden sm:block" /> Algemeen
