@@ -172,6 +172,9 @@ export default function Vehicles() {
             {filtered.length} beschikbaar
           </span>
         )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((vehicle, i) => (
           <div
             key={vehicle.id}
