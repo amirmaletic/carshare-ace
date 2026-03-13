@@ -285,6 +285,63 @@ export type Database = {
         }
         Relationships: []
       }
+      voertuigen: {
+        Row: {
+          apk_vervaldatum: string | null
+          bouwjaar: number
+          brandstof: string
+          categorie: string
+          created_at: string
+          dagprijs: number
+          id: string
+          kenteken: string
+          kilometerstand: number
+          kleur: string
+          merk: string
+          model: string
+          status: string
+          updated_at: string
+          user_id: string
+          verzekering_vervaldatum: string | null
+        }
+        Insert: {
+          apk_vervaldatum?: string | null
+          bouwjaar: number
+          brandstof?: string
+          categorie?: string
+          created_at?: string
+          dagprijs?: number
+          id?: string
+          kenteken: string
+          kilometerstand?: number
+          kleur?: string
+          merk: string
+          model: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          verzekering_vervaldatum?: string | null
+        }
+        Update: {
+          apk_vervaldatum?: string | null
+          bouwjaar?: number
+          brandstof?: string
+          categorie?: string
+          created_at?: string
+          dagprijs?: number
+          id?: string
+          kenteken?: string
+          kilometerstand?: number
+          kleur?: string
+          merk?: string
+          model?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          verzekering_vervaldatum?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
