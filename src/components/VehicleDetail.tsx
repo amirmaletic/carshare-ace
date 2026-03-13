@@ -56,7 +56,7 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-sidebar/90 to-transparent p-5">
             <div className="flex items-end justify-between">
               <div>
-                <h2 className="font-display font-bold text-xl text-sidebar-accent-foreground">
+                <h2 className="font-bold text-xl text-foreground">
                   {vehicle.merk} {vehicle.model}
                 </h2>
                 <p className="font-mono text-sm text-sidebar-foreground">{vehicle.kenteken}</p>

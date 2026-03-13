@@ -148,7 +148,7 @@ export function KentekenSearch() {
                 <Car className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="font-display font-bold text-lg">
+                <p className="font-bold text-lg">
                   {vehicleData.merk} {vehicleData.handelsbenaming}
                 </p>
                 <p className="font-mono text-sm text-sidebar-foreground">

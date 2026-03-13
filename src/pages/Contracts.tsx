@@ -271,7 +271,7 @@ function ContractDetail({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-display flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2">
               <span className="text-xl">{getContractTypeIcon(contract.type)}</span>
               {contract.contract_nummer}
             </DialogTitle>
