@@ -124,7 +124,7 @@ export default function Chauffeurs() {
                       <h3 className="font-semibold text-foreground">
                         {c.voornaam} {c.achternaam}
                       </h3>
-                      <StatusBadge status={c.status} variant={statusColors[c.status] || "default"} />
+                      <StatusBadge status={c.status} variant={statusColors[c.status] || "muted"} />
                     </div>
                   </div>
                   <div className="flex gap-1">
