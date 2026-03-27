@@ -317,6 +317,7 @@ export type Database = {
           bon_url: string | null
           created_at: string
           datum: string
+          fotos: string[] | null
           id: string
           kilometerstand: number
           medewerker_email: string | null
@@ -330,6 +331,7 @@ export type Database = {
           bon_url?: string | null
           created_at?: string
           datum?: string
+          fotos?: string[] | null
           id?: string
           kilometerstand: number
           medewerker_email?: string | null
@@ -343,6 +345,7 @@ export type Database = {
           bon_url?: string | null
           created_at?: string
           datum?: string
+          fotos?: string[] | null
           id?: string
           kilometerstand?: number
           medewerker_email?: string | null
