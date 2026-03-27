@@ -21,9 +21,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-const statusColors: Record<string, "success" | "warning" | "default"> = {
+const statusColors: Record<string, "success" | "warning" | "muted"> = {
   actief: "success",
-  inactief: "default",
+  inactief: "muted",
   verlof: "warning",
 };
 
