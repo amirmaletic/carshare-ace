@@ -215,6 +215,8 @@ export default function Terugmelden() {
         setNotitie={setNotitie}
         file={file}
         setFile={setFile}
+        fotos={fotos}
+        setFotos={setFotos}
         uploading={uploading}
         onSubmit={handleSubmit}
       />
