@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      chauffeurs: {
+        Row: {
+          achternaam: string
+          adres: string | null
+          created_at: string
+          email: string | null
+          geboortedatum: string | null
+          id: string
+          notities: string | null
+          plaats: string | null
+          postcode: string | null
+          rijbewijs_categorie: string
+          rijbewijs_nummer: string | null
+          rijbewijs_verloopt: string | null
+          status: string
+          telefoon: string | null
+          updated_at: string
+          user_id: string
+          voertuig_id: string | null
+          voornaam: string
+        }
+        Insert: {
+          achternaam: string
+          adres?: string | null
+          created_at?: string
+          email?: string | null
+          geboortedatum?: string | null
+          id?: string
+          notities?: string | null
+          plaats?: string | null
+          postcode?: string | null
+          rijbewijs_categorie?: string
+          rijbewijs_nummer?: string | null
+          rijbewijs_verloopt?: string | null
+          status?: string
+          telefoon?: string | null
+          updated_at?: string
+          user_id: string
+          voertuig_id?: string | null
+          voornaam: string
+        }
+        Update: {
+          achternaam?: string
+          adres?: string | null
+          created_at?: string
+          email?: string | null
+          geboortedatum?: string | null
+          id?: string
+          notities?: string | null
+          plaats?: string | null
+          postcode?: string | null
+          rijbewijs_categorie?: string
+          rijbewijs_nummer?: string | null
+          rijbewijs_verloopt?: string | null
+          status?: string
+          telefoon?: string | null
+          updated_at?: string
+          user_id?: string
+          voertuig_id?: string | null
+          voornaam?: string
+        }
+        Relationships: []
+      }
       contracts: {
         Row: {
           bedrijf: string | null
