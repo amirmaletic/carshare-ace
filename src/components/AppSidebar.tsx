@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   RotateCcw,
+  Users,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -19,6 +20,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
   { icon: Car, label: "Voertuigen", path: "/voertuigen" },
+  { icon: Users, label: "Chauffeurs", path: "/chauffeurs" },
   { icon: RotateCcw, label: "Terugmelden", path: "/terugmelden" },
   { icon: FileText, label: "Contracten", path: "/contracten" },
   { icon: CalendarRange, label: "Reserveringen", path: "/reserveringen" },
