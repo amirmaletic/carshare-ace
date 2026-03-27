@@ -63,7 +63,7 @@ export default function Dashboard() {
         <p className="text-muted-foreground mt-1">Overzicht van je wagenpark en verhuuractiviteiten</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
         <StatCard icon={Car} title="Totaal voertuigen" value={vehicles.length} subtitle={`${vehicles.filter(v => v.status === 'beschikbaar').length} beschikbaar`} trend={{ value: 12, label: 'vs vorige maand' }} />
         <StatCard icon={FileText} title="Actieve contracten" value={activeContracts.length} subtitle={`€${monthlyLeaseRevenue.toLocaleString('nl-NL')}/mnd`} trend={{ value: 5, label: 'vs vorige maand' }} />
         <StatCard icon={CalendarRange} title="Actieve reserveringen" value={activeReservations.length} subtitle="Deze week" trend={{ value: 8, label: 'vs vorige week' }} />
