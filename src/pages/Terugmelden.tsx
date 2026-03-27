@@ -22,6 +22,7 @@ interface Terugmelding {
   notitie: string | null;
   created_at: string;
   medewerker_email?: string | null;
+  fotos?: string[] | null;
 }
 
 function formatKentekenInput(input: string): string {
@@ -41,6 +42,7 @@ export default function Terugmelden() {
   const [kmError, setKmError] = useState("");
   const [notitie, setNotitie] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [fotos, setFotos] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
 
   const allVehicles = [
