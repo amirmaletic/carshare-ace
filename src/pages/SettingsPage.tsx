@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Shield, Bell, Database, Building2, Save, LogOut, KeyRound, MapPin } from "lucide-react";
+import { Settings, Shield, Bell, Building2, Save, LogOut, KeyRound, MapPin } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useIsMobile } from "@/hooks/use-mobile";
 import AutorisatieTab from "@/components/settings/AutorisatieTab";
 import LocatiesTab from "@/components/settings/LocatiesTab";
 
@@ -44,33 +45,16 @@ interface AlgemeneInstellingen {
 }
 
 const defaultBedrijf: BedrijfsInstellingen = {
-  bedrijfsnaam: "",
-  kvkNummer: "",
-  btwNummer: "",
-  adres: "",
-  postcode: "",
-  plaats: "",
-  telefoon: "",
-  email: "",
+  bedrijfsnaam: "", kvkNummer: "", btwNummer: "", adres: "", postcode: "", plaats: "", telefoon: "", email: "",
 };
 
 const defaultNotificaties: NotificatieInstellingen = {
-  apkHerinnering: true,
-  apkDagenVooraf: "30",
-  verzekeringHerinnering: true,
-  onderhoudHerinnering: true,
-  contractVerloop: true,
-  contractDagenVooraf: "60",
-  factuurHerinnering: true,
-  kmOverschrijding: true,
+  apkHerinnering: true, apkDagenVooraf: "30", verzekeringHerinnering: true, onderhoudHerinnering: true,
+  contractVerloop: true, contractDagenVooraf: "60", factuurHerinnering: true, kmOverschrijding: true,
 };
 
 const defaultAlgemeen: AlgemeneInstellingen = {
-  standaardBtw: "21",
-  valuta: "EUR",
-  datumFormaat: "dd-mm-yyyy",
-  kmRegistratieInterval: "maandelijks",
-  standaardContractDuur: "12",
+  standaardBtw: "21", valuta: "EUR", datumFormaat: "dd-mm-yyyy", kmRegistratieInterval: "maandelijks", standaardContractDuur: "12",
 };
 
 function loadSetting<T>(key: string, fallback: T): T {
@@ -86,10 +70,21 @@ function saveSetting(key: string, value: unknown) {
   localStorage.setItem(`fleetflow_${key}`, JSON.stringify(value));
 }
 
+const tabs = [
+  { value: "bedrijf", label: "Bedrijf", icon: Building2 },
+  { value: "notificaties", label: "Meldingen", icon: Bell },
+  { value: "locaties", label: "Locaties", icon: MapPin },
+  { value: "autorisatie", label: "Autorisatie", icon: KeyRound },
+  { value: "algemeen", label: "Algemeen", icon: Settings },
+  { value: "account", label: "Account", icon: Shield },
+];
+
 export default function SettingsPage() {
   const { toast } = useToast();
   const { user, signOut } = useAuth();
+  const isMobile = useIsMobile();
 
+  const [activeTab, setActiveTab] = useState("bedrijf");
   const [bedrijf, setBedrijf] = useState<BedrijfsInstellingen>(() => loadSetting("bedrijf", defaultBedrijf));
   const [notificaties, setNotificaties] = useState<NotificatieInstellingen>(() => loadSetting("notificaties", defaultNotificaties));
   const [algemeen, setAlgemeen] = useState<AlgemeneInstellingen>(() => loadSetting("algemeen", defaultAlgemeen));
@@ -116,30 +111,52 @@ export default function SettingsPage() {
         <p className="text-muted-foreground mt-1">Beheer je account en applicatie-instellingen</p>
       </div>
 
-      <Tabs defaultValue="bedrijf" className="max-w-3xl">
-        <TabsList className="grid w-full grid-cols-6">
-          <TabsTrigger value="bedrijf" className="gap-1.5 text-xs sm:text-sm">
-            <Building2 className="w-4 h-4 hidden sm:block" /> Bedrijf
-          </TabsTrigger>
-          <TabsTrigger value="notificaties" className="gap-1.5 text-xs sm:text-sm">
-            <Bell className="w-4 h-4 hidden sm:block" /> Meldingen
-          </TabsTrigger>
-          <TabsTrigger value="locaties" className="gap-1.5 text-xs sm:text-sm">
-            <MapPin className="w-4 h-4 hidden sm:block" /> Locaties
-          </TabsTrigger>
-          <TabsTrigger value="autorisatie" className="gap-1.5 text-xs sm:text-sm">
-            <KeyRound className="w-4 h-4 hidden sm:block" /> Autorisatie
-          </TabsTrigger>
-          <TabsTrigger value="algemeen" className="gap-1.5 text-xs sm:text-sm">
-            <Settings className="w-4 h-4 hidden sm:block" /> Algemeen
-          </TabsTrigger>
-          <TabsTrigger value="account" className="gap-1.5 text-xs sm:text-sm">
-            <Shield className="w-4 h-4 hidden sm:block" /> Account
-          </TabsTrigger>
-        </TabsList>
+      {isMobile ? (
+        /* Mobile: dropdown selector + content */
+        <div className="space-y-4">
+          <Select value={activeTab} onValueChange={setActiveTab}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {tabs.map((t) => (
+                <SelectItem key={t.value} value={t.value}>
+                  <div className="flex items-center gap-2">
+                    <t.icon className="w-4 h-4" />
+                    {t.label}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
-        {/* Bedrijfsgegevens */}
-        <TabsContent value="bedrijf" className="space-y-4 mt-4">
+          <div>{renderTabContent(activeTab)}</div>
+        </div>
+      ) : (
+        /* Desktop: normal tabs */
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-3xl">
+          <TabsList className="grid w-full grid-cols-6">
+            {tabs.map((t) => (
+              <TabsTrigger key={t.value} value={t.value} className="gap-1.5 text-xs sm:text-sm">
+                <t.icon className="w-4 h-4 hidden sm:block" /> {t.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+
+          {tabs.map((t) => (
+            <TabsContent key={t.value} value={t.value} className="space-y-4 mt-4">
+              {renderTabContent(t.value)}
+            </TabsContent>
+          ))}
+        </Tabs>
+      )}
+    </div>
+  );
+
+  function renderTabContent(tab: string) {
+    switch (tab) {
+      case "bedrijf":
+        return (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Bedrijfsgegevens</CardTitle>
@@ -164,9 +181,7 @@ export default function SettingsPage() {
                   <Input id="telefoon" value={bedrijf.telefoon} onChange={(e) => setBedrijf({ ...bedrijf, telefoon: e.target.value })} placeholder="+31 6 12345678" />
                 </div>
               </div>
-
               <Separator />
-
               <div className="grid gap-4 sm:grid-cols-3">
                 <div className="space-y-2 sm:col-span-3">
                   <Label htmlFor="adres">Adres</Label>
@@ -185,7 +200,6 @@ export default function SettingsPage() {
                   <Input id="bedrijf-email" type="email" value={bedrijf.email} onChange={(e) => setBedrijf({ ...bedrijf, email: e.target.value })} placeholder="info@bedrijf.nl" />
                 </div>
               </div>
-
               <div className="flex justify-end pt-2">
                 <Button onClick={handleSaveBedrijf} className="gap-2">
                   <Save className="w-4 h-4" /> Opslaan
@@ -193,98 +207,52 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        );
 
-        {/* Notificaties */}
-        <TabsContent value="notificaties" className="space-y-4 mt-4">
+      case "notificaties":
+        return (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Notificatie-instellingen</CardTitle>
               <CardDescription>Stel in welke automatische meldingen je wilt ontvangen.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">APK-herinnering</p>
-                  <p className="text-xs text-muted-foreground">Ontvang een melding voordat de APK verloopt</p>
+              {[
+                { key: "apkHerinnering", label: "APK-herinnering", desc: "Ontvang een melding voordat de APK verloopt", select: { key: "apkDagenVooraf" as const, options: ["14", "30", "60"], suffix: "dagen" } },
+                { key: "verzekeringHerinnering", label: "Verzekering-herinnering", desc: "Melding bij verlopen verzekering" },
+                { key: "onderhoudHerinnering", label: "Onderhouds-herinnering", desc: "Melding bij gepland onderhoud" },
+                { key: "contractVerloop", label: "Contract-verloop", desc: "Herinnering voordat een contract verloopt", select: { key: "contractDagenVooraf" as const, options: ["30", "60", "90"], suffix: "dagen" } },
+                { key: "factuurHerinnering", label: "Factuur-herinnering", desc: "Melding bij openstaande facturen" },
+                { key: "kmOverschrijding", label: "Kilometer-overschrijding", desc: "Waarschuwing wanneer km-limiet bijna bereikt is" },
+              ].map((item, idx) => (
+                <div key={item.key}>
+                  {idx > 0 && <Separator className="mb-5" />}
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground">{item.label}</p>
+                      <p className="text-xs text-muted-foreground">{item.desc}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {item.select && (
+                        <Select value={notificaties[item.select.key]} onValueChange={(v) => setNotificaties({ ...notificaties, [item.select!.key]: v })}>
+                          <SelectTrigger className="w-20 h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {item.select.options.map((o) => (
+                              <SelectItem key={o} value={o}>{o} {item.select!.suffix}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      <Switch
+                        checked={notificaties[item.key as keyof NotificatieInstellingen] as boolean}
+                        onCheckedChange={(v) => setNotificaties({ ...notificaties, [item.key]: v })}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Select value={notificaties.apkDagenVooraf} onValueChange={(v) => setNotificaties({ ...notificaties, apkDagenVooraf: v })}>
-                    <SelectTrigger className="w-24 h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="14">14 dagen</SelectItem>
-                      <SelectItem value="30">30 dagen</SelectItem>
-                      <SelectItem value="60">60 dagen</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Switch checked={notificaties.apkHerinnering} onCheckedChange={(v) => setNotificaties({ ...notificaties, apkHerinnering: v })} />
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Verzekering-herinnering</p>
-                  <p className="text-xs text-muted-foreground">Melding bij verlopen verzekering</p>
-                </div>
-                <Switch checked={notificaties.verzekeringHerinnering} onCheckedChange={(v) => setNotificaties({ ...notificaties, verzekeringHerinnering: v })} />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Onderhouds-herinnering</p>
-                  <p className="text-xs text-muted-foreground">Melding bij gepland onderhoud</p>
-                </div>
-                <Switch checked={notificaties.onderhoudHerinnering} onCheckedChange={(v) => setNotificaties({ ...notificaties, onderhoudHerinnering: v })} />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Contract-verloop</p>
-                  <p className="text-xs text-muted-foreground">Herinnering voordat een contract verloopt</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Select value={notificaties.contractDagenVooraf} onValueChange={(v) => setNotificaties({ ...notificaties, contractDagenVooraf: v })}>
-                    <SelectTrigger className="w-24 h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 dagen</SelectItem>
-                      <SelectItem value="60">60 dagen</SelectItem>
-                      <SelectItem value="90">90 dagen</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Switch checked={notificaties.contractVerloop} onCheckedChange={(v) => setNotificaties({ ...notificaties, contractVerloop: v })} />
-                </div>
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Factuur-herinnering</p>
-                  <p className="text-xs text-muted-foreground">Melding bij openstaande facturen</p>
-                </div>
-                <Switch checked={notificaties.factuurHerinnering} onCheckedChange={(v) => setNotificaties({ ...notificaties, factuurHerinnering: v })} />
-              </div>
-
-              <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Kilometer-overschrijding</p>
-                  <p className="text-xs text-muted-foreground">Waarschuwing wanneer km-limiet bijna bereikt is</p>
-                </div>
-                <Switch checked={notificaties.kmOverschrijding} onCheckedChange={(v) => setNotificaties({ ...notificaties, kmOverschrijding: v })} />
-              </div>
-
+              ))}
               <div className="flex justify-end pt-2">
                 <Button onClick={handleSaveNotificaties} className="gap-2">
                   <Save className="w-4 h-4" /> Opslaan
@@ -292,20 +260,16 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        );
 
-        {/* Autorisatie */}
-        <TabsContent value="autorisatie" className="space-y-4 mt-4">
-          <AutorisatieTab />
-        </TabsContent>
+      case "locaties":
+        return <LocatiesTab />;
 
-        {/* Locaties */}
-        <TabsContent value="locaties" className="space-y-4 mt-4">
-          <LocatiesTab />
-        </TabsContent>
+      case "autorisatie":
+        return <AutorisatieTab />;
 
-        {/* Algemeen */}
-        <TabsContent value="algemeen" className="space-y-4 mt-4">
+      case "algemeen":
+        return (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Algemene instellingen</CardTitle>
@@ -313,69 +277,26 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Standaard BTW-tarief</Label>
-                  <Select value={algemeen.standaardBtw} onValueChange={(v) => setAlgemeen({ ...algemeen, standaardBtw: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">0%</SelectItem>
-                      <SelectItem value="9">9%</SelectItem>
-                      <SelectItem value="21">21%</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Valuta</Label>
-                  <Select value={algemeen.valuta} onValueChange={(v) => setAlgemeen({ ...algemeen, valuta: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="EUR">Euro (€)</SelectItem>
-                      <SelectItem value="USD">Dollar ($)</SelectItem>
-                      <SelectItem value="GBP">Pond (£)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Datumformaat</Label>
-                  <Select value={algemeen.datumFormaat} onValueChange={(v) => setAlgemeen({ ...algemeen, datumFormaat: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="dd-mm-yyyy">DD-MM-YYYY</SelectItem>
-                      <SelectItem value="yyyy-mm-dd">YYYY-MM-DD</SelectItem>
-                      <SelectItem value="mm-dd-yyyy">MM-DD-YYYY</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>KM-registratie interval</Label>
-                  <Select value={algemeen.kmRegistratieInterval} onValueChange={(v) => setAlgemeen({ ...algemeen, kmRegistratieInterval: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="wekelijks">Wekelijks</SelectItem>
-                      <SelectItem value="maandelijks">Maandelijks</SelectItem>
-                      <SelectItem value="per_kwartaal">Per kwartaal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Standaard contractduur</Label>
-                  <Select value={algemeen.standaardContractDuur} onValueChange={(v) => setAlgemeen({ ...algemeen, standaardContractDuur: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="6">6 maanden</SelectItem>
-                      <SelectItem value="12">12 maanden</SelectItem>
-                      <SelectItem value="24">24 maanden</SelectItem>
-                      <SelectItem value="36">36 maanden</SelectItem>
-                      <SelectItem value="48">48 maanden</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                {[
+                  { label: "Standaard BTW-tarief", value: algemeen.standaardBtw, key: "standaardBtw", options: [{ v: "0", l: "0%" }, { v: "9", l: "9%" }, { v: "21", l: "21%" }] },
+                  { label: "Valuta", value: algemeen.valuta, key: "valuta", options: [{ v: "EUR", l: "Euro (€)" }, { v: "USD", l: "Dollar ($)" }, { v: "GBP", l: "Pond (£)" }] },
+                  { label: "Datumformaat", value: algemeen.datumFormaat, key: "datumFormaat", options: [{ v: "dd-mm-yyyy", l: "DD-MM-YYYY" }, { v: "yyyy-mm-dd", l: "YYYY-MM-DD" }, { v: "mm-dd-yyyy", l: "MM-DD-YYYY" }] },
+                  { label: "KM-registratie interval", value: algemeen.kmRegistratieInterval, key: "kmRegistratieInterval", options: [{ v: "wekelijks", l: "Wekelijks" }, { v: "maandelijks", l: "Maandelijks" }, { v: "per_kwartaal", l: "Per kwartaal" }] },
+                  { label: "Standaard contractduur", value: algemeen.standaardContractDuur, key: "standaardContractDuur", options: [{ v: "6", l: "6 maanden" }, { v: "12", l: "12 maanden" }, { v: "24", l: "24 maanden" }, { v: "36", l: "36 maanden" }, { v: "48", l: "48 maanden" }] },
+                ].map((field) => (
+                  <div key={field.key} className="space-y-2">
+                    <Label>{field.label}</Label>
+                    <Select value={field.value} onValueChange={(v) => setAlgemeen({ ...algemeen, [field.key]: v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {field.options.map((o) => (
+                          <SelectItem key={o.v} value={o.v}>{o.l}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ))}
               </div>
-
               <div className="flex justify-end pt-2">
                 <Button onClick={handleSaveAlgemeen} className="gap-2">
                   <Save className="w-4 h-4" /> Opslaan
@@ -383,10 +304,10 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
-        </TabsContent>
+        );
 
-        {/* Account */}
-        <TabsContent value="account" className="space-y-4 mt-4">
+      case "account":
+        return (
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Account</CardTitle>
@@ -398,29 +319,21 @@ export default function SettingsPage() {
                 <Input value={user?.email ?? ""} disabled className="bg-muted" />
                 <p className="text-xs text-muted-foreground">Je inlog-emailadres kan niet worden gewijzigd.</p>
               </div>
-
               <Separator />
-
               <div className="space-y-2">
                 <Label>Account-ID</Label>
                 <Input value={user?.id ?? ""} disabled className="bg-muted font-mono text-xs" />
               </div>
-
               <Separator />
-
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Uitloggen</p>
-                  <p className="text-xs text-muted-foreground">Log uit van je FleetFlow account</p>
-                </div>
-                <Button variant="destructive" size="sm" onClick={signOut} className="gap-2">
-                  <LogOut className="w-4 h-4" /> Uitloggen
-                </Button>
-              </div>
+              <Button variant="destructive" onClick={signOut} className="gap-2">
+                <LogOut className="w-4 h-4" /> Uitloggen
+              </Button>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
+        );
+
+      default:
+        return null;
+    }
+  }
 }
