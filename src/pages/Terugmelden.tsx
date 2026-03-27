@@ -134,6 +134,7 @@ export default function Terugmelden() {
 
     setUploading(true);
     let bonUrl: string | null = null;
+    const fotoUrls: string[] = [];
 
     try {
       if (file) {
@@ -145,6 +146,16 @@ export default function Terugmelden() {
         bonUrl = urlData.publicUrl;
       }
 
+      // Upload schadefoto's
+      for (const foto of fotos) {
+        const ext = foto.name.split(".").pop();
+        const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: uploadError } = await supabase.storage.from("schade-fotos").upload(path, foto);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from("schade-fotos").getPublicUrl(path);
+        fotoUrls.push(urlData.publicUrl);
+      }
+
       const { error } = await supabase.from("terugmeldingen").insert({
         user_id: user.id,
         voertuig_id: matchedVehicle.id,
@@ -154,6 +165,7 @@ export default function Terugmelden() {
         bon_url: bonUrl,
         notitie: notitie.trim() || null,
         medewerker_email: user.email || null,
+        fotos: fotoUrls.length > 0 ? fotoUrls : [],
       });
       if (error) throw error;
 
@@ -170,6 +182,7 @@ export default function Terugmelden() {
       setKilometerstand("");
       setNotitie("");
       setFile(null);
+      setFotos([]);
       setKmError("");
     } catch (err: any) {
       toast.error("Fout bij terugmelden: " + err.message);
