@@ -23,7 +23,7 @@ export interface DbVoertuig {
   updated_at: string;
 }
 
-export type VoertuigInsert = Omit<DbVoertuig, "id" | "user_id" | "created_at" | "updated_at">;
+export type VoertuigInsert = Omit<DbVoertuig, "id" | "user_id" | "created_at" | "updated_at" | "locatie"> & { locatie?: string | null };
 
 export function useVoertuigen() {
   const { user } = useAuth();
