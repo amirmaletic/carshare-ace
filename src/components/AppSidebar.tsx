@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/" },
@@ -27,15 +28,24 @@ const navItems = [
   { icon: Settings, label: "Instellingen", path: "/instellingen" },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onNavigate?: () => void;
+}
+
+export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
+
+  // On mobile inside Sheet, always show expanded
+  const isCollapsed = isMobile ? false : collapsed;
 
   return (
     <aside
       className={cn(
-        "h-screen sticky top-0 bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 z-50",
-        collapsed ? "w-[72px]" : "w-[240px]"
+        "h-screen bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300 z-50",
+        isMobile ? "w-full sticky top-0" : "sticky top-0",
+        !isMobile && (isCollapsed ? "w-[72px]" : "w-[240px]")
       )}
     >
       {/* Logo */}
@@ -43,7 +53,7 @@ export function AppSidebar() {
         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
           <span className="text-primary-foreground font-bold text-lg leading-none">W</span>
         </div>
-        {!collapsed && (
+        {!isCollapsed && (
           <span className="font-semibold text-base text-foreground tracking-tight">
             Waggie
           </span>
@@ -51,13 +61,14 @@ export function AppSidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 py-3 px-3 space-y-0.5">
+      <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link
               key={item.path}
               to={item.path}
+              onClick={onNavigate}
               className={cn(
                 "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
                 isActive
@@ -66,22 +77,24 @@ export function AppSidebar() {
               )}
             >
               <item.icon className={cn("w-[18px] h-[18px] flex-shrink-0", isActive && "text-primary")} />
-              {!collapsed && <span>{item.label}</span>}
+              {!isCollapsed && <span>{item.label}</span>}
             </Link>
           );
         })}
       </nav>
 
-      {/* Collapse toggle */}
-      <div className="p-3 border-t border-sidebar-border">
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-accent transition-colors text-sm"
-        >
-          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          {!collapsed && <span>Inklappen</span>}
-        </button>
-      </div>
+      {/* Collapse toggle — desktop only */}
+      {!isMobile && (
+        <div className="p-3 border-t border-sidebar-border">
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sidebar-foreground hover:bg-accent transition-colors text-sm"
+          >
+            {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            {!isCollapsed && <span>Inklappen</span>}
+          </button>
+        </div>
+      )}
     </aside>
   );
 }
