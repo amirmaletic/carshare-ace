@@ -16,6 +16,7 @@ import SettingsPage from "./pages/SettingsPage";
 import Kosten from "./pages/Kosten";
 import Chauffeurs from "./pages/Chauffeurs";
 import Ritten from "./pages/Ritten";
+import Klanten from "./pages/Klanten";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -54,6 +55,7 @@ const App = () => (
           <Route path="/kosten" element={<ProtectedRoute><AppLayout><Kosten /></AppLayout></ProtectedRoute>} />
           <Route path="/chauffeurs" element={<ProtectedRoute><AppLayout><Chauffeurs /></AppLayout></ProtectedRoute>} />
           <Route path="/ritten" element={<ProtectedRoute><AppLayout><Ritten /></AppLayout></ProtectedRoute>} />
+          <Route path="/klanten" element={<ProtectedRoute><AppLayout><Klanten /></AppLayout></ProtectedRoute>} />
           <Route path="/instellingen" element={<ProtectedRoute><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
