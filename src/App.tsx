@@ -15,6 +15,7 @@ import Reports from "./pages/Reports";
 import SettingsPage from "./pages/SettingsPage";
 import Kosten from "./pages/Kosten";
 import Chauffeurs from "./pages/Chauffeurs";
+import Ritten from "./pages/Ritten";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
