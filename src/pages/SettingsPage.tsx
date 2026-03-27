@@ -299,6 +299,11 @@ export default function SettingsPage() {
           <AutorisatieTab />
         </TabsContent>
 
+        {/* Locaties */}
+        <TabsContent value="locaties" className="space-y-4 mt-4">
+          <LocatiesTab />
+        </TabsContent>
+
         {/* Algemeen */}
         <TabsContent value="algemeen" className="space-y-4 mt-4">
           <Card>
