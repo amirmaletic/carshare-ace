@@ -4,17 +4,111 @@ import { useAuth } from "@/hooks/useAuth";
 
 export type AppRole = "beheerder" | "medewerker" | "chauffeur" | "klant";
 
-export const APP_MODULES = [
-  { key: "dashboard", label: "Dashboard", icon: "LayoutDashboard" },
-  { key: "voertuigen", label: "Voertuigen", icon: "Car" },
-  { key: "terugmelden", label: "Terugmelden", icon: "RotateCcw" },
-  { key: "contracten", label: "Contracten", icon: "FileText" },
-  { key: "reserveringen", label: "Reserveringen", icon: "CalendarRange" },
-  { key: "onderhoud", label: "Onderhoud", icon: "Wrench" },
-  { key: "rapportages", label: "Rapportages", icon: "BarChart3" },
-  { key: "kosten", label: "Kosten", icon: "Euro" },
-  { key: "instellingen", label: "Instellingen", icon: "Settings" },
-] as const;
+export interface ModuleFunction {
+  key: string;
+  label: string;
+}
+
+export interface AppModule {
+  key: string;
+  label: string;
+  icon: string;
+  functions: ModuleFunction[];
+}
+
+export const APP_MODULES: AppModule[] = [
+  {
+    key: "dashboard",
+    label: "Dashboard",
+    icon: "LayoutDashboard",
+    functions: [
+      { key: "dashboard.bekijken", label: "Dashboard bekijken" },
+    ],
+  },
+  {
+    key: "voertuigen",
+    label: "Voertuigen",
+    icon: "Car",
+    functions: [
+      { key: "voertuigen.bekijken", label: "Voertuigen bekijken" },
+      { key: "voertuigen.toevoegen", label: "Voertuig toevoegen" },
+      { key: "voertuigen.bewerken", label: "Voertuig bewerken" },
+      { key: "voertuigen.verwijderen", label: "Voertuig verwijderen" },
+      { key: "voertuigen.locatie_wijzigen", label: "Locatie wijzigen" },
+    ],
+  },
+  {
+    key: "terugmelden",
+    label: "Terugmelden",
+    icon: "RotateCcw",
+    functions: [
+      { key: "terugmelden.bekijken", label: "Terugmeldingen bekijken" },
+      { key: "terugmelden.aanmaken", label: "Terugmelding aanmaken" },
+      { key: "terugmelden.fotos_uploaden", label: "Schadefoto's uploaden" },
+    ],
+  },
+  {
+    key: "contracten",
+    label: "Contracten",
+    icon: "FileText",
+    functions: [
+      { key: "contracten.bekijken", label: "Contracten bekijken" },
+      { key: "contracten.aanmaken", label: "Contract aanmaken" },
+      { key: "contracten.bewerken", label: "Contract bewerken" },
+      { key: "contracten.verwijderen", label: "Contract verwijderen" },
+      { key: "contracten.facturen", label: "Facturen beheren" },
+    ],
+  },
+  {
+    key: "reserveringen",
+    label: "Reserveringen",
+    icon: "CalendarRange",
+    functions: [
+      { key: "reserveringen.bekijken", label: "Reserveringen bekijken" },
+      { key: "reserveringen.aanmaken", label: "Reservering aanmaken" },
+      { key: "reserveringen.annuleren", label: "Reservering annuleren" },
+    ],
+  },
+  {
+    key: "onderhoud",
+    label: "Onderhoud",
+    icon: "Wrench",
+    functions: [
+      { key: "onderhoud.bekijken", label: "Onderhoud bekijken" },
+      { key: "onderhoud.inplannen", label: "Onderhoud inplannen" },
+      { key: "onderhoud.afronden", label: "Onderhoud afronden" },
+    ],
+  },
+  {
+    key: "rapportages",
+    label: "Rapportages",
+    icon: "BarChart3",
+    functions: [
+      { key: "rapportages.bekijken", label: "Rapportages bekijken" },
+      { key: "rapportages.exporteren", label: "Rapportages exporteren" },
+    ],
+  },
+  {
+    key: "kosten",
+    label: "Kosten",
+    icon: "Euro",
+    functions: [
+      { key: "kosten.bekijken", label: "Kosten bekijken" },
+      { key: "kosten.registreren", label: "Kosten registreren" },
+    ],
+  },
+  {
+    key: "instellingen",
+    label: "Instellingen",
+    icon: "Settings",
+    functions: [
+      { key: "instellingen.bekijken", label: "Instellingen bekijken" },
+      { key: "instellingen.bewerken", label: "Instellingen bewerken" },
+      { key: "instellingen.autorisatie", label: "Autorisatie beheren" },
+      { key: "instellingen.locaties", label: "Locaties beheren" },
+    ],
+  },
+];
 
 export const ROLES: { key: AppRole; label: string }[] = [
   { key: "beheerder", label: "Beheerder" },
@@ -40,7 +134,6 @@ export function usePermissions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  // Fetch current user's roles
   const { data: userRoles = [] } = useQuery({
     queryKey: ["user_roles", user?.id],
     queryFn: async () => {
@@ -54,7 +147,6 @@ export function usePermissions() {
     enabled: !!user,
   });
 
-  // Fetch all role permissions
   const { data: permissions = [], isLoading } = useQuery({
     queryKey: ["role_permissions"],
     queryFn: async () => {
@@ -69,25 +161,33 @@ export function usePermissions() {
     enabled: !!user,
   });
 
-  const isAdmin = userRoles.some(r => r.role === "beheerder");
-
-  // If user has no roles yet, treat as beheerder (first user / owner)
   const effectiveRoles: AppRole[] = userRoles.length > 0
     ? userRoles.map(r => r.role)
     : ["beheerder"];
 
-  const hasAccess = (module: string): boolean => {
-    // Beheerders always have full access
-    if (effectiveRoles.includes("beheerder")) return true;
+  const isAdmin = effectiveRoles.includes("beheerder");
 
-    // Check if any of the user's roles grants access
+  const hasAccess = (module: string): boolean => {
+    if (effectiveRoles.includes("beheerder")) return true;
     return effectiveRoles.some(role => {
       const perm = permissions.find(p => p.role === role && p.module === module);
       return perm ? perm.allowed : false;
     });
   };
 
-  // Update a permission (admin only)
+  // Check a specific function permission (e.g. "voertuigen.toevoegen")
+  const hasFunctionAccess = (funcKey: string): boolean => {
+    if (effectiveRoles.includes("beheerder")) return true;
+    // First check module-level access
+    const moduleKey = funcKey.split(".")[0];
+    if (!hasAccess(moduleKey)) return false;
+    // Then check function-level (if no specific entry, default to module-level access)
+    return effectiveRoles.some(role => {
+      const perm = permissions.find(p => p.role === role && p.module === funcKey);
+      return perm ? perm.allowed : true; // default allowed if module is allowed
+    });
+  };
+
   const updatePermission = useMutation({
     mutationFn: async ({ role, module, allowed }: { role: AppRole; module: string; allowed: boolean }) => {
       const existing = permissions.find(p => p.role === role && p.module === module);
@@ -111,9 +211,10 @@ export function usePermissions() {
 
   return {
     userRoles: effectiveRoles,
-    isAdmin: effectiveRoles.includes("beheerder"),
+    isAdmin,
     permissions,
     hasAccess,
+    hasFunctionAccess,
     updatePermission,
     isLoading,
   };
