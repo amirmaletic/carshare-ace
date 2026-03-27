@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Shield, Bell, Database, Building2, Save, LogOut, KeyRound } from "lucide-react";
+import { Settings, Shield, Bell, Database, Building2, Save, LogOut, KeyRound, MapPin } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import AutorisatieTab from "@/components/settings/AutorisatieTab";
+import LocatiesTab from "@/components/settings/LocatiesTab";
 
 interface BedrijfsInstellingen {
   bedrijfsnaam: string;
@@ -116,12 +117,15 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="bedrijf" className="max-w-3xl">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="bedrijf" className="gap-1.5 text-xs sm:text-sm">
             <Building2 className="w-4 h-4 hidden sm:block" /> Bedrijf
           </TabsTrigger>
           <TabsTrigger value="notificaties" className="gap-1.5 text-xs sm:text-sm">
             <Bell className="w-4 h-4 hidden sm:block" /> Meldingen
+          </TabsTrigger>
+          <TabsTrigger value="locaties" className="gap-1.5 text-xs sm:text-sm">
+            <MapPin className="w-4 h-4 hidden sm:block" /> Locaties
           </TabsTrigger>
           <TabsTrigger value="autorisatie" className="gap-1.5 text-xs sm:text-sm">
             <KeyRound className="w-4 h-4 hidden sm:block" /> Autorisatie
@@ -293,6 +297,11 @@ export default function SettingsPage() {
         {/* Autorisatie */}
         <TabsContent value="autorisatie" className="space-y-4 mt-4">
           <AutorisatieTab />
+        </TabsContent>
+
+        {/* Locaties */}
+        <TabsContent value="locaties" className="space-y-4 mt-4">
+          <LocatiesTab />
         </TabsContent>
 
         {/* Algemeen */}

@@ -18,11 +18,12 @@ export interface DbVoertuig {
   dagprijs: number;
   categorie: string;
   kleur: string;
+  locatie: string | null;
   created_at: string;
   updated_at: string;
 }
 
-export type VoertuigInsert = Omit<DbVoertuig, "id" | "user_id" | "created_at" | "updated_at">;
+export type VoertuigInsert = Omit<DbVoertuig, "id" | "user_id" | "created_at" | "updated_at" | "locatie"> & { locatie?: string | null };
 
 export function useVoertuigen() {
   const { user } = useAuth();

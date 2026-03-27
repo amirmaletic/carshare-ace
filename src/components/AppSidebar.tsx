@@ -6,6 +6,7 @@ import {
   FileText,
   Wrench,
   BarChart3,
+  MapPin,
   Euro,
   Settings,
   ChevronLeft,
@@ -25,6 +26,7 @@ const navItems = [
   { icon: Wrench, label: "Onderhoud", path: "/onderhoud" },
   { icon: BarChart3, label: "Rapportages", path: "/rapportages" },
   { icon: Euro, label: "Kosten", path: "/kosten" },
+  { icon: MapPin, label: "Locaties", path: "/locaties" },
   { icon: Settings, label: "Instellingen", path: "/instellingen" },
 ];
 

@@ -192,6 +192,27 @@ export type Database = {
           },
         ]
       }
+      locaties: {
+        Row: {
+          created_at: string
+          id: string
+          naam: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          naam: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          naam?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: {
           allowed: boolean
@@ -390,6 +411,7 @@ export type Database = {
           kenteken: string
           kilometerstand: number
           kleur: string
+          locatie: string | null
           merk: string
           model: string
           status: string
@@ -408,6 +430,7 @@ export type Database = {
           kenteken: string
           kilometerstand?: number
           kleur?: string
+          locatie?: string | null
           merk: string
           model: string
           status?: string
@@ -426,6 +449,7 @@ export type Database = {
           kenteken?: string
           kilometerstand?: number
           kleur?: string
+          locatie?: string | null
           merk?: string
           model?: string
           status?: string
