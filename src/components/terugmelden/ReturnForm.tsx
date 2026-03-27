@@ -27,6 +27,8 @@ interface ReturnFormProps {
   setNotitie: (v: string) => void;
   file: File | null;
   setFile: (f: File | null) => void;
+  fotos: File[];
+  setFotos: (f: File[]) => void;
   uploading: boolean;
   onSubmit: (e: React.FormEvent) => void;
 }
@@ -43,6 +45,8 @@ export default function ReturnForm({
   setNotitie,
   file,
   setFile,
+  fotos,
+  setFotos,
   uploading,
   onSubmit,
 }: ReturnFormProps) {
@@ -170,6 +174,51 @@ export default function ReturnForm({
               className="hidden"
               onChange={e => handleFileChange(e.target.files?.[0] || null)}
             />
+          </div>
+
+          {/* Schadefoto's upload */}
+          <div className="space-y-2">
+            <Label>Schadefoto's (optioneel)</Label>
+            <div
+              className="relative border-2 border-dashed rounded-lg p-4 text-center transition-colors cursor-pointer border-border hover:border-primary/30 hover:bg-muted/50"
+              onClick={() => document.getElementById("fotos-upload")?.click()}
+            >
+              <ImageIcon className="w-6 h-6 text-muted-foreground mx-auto mb-1" />
+              <p className="text-sm text-muted-foreground">Klik om foto's toe te voegen</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Max 5 afbeeldingen</p>
+            </div>
+            <input
+              id="fotos-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={e => {
+                const files = Array.from(e.target.files || []).slice(0, 5 - fotos.length);
+                if (files.length > 0) setFotos([...fotos, ...files].slice(0, 5));
+                e.target.value = "";
+              }}
+            />
+            {fotos.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 mt-2">
+                {fotos.map((foto, i) => (
+                  <div key={i} className="relative group rounded-lg overflow-hidden border border-border">
+                    <img
+                      src={URL.createObjectURL(foto)}
+                      alt={`Foto ${i + 1}`}
+                      className="w-full h-20 object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={e => { e.stopPropagation(); setFotos(fotos.filter((_, j) => j !== i)); }}
+                      className="absolute top-1 right-1 p-0.5 rounded-full bg-background/80 hover:bg-background border border-border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Notes */}

@@ -20,6 +20,7 @@ interface Terugmelding {
   notitie: string | null;
   created_at: string;
   medewerker_email: string | null;
+  fotos: string[] | null;
 }
 
 interface VehicleTerugmeldingenProps {
@@ -158,6 +159,17 @@ export function VehicleTerugmeldingen({ voertuigId, kenteken }: VehicleTerugmeld
                   <div className="flex items-center gap-1.5 mt-1.5">
                     <User className="w-3 h-3 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">{t.medewerker_email}</span>
+                  </div>
+                )}
+
+                {/* Schadefoto's */}
+                {t.fotos && t.fotos.length > 0 && (
+                  <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+                    {t.fotos.map((url, fi) => (
+                      <a key={fi} href={url} target="_blank" rel="noopener noreferrer" className="block rounded-md overflow-hidden border border-border hover:border-primary/30 transition-colors">
+                        <img src={url} alt={`Schadefoto ${fi + 1}`} className="w-full h-16 object-cover" />
+                      </a>
+                    ))}
                   </div>
                 )}
 

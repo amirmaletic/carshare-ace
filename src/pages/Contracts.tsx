@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ContractDocument } from "@/components/ContractDocument";
 import { KilometerTab } from "@/components/KilometerTab";
-import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle, Printer, Gauge } from "lucide-react";
+import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle, Printer, Gauge, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -17,6 +17,7 @@ import { ContractForm } from "@/components/ContractForm";
 import { InvoiceForm } from "@/components/InvoiceForm";
 import { getVehicleById, getContractStatusColor, getContractTypeLabel, getContractTypeIcon, getInvoiceStatusColor } from "@/data/mockData";
 import { cn } from "@/lib/utils";
+import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
 
 const typeFilters: { value: string; label: string; icon: React.ReactNode }[] = [
   { value: "Alle", label: "Alle", icon: <FileText className="w-3.5 h-3.5" /> },
@@ -329,14 +330,18 @@ function ContractDetail({
             <Separator />
 
             <Tabs defaultValue="facturen">
-              <TabsList className="w-full grid grid-cols-2">
-                <TabsTrigger value="facturen" className="gap-1.5">
+              <TabsList className="w-full grid grid-cols-3">
+                <TabsTrigger value="facturen" className="gap-1.5 text-xs">
                   <Euro className="w-3.5 h-3.5" />
-                  Facturen ({contract.invoices.length})
+                  Facturen
                 </TabsTrigger>
-                <TabsTrigger value="kilometers" className="gap-1.5">
+                <TabsTrigger value="kilometers" className="gap-1.5 text-xs">
                   <Gauge className="w-3.5 h-3.5" />
                   Kilometers
+                </TabsTrigger>
+                <TabsTrigger value="retouren" className="gap-1.5 text-xs">
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  Retouren
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="facturen" className="mt-4 space-y-2">
@@ -374,6 +379,13 @@ function ContractDetail({
                   startDatum={contract.start_datum}
                   eindDatum={contract.eind_datum}
                 />
+              </TabsContent>
+              <TabsContent value="retouren" className="mt-4">
+                {vehicle ? (
+                  <VehicleTerugmeldingen voertuigId={contract.voertuig_id || ""} kenteken={vehicle.kenteken} />
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground text-sm">Geen voertuig gekoppeld</div>
+                )}
               </TabsContent>
             </Tabs>
           </div>

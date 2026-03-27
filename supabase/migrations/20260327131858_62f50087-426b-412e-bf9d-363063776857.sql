@@ -1,0 +1,1 @@
+ALTER TABLE public.terugmeldingen ADD COLUMN fotos text[] DEFAULT '{}'::text[];
