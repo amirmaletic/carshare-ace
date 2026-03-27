@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      aanvragen: {
+        Row: {
+          ai_motivatie: string | null
+          budget_max: number | null
+          created_at: string
+          gekoppeld_voertuig_id: string | null
+          gewenst_type: string | null
+          gewenste_brandstof: string | null
+          gewenste_categorie: string | null
+          gewenste_periode_eind: string | null
+          gewenste_periode_start: string | null
+          id: string
+          klant_email: string | null
+          klant_naam: string
+          klant_telefoon: string | null
+          notitie: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ai_motivatie?: string | null
+          budget_max?: number | null
+          created_at?: string
+          gekoppeld_voertuig_id?: string | null
+          gewenst_type?: string | null
+          gewenste_brandstof?: string | null
+          gewenste_categorie?: string | null
+          gewenste_periode_eind?: string | null
+          gewenste_periode_start?: string | null
+          id?: string
+          klant_email?: string | null
+          klant_naam: string
+          klant_telefoon?: string | null
+          notitie?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ai_motivatie?: string | null
+          budget_max?: number | null
+          created_at?: string
+          gekoppeld_voertuig_id?: string | null
+          gewenst_type?: string | null
+          gewenste_brandstof?: string | null
+          gewenste_categorie?: string | null
+          gewenste_periode_eind?: string | null
+          gewenste_periode_start?: string | null
+          id?: string
+          klant_email?: string | null
+          klant_naam?: string
+          klant_telefoon?: string | null
+          notitie?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aanvragen_gekoppeld_voertuig_id_fkey"
+            columns: ["gekoppeld_voertuig_id"]
+            isOneToOne: false
+            referencedRelation: "voertuigen"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chauffeurs: {
         Row: {
           achternaam: string
