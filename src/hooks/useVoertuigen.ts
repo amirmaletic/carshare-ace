@@ -18,6 +18,7 @@ export interface DbVoertuig {
   dagprijs: number;
   categorie: string;
   kleur: string;
+  locatie: string | null;
   created_at: string;
   updated_at: string;
 }
