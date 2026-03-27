@@ -20,9 +20,10 @@ interface TerugmeldStatsProps {
 }
 
 export default function TerugmeldStats({ terugmeldingen }: TerugmeldStatsProps) {
-  const vandaag = terugmeldingen.filter(t => isToday(new Date(t.created_at))).length;
-  const dezeWeek = terugmeldingen.filter(t => isThisWeek(new Date(t.created_at), { weekStartsOn: 1 })).length;
-  const dezeMaand = terugmeldingen.filter(t => isThisMonth(new Date(t.created_at))).length;
+  const validDates = terugmeldingen.filter(t => !isNaN(new Date(t.created_at).getTime()));
+  const vandaag = validDates.filter(t => isToday(new Date(t.created_at))).length;
+  const dezeWeek = validDates.filter(t => isThisWeek(new Date(t.created_at), { weekStartsOn: 1 })).length;
+  const dezeMaand = validDates.filter(t => isThisMonth(new Date(t.created_at))).length;
 
   const uniqueVehicles = new Set(terugmeldingen.map(t => t.voertuig_id)).size;
 

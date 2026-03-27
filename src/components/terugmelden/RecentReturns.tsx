@@ -37,7 +37,9 @@ export default function RecentReturns({
   getMinKm,
 }: RecentReturnsProps) {
   const terugmeldingenByDate = terugmeldingen.reduce<Record<string, Terugmelding[]>>((acc, t) => {
-    const dateKey = format(new Date(t.created_at), "yyyy-MM-dd");
+    const date = new Date(t.created_at);
+    if (isNaN(date.getTime())) return acc;
+    const dateKey = format(date, "yyyy-MM-dd");
     if (!acc[dateKey]) acc[dateKey] = [];
     acc[dateKey].push(t);
     return acc;
