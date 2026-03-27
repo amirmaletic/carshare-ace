@@ -276,6 +276,81 @@ export type Database = {
         }
         Relationships: []
       }
+      ritten: {
+        Row: {
+          aankomst_tijd: string | null
+          afstand_km: number | null
+          chauffeur_id: string | null
+          created_at: string
+          datum: string
+          id: string
+          km_tarief: number | null
+          kosten: number | null
+          naar_locatie: string
+          notitie: string | null
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+          van_locatie: string
+          vertrek_tijd: string | null
+          voertuig_id: string | null
+        }
+        Insert: {
+          aankomst_tijd?: string | null
+          afstand_km?: number | null
+          chauffeur_id?: string | null
+          created_at?: string
+          datum?: string
+          id?: string
+          km_tarief?: number | null
+          kosten?: number | null
+          naar_locatie: string
+          notitie?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id: string
+          van_locatie: string
+          vertrek_tijd?: string | null
+          voertuig_id?: string | null
+        }
+        Update: {
+          aankomst_tijd?: string | null
+          afstand_km?: number | null
+          chauffeur_id?: string | null
+          created_at?: string
+          datum?: string
+          id?: string
+          km_tarief?: number | null
+          kosten?: number | null
+          naar_locatie?: string
+          notitie?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          van_locatie?: string
+          vertrek_tijd?: string | null
+          voertuig_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ritten_chauffeur_id_fkey"
+            columns: ["chauffeur_id"]
+            isOneToOne: false
+            referencedRelation: "chauffeurs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ritten_voertuig_id_fkey"
+            columns: ["voertuig_id"]
+            isOneToOne: false
+            referencedRelation: "voertuigen"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       role_permissions: {
         Row: {
           allowed: boolean
