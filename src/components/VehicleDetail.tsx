@@ -3,7 +3,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText,
+  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw,
 } from "lucide-react";
 import {
   Vehicle, getStatusColor, getVehicleImageUrl,
@@ -11,6 +11,7 @@ import {
   getReservationStatusColor,
 } from "@/data/mockData";
 import { VehicleReportTabs } from "@/components/VehicleReportTabs";
+import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
 
 interface VehicleDetailProps {
   vehicle: Vehicle | null;
@@ -85,16 +86,20 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
           {/* Tabs for maintenance and reservations */}
           <Tabs defaultValue="onderhoud" className="w-full">
-            <TabsList className="w-full grid grid-cols-3">
-              <TabsTrigger value="onderhoud" className="gap-1.5">
+            <TabsList className="w-full grid grid-cols-4">
+              <TabsTrigger value="onderhoud" className="gap-1.5 text-xs">
                 <Wrench className="w-3.5 h-3.5" />
-                Onderhoud ({maintenance.length})
+                Onderhoud
               </TabsTrigger>
-              <TabsTrigger value="reserveringen" className="gap-1.5">
+              <TabsTrigger value="terugmeldingen" className="gap-1.5 text-xs">
+                <RotateCcw className="w-3.5 h-3.5" />
+                Retouren
+              </TabsTrigger>
+              <TabsTrigger value="reserveringen" className="gap-1.5 text-xs">
                 <CalendarRange className="w-3.5 h-3.5" />
-                Reserveringen ({reservations.length})
+                Reserveringen
               </TabsTrigger>
-              <TabsTrigger value="rapporten" className="gap-1.5">
+              <TabsTrigger value="rapporten" className="gap-1.5 text-xs">
                 <FileText className="w-3.5 h-3.5" />
                 Rapporten
               </TabsTrigger>
@@ -126,6 +131,10 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
                   </div>
                 ))
               )}
+            </TabsContent>
+
+            <TabsContent value="terugmeldingen" className="mt-4">
+              <VehicleTerugmeldingen voertuigId={vehicle.id} kenteken={vehicle.kenteken} />
             </TabsContent>
 
             <TabsContent value="reserveringen" className="mt-4 space-y-3">
