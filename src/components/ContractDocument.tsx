@@ -176,6 +176,15 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
             </div>
           )}
 
+          {contract.boeteclausule && (
+            <div className="mb-6">
+              <h3 className="text-xs uppercase tracking-wider text-primary font-semibold mb-3 pb-1.5 border-b border-border">
+                Boeteclausule
+              </h3>
+              <p className="text-sm">{contract.boeteclausule}</p>
+            </div>
+          )}
+
           {/* Voorwaarden */}
           <div className="mb-6">
             <h3 className="text-xs uppercase tracking-wider text-primary font-semibold mb-3 pb-1.5 border-b border-border">
