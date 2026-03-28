@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { ContractDocument } from "@/components/ContractDocument";
 import { KilometerTab } from "@/components/KilometerTab";
-import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle, Printer, Gauge, RotateCcw } from "lucide-react";
+import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle, Printer, Gauge, RotateCcw, Shield, CalendarCheck, Phone, Mail, Building2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -40,6 +41,7 @@ export default function Contracts() {
   const totalMonthlyRevenue = activeContracts.reduce((sum, c) => sum + Number(c.maandprijs), 0);
   const overdueInvoices = contracts.flatMap((c) => c.invoices).filter((f) => f.status === "te_laat" || f.status === "herinnering_verstuurd");
   const totalOverdue = overdueInvoices.reduce((sum, f) => sum + Number(f.bedrag), 0);
+  const signedCount = contracts.filter((c) => c.ondertekend).length;
 
   const filtered = contracts.filter((c) => {
     const matchesSearch =
@@ -81,14 +83,14 @@ export default function Contracts() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="clean-card p-4 flex items-center gap-3">
           <div className="p-2 rounded-lg bg-success/10">
             <Euro className="w-5 h-5 text-success" />
           </div>
           <div>
             <p className="text-lg font-bold text-foreground">€{totalMonthlyRevenue.toLocaleString("nl-NL")}</p>
-            <p className="text-xs text-muted-foreground">Maandelijkse lease-omzet</p>
+            <p className="text-xs text-muted-foreground">Maandomzet</p>
           </div>
         </div>
         <div className="clean-card p-4 flex items-center gap-3">
@@ -97,7 +99,16 @@ export default function Contracts() {
           </div>
           <div>
             <p className="text-lg font-bold text-foreground">{activeContracts.length}</p>
-            <p className="text-xs text-muted-foreground">Actieve contracten</p>
+            <p className="text-xs text-muted-foreground">Actief</p>
+          </div>
+        </div>
+        <div className="clean-card p-4 flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-accent">
+            <CalendarCheck className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-lg font-bold text-foreground">{signedCount}</p>
+            <p className="text-xs text-muted-foreground">Ondertekend</p>
           </div>
         </div>
         <div className="clean-card p-4 flex items-center gap-3">
@@ -106,7 +117,7 @@ export default function Contracts() {
           </div>
           <div>
             <p className="text-lg font-bold text-foreground">€{totalOverdue.toLocaleString("nl-NL")}</p>
-            <p className="text-xs text-muted-foreground">{overdueInvoices.length} openstaande herinneringen</p>
+            <p className="text-xs text-muted-foreground">{overdueInvoices.length} openstaand</p>
           </div>
         </div>
       </div>
@@ -134,84 +145,85 @@ export default function Contracts() {
         </div>
       </div>
 
-      {/* Contracts table */}
-      <div className="clean-card overflow-hidden">
-        {isLoading ? (
-          <div className="p-6 space-y-4">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border/50">
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Contract</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Klant</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Voertuig</th>
-                  <th className="text-left px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Looptijd</th>
-                  <th className="text-right px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Maandprijs</th>
-                  <th className="text-right px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                  <th className="text-right px-5 py-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"></th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/30">
-                {filtered.map((c, i) => {
-                  const vehicle = c.voertuig_id ? getVehicleById(c.voertuig_id) : null;
-                  return (
-                    <tr key={c.id} className="hover:bg-muted/30 transition-colors animate-fade-in cursor-pointer" style={{ animationDelay: `${i * 40}ms` }} onClick={() => openContract(c)}>
-                      <td className="px-5 py-4">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">{getContractTypeIcon(c.type)}</span>
-                          <div>
-                            <p className="font-medium text-sm text-foreground font-mono">{c.contract_nummer}</p>
-                            <p className="text-xs text-muted-foreground">{getContractTypeLabel(c.type)}</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-4">
-                        <p className="text-sm text-foreground">{c.klant_naam}</p>
-                        {c.bedrijf && <p className="text-xs text-muted-foreground">{c.bedrijf}</p>}
-                      </td>
-                      <td className="px-5 py-4">
-                        {vehicle ? (
-                          <div>
-                            <p className="text-sm text-foreground">{vehicle.merk} {vehicle.model}</p>
-                            <p className="text-xs text-muted-foreground font-mono">{vehicle.kenteken}</p>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-muted-foreground">{c.type === "fietslease" ? "🚲 Fiets" : "—"}</span>
-                        )}
-                      </td>
-                      <td className="px-5 py-4">
-                        <p className="text-sm text-foreground">{c.start_datum}</p>
-                        <p className="text-xs text-muted-foreground">t/m {c.eind_datum}</p>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <span className="font-medium text-foreground">€{Number(c.maandprijs)}/mnd</span>
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <StatusBadge status={c.status} variant={getContractStatusColor(c.status)} />
-                      </td>
-                      <td className="px-5 py-4 text-right">
-                        <Eye className="w-4 h-4 text-muted-foreground" />
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Contracts as cards on mobile, table on desktop */}
+      {isLoading ? (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Skeleton key={i} className="h-40 w-full rounded-xl" />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-12 clean-card">
+          <FileText className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+          <p className="text-muted-foreground">Geen contracten gevonden</p>
+        </div>
+      ) : (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((c, i) => {
+            const vehicle = c.voertuig_id ? getVehicleById(c.voertuig_id) : null;
+            const openInvoices = c.invoices.filter((inv) => inv.status !== "betaald").length;
+            return (
+              <div
+                key={c.id}
+                onClick={() => openContract(c)}
+                className="clean-card p-4 cursor-pointer hover:shadow-md hover:border-primary/20 transition-all animate-fade-in group"
+                style={{ animationDelay: `${i * 30}ms` }}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">{getContractTypeIcon(c.type)}</span>
+                    <div>
+                      <p className="font-mono text-sm font-semibold text-foreground">{c.contract_nummer}</p>
+                      <p className="text-xs text-muted-foreground">{getContractTypeLabel(c.type)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {c.ondertekend && (
+                      <Shield className="w-3.5 h-3.5 text-success" />
+                    )}
+                    <StatusBadge status={c.status} variant={getContractStatusColor(c.status)} />
+                  </div>
+                </div>
 
-        {!isLoading && filtered.length === 0 && (
-          <div className="text-center py-12">
-            <FileText className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-            <p className="text-muted-foreground">Geen contracten gevonden</p>
-          </div>
-        )}
-      </div>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2 text-foreground">
+                    <span className="font-medium">{c.klant_naam}</span>
+                    {c.bedrijf && <span className="text-xs text-muted-foreground">• {c.bedrijf}</span>}
+                  </div>
+
+                  {vehicle && (
+                    <p className="text-xs text-muted-foreground">
+                      {vehicle.merk} {vehicle.model} — <span className="font-mono">{vehicle.kenteken}</span>
+                    </p>
+                  )}
+
+                  <Separator className="my-2" />
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="font-semibold text-foreground">€{Number(c.maandprijs)}</span>
+                      <span className="text-xs text-muted-foreground">/mnd</span>
+                      {Number(c.borg) > 0 && (
+                        <span className="text-xs text-muted-foreground ml-2">+ €{Number(c.borg)} borg</span>
+                      )}
+                    </div>
+                    {openInvoices > 0 && (
+                      <Badge variant="outline" className="text-xs border-warning text-warning">
+                        {openInvoices} facturen
+                      </Badge>
+                    )}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    {c.start_datum} — {c.eind_datum}
+                    {c.verlengbaar && <span className="ml-1 text-primary">• verlengbaar</span>}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Contract detail dialog */}
       <ContractDetail
@@ -258,6 +270,20 @@ function ContractDetail({
     }
   };
 
+  const handleSign = async () => {
+    try {
+      await updateContract.mutateAsync({
+        id: contract.id,
+        ondertekend: true,
+        ondertekend_op: new Date().toISOString(),
+        status: "actief",
+      });
+      toast({ title: "Contract ondertekend en geactiveerd" });
+    } catch (err: any) {
+      toast({ title: "Fout", description: err.message, variant: "destructive" });
+    }
+  };
+
   const markInvoicePaid = async (invoiceId: string) => {
     try {
       await updateInvoice.mutateAsync({ id: invoiceId, status: "betaald" });
@@ -275,16 +301,26 @@ function ContractDetail({
             <DialogTitle className="flex items-center gap-2">
               <span className="text-xl">{getContractTypeIcon(contract.type)}</span>
               {contract.contract_nummer}
+              {contract.ondertekend && (
+                <Badge variant="outline" className="text-success border-success/30 bg-success/10 ml-2">
+                  <Shield className="w-3 h-3 mr-1" /> Ondertekend
+                </Badge>
+              )}
             </DialogTitle>
           </DialogHeader>
 
           {/* Action buttons */}
           <div className="flex gap-2 flex-wrap">
             <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setDocumentOpen(true)}>
-              <Printer className="w-3.5 h-3.5" /> Contract genereren
+              <Printer className="w-3.5 h-3.5" /> Document
             </Button>
             {contract.status !== "opgezegd" && contract.status !== "verlopen" && (
               <>
+                {!contract.ondertekend && (
+                  <Button size="sm" variant="default" className="gap-1.5" onClick={handleSign}>
+                    <Shield className="w-3.5 h-3.5" /> Ondertekenen
+                  </Button>
+                )}
                 <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(contract)}>
                   <Edit className="w-3.5 h-3.5" /> Bewerken
                 </Button>
@@ -296,15 +332,45 @@ function ContractDetail({
           </div>
 
           <div className="space-y-4">
+            {/* Klantgegevens */}
+            <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
+              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Klantgegevens</h4>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="font-medium text-foreground">{contract.klant_naam}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Mail className="w-3.5 h-3.5" /> {contract.klant_email}
+                </div>
+                {contract.klant_telefoon && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Phone className="w-3.5 h-3.5" /> {contract.klant_telefoon}
+                  </div>
+                )}
+                {contract.klant_adres && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <MapPin className="w-3.5 h-3.5" /> {contract.klant_adres}
+                  </div>
+                )}
+                {contract.bedrijf && (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Building2 className="w-3.5 h-3.5" /> {contract.bedrijf}
+                    {contract.kvk_nummer && <span className="font-mono text-xs">KVK {contract.kvk_nummer}</span>}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Contract details */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               <InfoBlock label="Type" value={getContractTypeLabel(contract.type)} />
               <InfoBlock label="Status" value={contract.status} />
               <InfoBlock label="Maandprijs" value={`€${Number(contract.maandprijs)}`} />
-              <InfoBlock label="Klant" value={contract.klant_naam} />
-              {contract.bedrijf && <InfoBlock label="Bedrijf" value={contract.bedrijf} />}
+              {Number(contract.borg) > 0 && <InfoBlock label="Borg" value={`€${Number(contract.borg)}`} />}
               <InfoBlock label="Looptijd" value={`${contract.start_datum} — ${contract.eind_datum}`} />
               {contract.km_per_jaar && <InfoBlock label="Km/jaar" value={`${contract.km_per_jaar.toLocaleString("nl-NL")} km`} />}
               {vehicle && <InfoBlock label="Voertuig" value={`${vehicle.merk} ${vehicle.model} (${vehicle.kenteken})`} />}
+              {contract.verlengbaar && <InfoBlock label="Verlenging" value={contract.verlengings_termijn || "Ja"} />}
             </div>
 
             {contract.inclusief.length > 0 && (
@@ -317,6 +383,15 @@ function ContractDetail({
                     </span>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {contract.boeteclausule && (
+              <div className="p-3 rounded-lg bg-destructive/5 border border-destructive/15">
+                <p className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" /> Boeteclausule
+                </p>
+                <p className="text-sm text-foreground">{contract.boeteclausule}</p>
               </div>
             )}
 
