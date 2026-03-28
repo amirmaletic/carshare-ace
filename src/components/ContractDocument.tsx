@@ -112,7 +112,9 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
               <Field label="Startdatum" value={contract.start_datum} />
               <Field label="Einddatum" value={contract.eind_datum} />
               <Field label="Maandprijs" value={`€ ${Number(contract.maandprijs).toLocaleString("nl-NL", { minimumFractionDigits: 2 })}`} />
+              {Number(contract.borg) > 0 && <Field label="Borg" value={`€ ${Number(contract.borg).toLocaleString("nl-NL", { minimumFractionDigits: 2 })}`} />}
               {contract.km_per_jaar && <Field label="Km/jaar" value={`${contract.km_per_jaar.toLocaleString("nl-NL")} km`} />}
+              {contract.verlengbaar && <Field label="Verlengbaar" value={contract.verlengings_termijn || "Ja"} />}
             </div>
           </div>
 
@@ -124,7 +126,11 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
             <div className="grid grid-cols-2 gap-3">
               <Field label="Naam" value={contract.klant_naam} />
               <Field label="E-mail" value={contract.klant_email} />
+              {contract.klant_telefoon && <Field label="Telefoon" value={contract.klant_telefoon} />}
+              {contract.klant_adres && <Field label="Adres" value={contract.klant_adres} />}
               {contract.bedrijf && <Field label="Bedrijf" value={contract.bedrijf} />}
+              {contract.kvk_nummer && <Field label="KVK-nummer" value={contract.kvk_nummer} />}
+              {contract.bedrijf_adres && <Field label="Bedrijfsadres" value={contract.bedrijf_adres} />}
             </div>
           </div>
 
