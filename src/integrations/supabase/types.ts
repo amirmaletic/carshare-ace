@@ -149,64 +149,88 @@ export type Database = {
         Row: {
           bedrijf: string | null
           bedrijf_adres: string | null
+          boeteclausule: string | null
+          borg: number | null
           contract_nummer: string
           created_at: string
           eind_datum: string
           id: string
           inclusief: string[]
+          klant_adres: string | null
           klant_email: string
           klant_naam: string
+          klant_telefoon: string | null
           km_per_jaar: number | null
           kvk_nummer: string | null
           maandprijs: number
           notities: string | null
+          ondertekend: boolean | null
+          ondertekend_op: string | null
           start_datum: string
           status: Database["public"]["Enums"]["contract_status"]
           type: Database["public"]["Enums"]["contract_type"]
           updated_at: string
           user_id: string
+          verlengbaar: boolean | null
+          verlengings_termijn: string | null
           voertuig_id: string | null
         }
         Insert: {
           bedrijf?: string | null
           bedrijf_adres?: string | null
+          boeteclausule?: string | null
+          borg?: number | null
           contract_nummer: string
           created_at?: string
           eind_datum: string
           id?: string
           inclusief?: string[]
+          klant_adres?: string | null
           klant_email: string
           klant_naam: string
+          klant_telefoon?: string | null
           km_per_jaar?: number | null
           kvk_nummer?: string | null
           maandprijs?: number
           notities?: string | null
+          ondertekend?: boolean | null
+          ondertekend_op?: string | null
           start_datum: string
           status?: Database["public"]["Enums"]["contract_status"]
           type: Database["public"]["Enums"]["contract_type"]
           updated_at?: string
           user_id: string
+          verlengbaar?: boolean | null
+          verlengings_termijn?: string | null
           voertuig_id?: string | null
         }
         Update: {
           bedrijf?: string | null
           bedrijf_adres?: string | null
+          boeteclausule?: string | null
+          borg?: number | null
           contract_nummer?: string
           created_at?: string
           eind_datum?: string
           id?: string
           inclusief?: string[]
+          klant_adres?: string | null
           klant_email?: string
           klant_naam?: string
+          klant_telefoon?: string | null
           km_per_jaar?: number | null
           kvk_nummer?: string | null
           maandprijs?: number
           notities?: string | null
+          ondertekend?: boolean | null
+          ondertekend_op?: string | null
           start_datum?: string
           status?: Database["public"]["Enums"]["contract_status"]
           type?: Database["public"]["Enums"]["contract_type"]
           updated_at?: string
           user_id?: string
+          verlengbaar?: boolean | null
+          verlengings_termijn?: string | null
           voertuig_id?: string | null
         }
         Relationships: []

@@ -10,14 +10,24 @@ export interface DbContract {
   voertuig_id: string | null;
   klant_naam: string;
   klant_email: string;
+  klant_telefoon: string | null;
+  klant_adres: string | null;
   bedrijf: string | null;
+  kvk_nummer: string | null;
+  bedrijf_adres: string | null;
   start_datum: string;
   eind_datum: string;
   maandprijs: number;
+  borg: number;
   status: ContractStatus;
   km_per_jaar: number | null;
   inclusief: string[];
   notities: string | null;
+  boeteclausule: string | null;
+  verlengbaar: boolean;
+  verlengings_termijn: string | null;
+  ondertekend: boolean;
+  ondertekend_op: string | null;
   created_at: string;
   updated_at: string;
 }
