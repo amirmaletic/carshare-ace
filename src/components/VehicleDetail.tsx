@@ -48,6 +48,7 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
   const imageUrl = getVehicleImageUrl(vehicle.merk, vehicle.model);
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0">
         {/* Hero image */}
