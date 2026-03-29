@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import {
-  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw,
+  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw, Clock, Plus,
 } from "lucide-react";
 import {
   Vehicle, getStatusColor, getVehicleImageUrl,
@@ -12,6 +14,8 @@ import {
 } from "@/data/mockData";
 import { VehicleReportTabs } from "@/components/VehicleReportTabs";
 import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
+import { VehicleTimeline } from "@/components/VehicleTimeline";
+import { ContractForm } from "@/components/ContractForm";
 
 interface VehicleDetailProps {
   vehicle: Vehicle | null;
@@ -35,6 +39,8 @@ const statusLabels: Record<string, string> = {
 };
 
 export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProps) {
+  const [contractFormOpen, setContractFormOpen] = useState(false);
+
   if (!vehicle) return null;
 
   const maintenance = getMaintenanceForVehicle(vehicle.id);
