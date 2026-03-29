@@ -74,6 +74,11 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
         </div>
 
         <div className="p-5 space-y-5">
+          {/* Action button */}
+          <Button size="sm" className="gap-1.5" onClick={() => setContractFormOpen(true)}>
+            <Plus className="w-3.5 h-3.5" /> Contract aanmaken
+          </Button>
+
           {/* Quick info grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <QuickInfo icon={Calendar} label="Bouwjaar" value={String(vehicle.bouwjaar)} />
@@ -90,9 +95,13 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
           <Separator />
 
-          {/* Tabs for maintenance and reservations */}
-          <Tabs defaultValue="onderhoud" className="w-full">
-            <TabsList className="w-full grid grid-cols-4">
+          {/* Tabs */}
+          <Tabs defaultValue="tijdlijn" className="w-full">
+            <TabsList className="w-full grid grid-cols-5">
+              <TabsTrigger value="tijdlijn" className="gap-1.5 text-xs">
+                <Clock className="w-3.5 h-3.5" />
+                Tijdlijn
+              </TabsTrigger>
               <TabsTrigger value="onderhoud" className="gap-1.5 text-xs">
                 <Wrench className="w-3.5 h-3.5" />
                 Onderhoud
