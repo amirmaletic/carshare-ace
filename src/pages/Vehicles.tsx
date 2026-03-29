@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X, List, MapPin } from "lucide-react";
+import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X, List, MapPin, GanttChart } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import { KentekenSearch } from "@/components/KentekenSearch";
 import { VehicleDetail } from "@/components/VehicleDetail";
 import { VehicleForm } from "@/components/VehicleForm";
 import { VehicleKanban } from "@/components/VehicleKanban";
+import { VehicleGantt } from "@/components/VehicleGantt";
 import { vehicles as mockVehicles, reservations, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
@@ -27,7 +28,7 @@ function isVehicleAvailable(vehicleId: string, from: Date, to: Date): boolean {
   });
 }
 
-type ViewMode = "lijst" | "locaties";
+type ViewMode = "lijst" | "locaties" | "tijdlijn";
 
 export default function Vehicles() {
   const [search, setSearch] = useState("");
@@ -109,6 +110,18 @@ export default function Vehicles() {
             Lijst
           </button>
           <button
+            onClick={() => setViewMode("tijdlijn")}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+              viewMode === "tijdlijn"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <GanttChart className="w-4 h-4" />
+            Tijdlijn
+          </button>
+          <button
             onClick={() => setViewMode("locaties")}
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
@@ -123,7 +136,9 @@ export default function Vehicles() {
         </div>
       </div>
 
-      {viewMode === "locaties" ? (
+      {viewMode === "tijdlijn" ? (
+        <VehicleGantt onSelectVehicle={openVehicle} />
+      ) : viewMode === "locaties" ? (
         <VehicleKanban onSelectVehicle={openVehicle} />
       ) : (
         <div className="space-y-6">
