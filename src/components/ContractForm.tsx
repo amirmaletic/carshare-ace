@@ -61,9 +61,10 @@ interface ContractFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   editContract?: ContractWithInvoices | null;
+  prefilledVehicleId?: string | null;
 }
 
-export function ContractForm({ open, onOpenChange, editContract }: ContractFormProps) {
+export function ContractForm({ open, onOpenChange, editContract, prefilledVehicleId }: ContractFormProps) {
   const isEdit = !!editContract;
   const createMutation = useCreateContract();
   const updateMutation = useUpdateContract();
@@ -84,7 +85,7 @@ export function ContractForm({ open, onOpenChange, editContract }: ContractFormP
       klant_telefoon: c?.klant_telefoon ?? "",
       klant_adres: c?.klant_adres ?? "",
       bedrijf: c?.bedrijf ?? "",
-      voertuig_id: c?.voertuig_id ?? "",
+      voertuig_id: c?.voertuig_id ?? prefilledVehicleId ?? "",
       start_datum: c?.start_datum ?? "",
       eind_datum: c?.eind_datum ?? "",
       maandprijs: c?.maandprijs ?? 0,
