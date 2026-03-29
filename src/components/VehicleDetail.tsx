@@ -120,6 +120,10 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
               </TabsTrigger>
             </TabsList>
 
+            <TabsContent value="tijdlijn" className="mt-4">
+              <VehicleTimeline voertuigId={vehicle.id} />
+            </TabsContent>
+
             <TabsContent value="onderhoud" className="mt-4 space-y-3">
               {maintenance.length === 0 ? (
                 <EmptyState icon={Wrench} text="Geen onderhoudshistorie" />
@@ -188,6 +192,13 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
         </div>
       </DialogContent>
     </Dialog>
+
+    <ContractForm
+      open={contractFormOpen}
+      onOpenChange={setContractFormOpen}
+      prefilledVehicleId={vehicle.id}
+    />
+  </>
   );
 }
 
