@@ -142,7 +142,14 @@ export default function Vehicles() {
       </div>
 
       {viewMode === "tijdlijn" ? (
-        <VehicleGantt onSelectVehicle={openVehicle} />
+        <VehicleGantt
+          onSelectVehicle={openVehicle}
+          onReturnVehicle={(v) => navigate(`/terugmelden?kenteken=${encodeURIComponent(v.kenteken)}`)}
+          onCreateContract={(v) => {
+            setContractVehicleId(v.id);
+            setContractFormOpen(true);
+          }}
+        />
       ) : viewMode === "locaties" ? (
         <VehicleKanban onSelectVehicle={openVehicle} />
       ) : (
