@@ -276,6 +276,7 @@ export default function Vehicles() {
 
       <VehicleDetail vehicle={selectedVehicle} open={detailOpen} onOpenChange={setDetailOpen} />
       <VehicleForm open={formOpen} onOpenChange={setFormOpen} />
+      <ContractForm open={contractFormOpen} onOpenChange={setContractFormOpen} prefilledVehicleId={contractVehicleId} />
     </div>
   );
 }
