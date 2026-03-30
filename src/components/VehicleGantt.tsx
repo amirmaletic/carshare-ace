@@ -4,13 +4,28 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { vehicles as mockVehicles, reservations, type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
+import { useLocaties } from "@/hooks/useLocaties";
 import { StatusBadge } from "@/components/StatusBadge";
-import { getStatusColor, getVehicleImageUrl } from "@/data/mockData";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { getStatusColor } from "@/data/mockData";
+import { ChevronLeft, ChevronRight, Eye, FileText, RotateCcw, Plus, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { format, addDays, startOfWeek, differenceInDays, isWithinInterval, addWeeks, subWeeks } from "date-fns";
+import { format, addDays, startOfWeek, differenceInDays, isWithinInterval, addWeeks } from "date-fns";
 import { nl } from "date-fns/locale";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface GanttBlock {
   id: string;
@@ -53,13 +68,17 @@ function getEffectiveStatus(vehicle: Vehicle, blocks: GanttBlock[]): Vehicle["st
 
 interface VehicleGanttProps {
   onSelectVehicle?: (vehicle: Vehicle) => void;
+  onReturnVehicle?: (vehicle: Vehicle) => void;
+  onCreateContract?: (vehicle: Vehicle) => void;
 }
 
-export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
+export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContract }: VehicleGanttProps) {
   const { user } = useAuth();
   const { voertuigen: dbVoertuigen } = useVoertuigen();
+  const { locaties } = useLocaties();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [locationFilter, setLocationFilter] = useState<string>("alle");
 
   const startDate = useMemo(
     () => startOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 }),
@@ -71,7 +90,6 @@ export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
     [startDate]
   );
 
-  // Fetch contracts from DB
   const { data: dbContracts = [] } = useQuery({
     queryKey: ["gantt-contracts"],
     enabled: !!user,
@@ -98,15 +116,19 @@ export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
     dagprijs: Number(v.dagprijs),
     categorie: v.categorie as Vehicle["categorie"],
     kleur: v.kleur,
+    _locatie: v.locatie,
   }));
 
-  const allVehicles = [...mockVehicles, ...dbAsVehicles];
+  const allVehicles = [...mockVehicles.map(v => ({ ...v, _locatie: null as string | null })), ...dbAsVehicles];
 
-  // Build blocks
+  const filteredVehicles = useMemo(() => {
+    if (locationFilter === "alle") return allVehicles;
+    if (locationFilter === "geen") return allVehicles.filter(v => !(v as any)._locatie);
+    return allVehicles.filter(v => (v as any)._locatie === locationFilter);
+  }, [allVehicles, locationFilter]);
+
   const blocks: GanttBlock[] = useMemo(() => {
     const result: GanttBlock[] = [];
-
-    // DB contracts
     dbContracts.forEach((c: any) => {
       if (!c.voertuig_id) return;
       result.push({
@@ -118,8 +140,6 @@ export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
         type: "contract",
       });
     });
-
-    // Mock reservations
     reservations.forEach((r) => {
       if (r.status === "geannuleerd" || r.status === "voltooid") return;
       result.push({
@@ -131,7 +151,6 @@ export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
         type: "reservation",
       });
     });
-
     return result;
   }, [dbContracts]);
 
@@ -140,7 +159,7 @@ export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
   return (
     <div className="clean-card overflow-hidden">
       {/* Header nav */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-wrap gap-2">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWeekOffset((o) => o - 1)}>
             <ChevronLeft className="w-4 h-4" />
@@ -152,6 +171,23 @@ export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
             <ChevronRight className="w-4 h-4" />
           </Button>
         </div>
+
+        <div className="flex items-center gap-2">
+          <Filter className="w-3.5 h-3.5 text-muted-foreground" />
+          <Select value={locationFilter} onValueChange={setLocationFilter}>
+            <SelectTrigger className="h-8 w-[160px] text-xs">
+              <SelectValue placeholder="Alle locaties" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="alle">Alle locaties</SelectItem>
+              <SelectItem value="geen">Geen locatie</SelectItem>
+              {locaties.map((l) => (
+                <SelectItem key={l.id} value={l.naam}>{l.naam}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
         <p className="text-sm text-muted-foreground">
           {format(startDate, "d MMM", { locale: nl })} — {format(endDate, "d MMM yyyy", { locale: nl })}
         </p>
@@ -166,30 +202,46 @@ export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
         <div className="flex min-w-fit">
           {/* Vehicle column */}
           <div className="sticky left-0 z-10 bg-background border-r border-border shrink-0" style={{ width: 220 }}>
-            {/* Date header spacer */}
             <div className="h-10 border-b border-border" />
-            {allVehicles.map((v) => {
+            {filteredVehicles.map((v) => {
               const effectiveStatus = getEffectiveStatus(v, blocks);
               return (
-                <div
-                  key={v.id}
-                  className="flex items-center gap-2 px-3 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors"
-                  style={{ height: ROW_HEIGHT }}
-                  onClick={() => onSelectVehicle?.(v)}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-foreground truncate">{v.merk} {v.model}</p>
-                    <p className="text-[10px] text-muted-foreground font-mono">{v.kenteken}</p>
-                  </div>
-                  <StatusBadge status={effectiveStatus} variant={getStatusColor(effectiveStatus)} />
-                </div>
+                <ContextMenu key={v.id}>
+                  <ContextMenuTrigger asChild>
+                    <div
+                      className="flex items-center gap-2 px-3 border-b border-border cursor-pointer hover:bg-muted/50 transition-colors"
+                      style={{ height: ROW_HEIGHT }}
+                      onClick={() => onSelectVehicle?.(v)}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-medium text-foreground truncate">{v.merk} {v.model}</p>
+                        <p className="text-[10px] text-muted-foreground font-mono">{v.kenteken}</p>
+                      </div>
+                      <StatusBadge status={effectiveStatus} variant={getStatusColor(effectiveStatus)} />
+                    </div>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent>
+                    <ContextMenuItem onClick={() => onSelectVehicle?.(v)} className="gap-2">
+                      <Eye className="w-3.5 h-3.5" />
+                      Voertuig openen
+                    </ContextMenuItem>
+                    <ContextMenuItem onClick={() => onCreateContract?.(v)} className="gap-2">
+                      <FileText className="w-3.5 h-3.5" />
+                      Contract aanmaken
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem onClick={() => onReturnVehicle?.(v)} className="gap-2">
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      Terugmelden
+                    </ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               );
             })}
           </div>
 
           {/* Gantt grid */}
           <div className="relative flex-1">
-            {/* Day headers */}
             <div className="flex border-b border-border h-10">
               {days.map((d, i) => {
                 const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
@@ -211,12 +263,10 @@ export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
               })}
             </div>
 
-            {/* Rows */}
-            {allVehicles.map((v) => {
+            {filteredVehicles.map((v) => {
               const vehicleBlocks = blocks.filter((b) => b.vehicleId === v.id);
               return (
                 <div key={v.id} className="relative border-b border-border" style={{ height: ROW_HEIGHT }}>
-                  {/* Day grid lines */}
                   <div className="absolute inset-0 flex">
                     {days.map((d, i) => {
                       const isWeekend = d.getDay() === 0 || d.getDay() === 6;
@@ -235,7 +285,6 @@ export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
                     })}
                   </div>
 
-                  {/* Blocks */}
                   {vehicleBlocks.map((block) => {
                     const blockStart = differenceInDays(block.start, startDate);
                     const blockEnd = differenceInDays(block.end, startDate);
@@ -272,7 +321,6 @@ export function VehicleGantt({ onSelectVehicle }: VehicleGanttProps) {
               );
             })}
 
-            {/* Today line */}
             {(() => {
               const todayOffset = differenceInDays(new Date(), startDate);
               if (todayOffset < 0 || todayOffset >= DAYS_VISIBLE) return null;
