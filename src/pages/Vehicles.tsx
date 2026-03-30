@@ -33,11 +33,14 @@ function isVehicleAvailable(vehicleId: string, from: Date, to: Date): boolean {
 type ViewMode = "lijst" | "locaties" | "tijdlijn";
 
 export default function Vehicles() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("Alle");
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [contractFormOpen, setContractFormOpen] = useState(false);
+  const [contractVehicleId, setContractVehicleId] = useState<string | undefined>();
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [viewMode, setViewMode] = useState<ViewMode>("lijst");
