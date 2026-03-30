@@ -13,6 +13,7 @@ import { VehicleDetail } from "@/components/VehicleDetail";
 import { VehicleForm } from "@/components/VehicleForm";
 import { VehicleKanban } from "@/components/VehicleKanban";
 import { VehicleGantt } from "@/components/VehicleGantt";
+import { ContractForm } from "@/components/ContractForm";
 import { vehicles as mockVehicles, reservations, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
