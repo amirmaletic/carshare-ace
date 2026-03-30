@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X, List, MapPin, GanttChart } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -12,6 +13,7 @@ import { VehicleDetail } from "@/components/VehicleDetail";
 import { VehicleForm } from "@/components/VehicleForm";
 import { VehicleKanban } from "@/components/VehicleKanban";
 import { VehicleGantt } from "@/components/VehicleGantt";
+import { ContractForm } from "@/components/ContractForm";
 import { vehicles as mockVehicles, reservations, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
@@ -31,11 +33,14 @@ function isVehicleAvailable(vehicleId: string, from: Date, to: Date): boolean {
 type ViewMode = "lijst" | "locaties" | "tijdlijn";
 
 export default function Vehicles() {
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("Alle");
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [contractFormOpen, setContractFormOpen] = useState(false);
+  const [contractVehicleId, setContractVehicleId] = useState<string | undefined>();
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [viewMode, setViewMode] = useState<ViewMode>("lijst");
@@ -137,7 +142,14 @@ export default function Vehicles() {
       </div>
 
       {viewMode === "tijdlijn" ? (
-        <VehicleGantt onSelectVehicle={openVehicle} />
+        <VehicleGantt
+          onSelectVehicle={openVehicle}
+          onReturnVehicle={(v) => navigate(`/terugmelden?kenteken=${encodeURIComponent(v.kenteken)}`)}
+          onCreateContract={(v) => {
+            setContractVehicleId(v.id);
+            setContractFormOpen(true);
+          }}
+        />
       ) : viewMode === "locaties" ? (
         <VehicleKanban onSelectVehicle={openVehicle} />
       ) : (
@@ -264,6 +276,7 @@ export default function Vehicles() {
 
       <VehicleDetail vehicle={selectedVehicle} open={detailOpen} onOpenChange={setDetailOpen} />
       <VehicleForm open={formOpen} onOpenChange={setFormOpen} />
+      <ContractForm open={contractFormOpen} onOpenChange={setContractFormOpen} prefilledVehicleId={contractVehicleId} />
     </div>
   );
 }
