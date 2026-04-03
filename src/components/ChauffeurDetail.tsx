@@ -338,9 +338,14 @@ export function ChauffeurDetail({ chauffeur, onClose }: ChauffeurDetailProps) {
 
         {/* Ritten */}
         <div>
-          <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-3">
-            <Truck className="w-4 h-4" /> Recente ritten
-          </h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <Truck className="w-4 h-4" /> Recente ritten
+            </h4>
+            <Button size="sm" variant="outline" onClick={() => setAddRitOpen(true)}>
+              <Plus className="w-3.5 h-3.5 mr-1" /> Rit plannen
+            </Button>
+          </div>
           {ritten.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nog geen ritten geregistreerd</p>
           ) : (
