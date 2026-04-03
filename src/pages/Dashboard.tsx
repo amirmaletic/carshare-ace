@@ -52,6 +52,9 @@ export default function Dashboard() {
         <StatCard icon={Wrench} title="Bezettingsgraad" value={stats ? `${Math.round(((stats.totalVehicles - stats.available) / Math.max(stats.totalVehicles, 1)) * 100)}%` : "—"} subtitle="Van de vloot" />
       </div>
 
+      {/* Today's pickups */}
+      <TodayPickups />
+
       {/* Tasks + Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ActionableTasks />
