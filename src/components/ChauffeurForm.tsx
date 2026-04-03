@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Save } from "lucide-react";
+import { CalendarIcon, Save, Truck } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useChauffeurs, type ChauffeurInsert, type Chauffeur } from "@/hooks/useChauffeurs";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
@@ -42,6 +43,8 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
     notities: chauffeur?.notities ?? "",
     status: chauffeur?.status ?? "actief",
     voertuig_id: chauffeur?.voertuig_id ?? "",
+    heeft_trailer: chauffeur?.heeft_trailer ?? false,
+    trailer_plekken: chauffeur?.trailer_plekken ?? null as number | null,
   });
 
   // Reset form when chauffeur changes
@@ -62,6 +65,8 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
         notities: chauffeur.notities ?? "",
         status: chauffeur.status,
         voertuig_id: chauffeur.voertuig_id ?? "",
+        heeft_trailer: chauffeur.heeft_trailer ?? false,
+        trailer_plekken: chauffeur.trailer_plekken ?? null,
       });
     }
   });
@@ -84,6 +89,8 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
       notities: form.notities.trim() || null,
       status: form.status,
       voertuig_id: form.voertuig_id || null,
+      heeft_trailer: form.heeft_trailer,
+      trailer_plekken: form.heeft_trailer ? (form.trailer_plekken ?? null) : null,
     };
 
     if (isEdit && chauffeur) {
