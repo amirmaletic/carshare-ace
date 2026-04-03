@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
+import { RitForm } from "@/components/RitForm";
 
 interface ChauffeurDetailProps {
   chauffeur: Chauffeur;
