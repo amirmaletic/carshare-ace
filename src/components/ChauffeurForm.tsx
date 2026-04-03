@@ -9,7 +9,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Save } from "lucide-react";
+import { CalendarIcon, Save, Truck } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useChauffeurs, type ChauffeurInsert, type Chauffeur } from "@/hooks/useChauffeurs";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
@@ -42,6 +43,8 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
     notities: chauffeur?.notities ?? "",
     status: chauffeur?.status ?? "actief",
     voertuig_id: chauffeur?.voertuig_id ?? "",
+    heeft_trailer: chauffeur?.heeft_trailer ?? false,
+    trailer_plekken: chauffeur?.trailer_plekken ?? null as number | null,
   });
 
   // Reset form when chauffeur changes
@@ -62,6 +65,8 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
         notities: chauffeur.notities ?? "",
         status: chauffeur.status,
         voertuig_id: chauffeur.voertuig_id ?? "",
+        heeft_trailer: chauffeur.heeft_trailer ?? false,
+        trailer_plekken: chauffeur.trailer_plekken ?? null,
       });
     }
   });
@@ -84,6 +89,8 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
       notities: form.notities.trim() || null,
       status: form.status,
       voertuig_id: form.voertuig_id || null,
+      heeft_trailer: form.heeft_trailer,
+      trailer_plekken: form.heeft_trailer ? (form.trailer_plekken ?? null) : null,
     };
 
     if (isEdit && chauffeur) {
@@ -100,6 +107,7 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
             rijbewijs_verloopt: undefined, geboortedatum: undefined,
             adres: "", postcode: "", plaats: "", notities: "",
             status: "actief", voertuig_id: "",
+            heeft_trailer: false, trailer_plekken: null,
           });
         },
       });
@@ -214,6 +222,34 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
               <Label>Plaats</Label>
               <Input value={form.plaats} onChange={(e) => setForm({ ...form, plaats: e.target.value })} placeholder="Utrecht" />
             </div>
+          </div>
+
+          {/* Voertuig koppeling */}
+          {/* Trailer */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="heeft_trailer"
+                checked={form.heeft_trailer}
+                onCheckedChange={(checked) => setForm({ ...form, heeft_trailer: !!checked, trailer_plekken: checked ? (form.trailer_plekken ?? 1) : null })}
+              />
+              <Label htmlFor="heeft_trailer" className="flex items-center gap-1.5 cursor-pointer">
+                <Truck className="w-3.5 h-3.5" /> Heeft trailer
+              </Label>
+            </div>
+            {form.heeft_trailer && (
+              <div className="space-y-1.5 pl-6">
+                <Label>Aantal plekken op trailer</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={form.trailer_plekken ?? ""}
+                  onChange={(e) => setForm({ ...form, trailer_plekken: e.target.value ? Number(e.target.value) : null })}
+                  placeholder="Bijv. 6"
+                />
+              </div>
+            )}
           </div>
 
           {/* Voertuig koppeling */}

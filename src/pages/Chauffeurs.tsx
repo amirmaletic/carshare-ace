@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, User, Phone, Mail, Car, CreditCard, AlertTriangle, Edit, Trash2, LayoutGrid, List, Filter } from "lucide-react";
+import { Search, Plus, User, Phone, Mail, Car, CreditCard, AlertTriangle, Edit, Trash2, LayoutGrid, List, Filter, Truck } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
@@ -278,6 +278,13 @@ export default function Chauffeurs() {
                         </span>
                       )}
                     </div>
+                    {c.heeft_trailer && (
+                      <div className="flex items-center gap-2 text-sm bg-muted/50 rounded-lg px-3 py-2">
+                        <Truck className="w-3.5 h-3.5 text-primary shrink-0" />
+                        <span className="text-foreground font-medium">Trailer</span>
+                        <Badge variant="secondary" className="ml-auto text-xs">{c.trailer_plekken ?? "?"} plekken</Badge>
+                      </div>
+                    )}
                     {voertuig && (
                       <div className="flex items-center gap-2 text-sm bg-muted/50 rounded-lg px-3 py-2">
                         <Car className="w-3.5 h-3.5 text-primary shrink-0" />

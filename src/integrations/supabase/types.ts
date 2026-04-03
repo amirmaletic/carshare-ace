@@ -130,6 +130,7 @@ export type Database = {
           created_at: string
           email: string | null
           geboortedatum: string | null
+          heeft_trailer: boolean
           id: string
           notities: string | null
           plaats: string | null
@@ -139,6 +140,7 @@ export type Database = {
           rijbewijs_verloopt: string | null
           status: string
           telefoon: string | null
+          trailer_plekken: number | null
           updated_at: string
           user_id: string
           voertuig_id: string | null
@@ -150,6 +152,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           geboortedatum?: string | null
+          heeft_trailer?: boolean
           id?: string
           notities?: string | null
           plaats?: string | null
@@ -159,6 +162,7 @@ export type Database = {
           rijbewijs_verloopt?: string | null
           status?: string
           telefoon?: string | null
+          trailer_plekken?: number | null
           updated_at?: string
           user_id: string
           voertuig_id?: string | null
@@ -170,6 +174,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           geboortedatum?: string | null
+          heeft_trailer?: boolean
           id?: string
           notities?: string | null
           plaats?: string | null
@@ -179,6 +184,7 @@ export type Database = {
           rijbewijs_verloopt?: string | null
           status?: string
           telefoon?: string | null
+          trailer_plekken?: number | null
           updated_at?: string
           user_id?: string
           voertuig_id?: string | null
