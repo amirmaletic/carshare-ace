@@ -67,6 +67,7 @@ export function ChauffeurDetail({ chauffeur, onClose }: ChauffeurDetailProps) {
   const queryClient = useQueryClient();
   const { voertuigen } = useVoertuigen();
   const [addLeaveOpen, setAddLeaveOpen] = useState(false);
+  const [addRitOpen, setAddRitOpen] = useState(false);
   const [leaveForm, setLeaveForm] = useState({
     type: "verlof",
     start_datum: undefined as Date | undefined,
