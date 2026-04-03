@@ -5,15 +5,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus } from "lucide-react";
+import { Plus, Route, Clock, MapPin, Loader2 } from "lucide-react";
 import { useRitten, type RitInsert } from "@/hooks/useRitten";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { useChauffeurs } from "@/hooks/useChauffeurs";
 import { useLocaties } from "@/hooks/useLocaties";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface RitFormProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+}
+
+interface RouteInfo {
+  distance_km: number;
+  distance_text: string;
+  duration_minutes: number;
+  duration_text: string;
+  start_address: string;
+  end_address: string;
 }
 
 export function RitForm({ open, onOpenChange }: RitFormProps) {
@@ -22,6 +33,8 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
   const { chauffeurs } = useChauffeurs();
   const { locaties } = useLocaties();
   const [isOpen, setIsOpen] = useState(false);
+  const [routeInfo, setRouteInfo] = useState<RouteInfo | null>(null);
+  const [calculating, setCalculating] = useState(false);
 
   const dialogOpen = open ?? isOpen;
   const setDialogOpen = onOpenChange ?? setIsOpen;
@@ -45,8 +58,32 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
   const beschikbareVoertuigen = voertuigen.filter((v) => v.status === "beschikbaar" || v.status === "verhuurd");
   const actieveChauffeurs = chauffeurs.filter((c) => c.status === "actief");
 
-  const berekenKosten = (km: number, tarief: number) => {
-    return Math.round(km * tarief * 100) / 100;
+  const berekenKosten = (km: number, tarief: number) => Math.round(km * tarief * 100) / 100;
+
+  const calculateRoute = async () => {
+    if (!form.van_locatie || !form.naar_locatie) {
+      toast.error("Vul eerst vertrek- en aankomstlocatie in");
+      return;
+    }
+    setCalculating(true);
+    setRouteInfo(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("calculate-route", {
+        body: { origin: form.van_locatie, destination: form.naar_locatie },
+      });
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      setRouteInfo(data);
+      const km = data.distance_km;
+      const kosten = berekenKosten(km, form.km_tarief || 0.35);
+      setForm((prev) => ({ ...prev, afstand_km: km, kosten }));
+      toast.success(`Route berekend: ${data.distance_text}, ${data.duration_text}`);
+    } catch (e: any) {
+      toast.error(e.message || "Fout bij routeberekening");
+    } finally {
+      setCalculating(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -74,20 +111,14 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
       {
         onSuccess: () => {
           setDialogOpen(false);
+          setRouteInfo(null);
           setForm({
-            van_locatie: "",
-            naar_locatie: "",
+            van_locatie: "", naar_locatie: "",
             datum: new Date().toISOString().split("T")[0],
-            vertrek_tijd: "",
-            aankomst_tijd: "",
-            afstand_km: 0,
-            km_tarief: 0.35,
-            kosten: 0,
-            status: "gepland",
-            type: "transport",
-            voertuig_id: null,
-            chauffeur_id: null,
-            notitie: "",
+            vertrek_tijd: "", aankomst_tijd: "",
+            afstand_km: 0, km_tarief: 0.35, kosten: 0,
+            status: "gepland", type: "transport",
+            voertuig_id: null, chauffeur_id: null, notitie: "",
           });
         },
       }
@@ -106,11 +137,12 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
           <DialogTitle>Nieuwe rit plannen</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Locaties */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Van locatie *</Label>
               {locaties.length > 0 ? (
-                <Select value={form.van_locatie} onValueChange={(v) => setForm({ ...form, van_locatie: v })}>
+                <Select value={form.van_locatie} onValueChange={(v) => { setForm({ ...form, van_locatie: v }); setRouteInfo(null); }}>
                   <SelectTrigger><SelectValue placeholder="Kies vertrekpunt" /></SelectTrigger>
                   <SelectContent>
                     {locaties.map((l) => (
@@ -119,13 +151,13 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
                   </SelectContent>
                 </Select>
               ) : (
-                <Input value={form.van_locatie} onChange={(e) => setForm({ ...form, van_locatie: e.target.value })} placeholder="Bijv. Utrecht" />
+                <Input value={form.van_locatie} onChange={(e) => { setForm({ ...form, van_locatie: e.target.value }); setRouteInfo(null); }} placeholder="Bijv. Utrecht" />
               )}
             </div>
             <div className="space-y-1.5">
               <Label>Naar locatie *</Label>
               {locaties.length > 0 ? (
-                <Select value={form.naar_locatie} onValueChange={(v) => setForm({ ...form, naar_locatie: v })}>
+                <Select value={form.naar_locatie} onValueChange={(v) => { setForm({ ...form, naar_locatie: v }); setRouteInfo(null); }}>
                   <SelectTrigger><SelectValue placeholder="Kies bestemming" /></SelectTrigger>
                   <SelectContent>
                     {locaties.map((l) => (
@@ -134,11 +166,53 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
                   </SelectContent>
                 </Select>
               ) : (
-                <Input value={form.naar_locatie} onChange={(e) => setForm({ ...form, naar_locatie: e.target.value })} placeholder="Bijv. Den Bosch" />
+                <Input value={form.naar_locatie} onChange={(e) => { setForm({ ...form, naar_locatie: e.target.value }); setRouteInfo(null); }} placeholder="Bijv. Den Bosch" />
               )}
             </div>
           </div>
 
+          {/* Route calculation button */}
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full gap-2"
+            onClick={calculateRoute}
+            disabled={calculating || !form.van_locatie || !form.naar_locatie}
+          >
+            {calculating ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Route berekenen...</>
+            ) : (
+              <><Route className="w-4 h-4" /> Route berekenen via Google Maps</>
+            )}
+          </Button>
+
+          {/* Route info */}
+          {routeInfo && (
+            <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 space-y-1.5">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5 text-sm">
+                  <Route className="w-3.5 h-3.5 text-primary" />
+                  <span className="font-medium text-foreground">{routeInfo.distance_text}</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-sm">
+                  <Clock className="w-3.5 h-3.5 text-primary" />
+                  <span className="font-medium text-foreground">{routeInfo.duration_text}</span>
+                </div>
+              </div>
+              <div className="text-xs text-muted-foreground space-y-0.5">
+                <div className="flex items-start gap-1.5">
+                  <MapPin className="w-3 h-3 mt-0.5 text-success shrink-0" />
+                  <span>{routeInfo.start_address}</span>
+                </div>
+                <div className="flex items-start gap-1.5">
+                  <MapPin className="w-3 h-3 mt-0.5 text-destructive shrink-0" />
+                  <span>{routeInfo.end_address}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Datum & tijden */}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label>Datum *</Label>
@@ -154,6 +228,7 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
             </div>
           </div>
 
+          {/* Voertuig & chauffeur */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Voertuig</Label>
@@ -181,6 +256,7 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
             </div>
           </div>
 
+          {/* Kosten */}
           <div className="grid grid-cols-3 gap-3">
             <div className="space-y-1.5">
               <Label>Afstand (km)</Label>
@@ -202,6 +278,7 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
             </div>
           </div>
 
+          {/* Type & status */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>Type</Label>
