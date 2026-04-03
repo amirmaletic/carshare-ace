@@ -155,7 +155,32 @@ export function TodayPickups() {
         </div>
 
         {allItems.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Geen overdrachten vandaag</p>
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Geen overdrachten vandaag</p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (!user) return;
+                supabase.from("overdrachten").insert({
+                  user_id: user.id,
+                  voertuig_id: "test-001",
+                  voertuig_kenteken: "AB-123-CD",
+                  voertuig_naam: "Volkswagen Golf",
+                  klant_naam: "Jan de Vries",
+                  klant_email: "jan@voorbeeld.nl",
+                  type: "ophalen",
+                  datum: today,
+                }).then(({ error }) => {
+                  if (error) { toast.error("Fout bij aanmaken"); return; }
+                  toast.success("Test overdracht aangemaakt!");
+                  queryClient.invalidateQueries({ queryKey: ["overdrachten-vandaag"] });
+                });
+              }}
+            >
+              + Test overdracht aanmaken
+            </Button>
+          </div>
         ) : (
           <div className="space-y-2">
             {allItems.map((o) => (
