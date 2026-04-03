@@ -100,6 +100,7 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
             rijbewijs_verloopt: undefined, geboortedatum: undefined,
             adres: "", postcode: "", plaats: "", notities: "",
             status: "actief", voertuig_id: "",
+            heeft_trailer: false, trailer_plekken: null,
           });
         },
       });
@@ -214,6 +215,34 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
               <Label>Plaats</Label>
               <Input value={form.plaats} onChange={(e) => setForm({ ...form, plaats: e.target.value })} placeholder="Utrecht" />
             </div>
+          </div>
+
+          {/* Voertuig koppeling */}
+          {/* Trailer */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="heeft_trailer"
+                checked={form.heeft_trailer}
+                onCheckedChange={(checked) => setForm({ ...form, heeft_trailer: !!checked, trailer_plekken: checked ? (form.trailer_plekken ?? 1) : null })}
+              />
+              <Label htmlFor="heeft_trailer" className="flex items-center gap-1.5 cursor-pointer">
+                <Truck className="w-3.5 h-3.5" /> Heeft trailer
+              </Label>
+            </div>
+            {form.heeft_trailer && (
+              <div className="space-y-1.5 pl-6">
+                <Label>Aantal plekken op trailer</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={20}
+                  value={form.trailer_plekken ?? ""}
+                  onChange={(e) => setForm({ ...form, trailer_plekken: e.target.value ? Number(e.target.value) : null })}
+                  placeholder="Bijv. 6"
+                />
+              </div>
+            )}
           </div>
 
           {/* Voertuig koppeling */}
