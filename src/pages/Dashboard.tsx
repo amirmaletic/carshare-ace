@@ -4,6 +4,7 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { ActionableTasks } from "@/components/dashboard/ActionableTasks";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { UpcomingAgenda } from "@/components/dashboard/UpcomingAgenda";
+import { TodayPickups } from "@/components/dashboard/TodayPickups";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
