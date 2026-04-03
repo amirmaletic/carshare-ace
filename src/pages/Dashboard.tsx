@@ -4,6 +4,7 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { ActionableTasks } from "@/components/dashboard/ActionableTasks";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { UpcomingAgenda } from "@/components/dashboard/UpcomingAgenda";
+import { TodayPickups } from "@/components/dashboard/TodayPickups";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -50,6 +51,9 @@ export default function Dashboard() {
         <StatCard icon={Euro} title="Open facturen" value={stats?.openInvoices ?? 0} subtitle="Actie vereist" />
         <StatCard icon={Wrench} title="Bezettingsgraad" value={stats ? `${Math.round(((stats.totalVehicles - stats.available) / Math.max(stats.totalVehicles, 1)) * 100)}%` : "—"} subtitle="Van de vloot" />
       </div>
+
+      {/* Today's pickups */}
+      <TodayPickups />
 
       {/* Tasks + Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
