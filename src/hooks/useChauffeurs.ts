@@ -20,6 +20,8 @@ export interface Chauffeur {
   notities: string | null;
   status: string;
   voertuig_id: string | null;
+  heeft_trailer: boolean;
+  trailer_plekken: number | null;
   created_at: string;
   updated_at: string;
 }
