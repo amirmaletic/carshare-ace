@@ -10,11 +10,13 @@ import { ChauffeurForm } from "@/components/ChauffeurForm";
 import { ChauffeurDetail } from "@/components/ChauffeurDetail";
 import { useChauffeurs, type Chauffeur } from "@/hooks/useChauffeurs";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 const statusColors: Record<string, "success" | "warning" | "muted"> = {
   actief: "success",
@@ -30,6 +32,7 @@ const statusFilters = [
 ];
 
 export default function Chauffeurs() {
+  const isMobile = useIsMobile();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("alle");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -134,9 +137,9 @@ export default function Chauffeurs() {
         </div>
       </div>
 
-      <div className={cn("flex gap-6", selectedChauffeur ? "flex-col lg:flex-row" : "")}>
+      <div className={cn("flex gap-6", selectedChauffeur && !isMobile ? "flex-col lg:flex-row" : "")}>
         {/* Main content */}
-        <div className={cn("flex-1 min-w-0", selectedChauffeur && "lg:max-w-[50%]")}>
+        <div className={cn("flex-1 min-w-0", selectedChauffeur && !isMobile && "lg:max-w-[50%]")}>
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -290,7 +293,7 @@ export default function Chauffeurs() {
         </div>
 
         {/* Detail panel */}
-        {selectedChauffeur && (
+        {selectedChauffeur && !isMobile && (
           <div className="lg:w-[50%] flex-shrink-0">
             <ChauffeurDetail
               chauffeur={selectedChauffeur}
@@ -299,6 +302,24 @@ export default function Chauffeurs() {
           </div>
         )}
       </div>
+
+      <Sheet
+        open={isMobile && !!selectedChauffeur}
+        onOpenChange={(open) => {
+          if (!open) setSelectedChauffeur(null);
+        }}
+      >
+        <SheetContent side="bottom" className="h-[88vh] rounded-t-2xl px-0 pb-0">
+          {selectedChauffeur && (
+            <div className="h-full overflow-hidden">
+              <ChauffeurDetail
+                chauffeur={selectedChauffeur}
+                onClose={() => setSelectedChauffeur(null)}
+              />
+            </div>
+          )}
+        </SheetContent>
+      </Sheet>
 
       <ChauffeurForm
         open={formOpen}
