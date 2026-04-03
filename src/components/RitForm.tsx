@@ -30,7 +30,7 @@ interface RouteInfo {
   end_address: string;
 }
 
-export function RitForm({ open, onOpenChange }: RitFormProps) {
+export function RitForm({ open, onOpenChange, defaultChauffeurId, defaultVoertuigId, hideTrigger }: RitFormProps) {
   const { addRit } = useRitten();
   const { voertuigen } = useVoertuigen();
   const { chauffeurs } = useChauffeurs();
