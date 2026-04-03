@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Route, Clock, MapPin, Loader2 } from "lucide-react";
+import { Plus, Route, Clock, MapPin, Loader2, ExternalLink } from "lucide-react";
 import { useRitten, type RitInsert } from "@/hooks/useRitten";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { useChauffeurs } from "@/hooks/useChauffeurs";
@@ -203,16 +203,18 @@ export function RitForm({ open, onOpenChange, defaultChauffeurId, defaultVoertui
                   <Clock className="w-3.5 h-3.5 text-primary" />
                   <span className="font-medium text-foreground">{routeInfo.duration_text}</span>
                 </div>
-              </div>
-              <div className="text-xs text-muted-foreground space-y-0.5">
-                <div className="flex items-start gap-1.5">
-                  <MapPin className="w-3 h-3 mt-0.5 text-success shrink-0" />
-                  <span>{routeInfo.start_address}</span>
-                </div>
-                <div className="flex items-start gap-1.5">
-                  <MapPin className="w-3 h-3 mt-0.5 text-destructive shrink-0" />
-                  <span>{routeInfo.end_address}</span>
-                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="ml-auto h-7 text-xs gap-1"
+                  onClick={() => {
+                    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(form.van_locatie || "")}&destination=${encodeURIComponent(form.naar_locatie || "")}&travelmode=driving`;
+                    window.open(url, "_blank");
+                  }}
+                >
+                  <ExternalLink className="w-3 h-3" /> Bekijk
+                </Button>
               </div>
             </div>
           )}

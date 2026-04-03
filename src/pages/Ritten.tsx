@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MapPin, ArrowRight, Clock, Car, User, Euro, Trash2, Search, Route } from "lucide-react";
+import { MapPin, ArrowRight, Clock, Car, User, Euro, Trash2, Search, Route, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import {
@@ -121,6 +121,17 @@ export default function Ritten() {
               <Badge variant="outline" className="text-[10px]">{typeLabels[rit.type] || rit.type}</Badge>
             </div>
             <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs gap-1"
+                onClick={() => {
+                  const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(rit.van_locatie)}&destination=${encodeURIComponent(rit.naar_locatie)}&travelmode=driving`;
+                  window.open(url, "_blank");
+                }}
+              >
+                <ExternalLink className="w-3 h-3" /> Route
+              </Button>
               {rit.status === "gepland" && (
                 <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleStatusChange(rit.id, "onderweg")}>
                   Start
