@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X, List, MapPin, GanttChart } from "lucide-react";
+import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X, List, MapPin, GanttChart, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { VehicleForm } from "@/components/VehicleForm";
 import { VehicleKanban } from "@/components/VehicleKanban";
 import { VehicleGantt } from "@/components/VehicleGantt";
 import { ContractForm } from "@/components/ContractForm";
+import { VehicleImport } from "@/components/VehicleImport";
 import { vehicles as mockVehicles, reservations, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
@@ -41,6 +42,7 @@ export default function Vehicles() {
   const [formOpen, setFormOpen] = useState(false);
   const [contractFormOpen, setContractFormOpen] = useState(false);
   const [contractVehicleId, setContractVehicleId] = useState<string | undefined>();
+  const [importOpen, setImportOpen] = useState(false);
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [viewMode, setViewMode] = useState<ViewMode>("lijst");
@@ -93,6 +95,10 @@ export default function Vehicles() {
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <KentekenSearch />
+            <Button variant="outline" className="gap-2 w-full sm:w-auto" onClick={() => setImportOpen(true)}>
+              <Upload className="w-4 h-4" />
+              Importeren
+            </Button>
             <Button className="gap-2 w-full sm:w-auto" onClick={() => setFormOpen(true)}>
               <Plus className="w-4 h-4" />
               Voertuig toevoegen
@@ -276,6 +282,7 @@ export default function Vehicles() {
 
       <VehicleDetail vehicle={selectedVehicle} open={detailOpen} onOpenChange={setDetailOpen} />
       <VehicleForm open={formOpen} onOpenChange={setFormOpen} />
+      <VehicleImport open={importOpen} onOpenChange={setImportOpen} />
       <ContractForm open={contractFormOpen} onOpenChange={setContractFormOpen} prefilledVehicleId={contractVehicleId} />
     </div>
   );
