@@ -5,6 +5,7 @@ import { ActionableTasks } from "@/components/dashboard/ActionableTasks";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { UpcomingAgenda } from "@/components/dashboard/UpcomingAgenda";
 import { TodayPickups } from "@/components/dashboard/TodayPickups";
+import { OverdrachtenOverzicht } from "@/components/dashboard/OverdrachtenOverzicht";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -60,6 +61,9 @@ export default function Dashboard() {
         <ActionableTasks />
         <RecentActivity />
       </div>
+
+      {/* Overdrachten overzicht */}
+      <OverdrachtenOverzicht />
 
       {/* Agenda */}
       <UpcomingAgenda />
