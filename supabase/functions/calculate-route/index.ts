@@ -27,35 +27,50 @@ serve(async (req) => {
       );
     }
 
-    const url = new URL("https://maps.googleapis.com/maps/api/directions/json");
-    url.searchParams.set("origin", origin);
-    url.searchParams.set("destination", destination);
-    url.searchParams.set("key", GOOGLE_MAPS_API_KEY);
-    url.searchParams.set("language", "nl");
-    url.searchParams.set("units", "metric");
+    // Use the new Routes API instead of legacy Directions API
+    const response = await fetch(
+      "https://routes.googleapis.com/directions/v2:computeRoutes",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
+          "X-Goog-FieldMask": "routes.distanceMeters,routes.duration,routes.polyline.encodedPolyline,routes.legs.startLocation,routes.legs.endLocation",
+        },
+        body: JSON.stringify({
+          origin: { address: origin },
+          destination: { address: destination },
+          travelMode: "DRIVE",
+          languageCode: "nl",
+          units: "METRIC",
+        }),
+      }
+    );
 
-    const response = await fetch(url.toString());
     const data = await response.json();
 
-    if (data.status !== "OK" || !data.routes?.length) {
+    if (!response.ok || !data.routes?.length) {
+      const errMsg = data.error?.message || "Geen route gevonden";
       return new Response(
-        JSON.stringify({ error: `Google Maps fout: ${data.status}`, details: data.error_message }),
+        JSON.stringify({ error: `Google Maps fout: ${errMsg}`, details: data.error?.message }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const route = data.routes[0];
-    const leg = route.legs[0];
+    const distanceMeters = route.distanceMeters ?? 0;
+    // duration comes as "123s" string
+    const durationSeconds = parseInt(route.duration?.replace("s", "") ?? "0", 10);
+    const distanceKm = Math.round(distanceMeters / 100) / 10;
+    const durationMinutes = Math.round(durationSeconds / 60);
 
     return new Response(
       JSON.stringify({
-        distance_km: Math.round(leg.distance.value / 100) / 10,
-        distance_text: leg.distance.text,
-        duration_minutes: Math.round(leg.duration.value / 60),
-        duration_text: leg.duration.text,
-        start_address: leg.start_address,
-        end_address: leg.end_address,
-        overview_polyline: route.overview_polyline?.points,
+        distance_km: distanceKm,
+        distance_text: `${distanceKm} km`,
+        duration_minutes: durationMinutes,
+        duration_text: `${durationMinutes} min`,
+        overview_polyline: route.polyline?.encodedPolyline ?? null,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
