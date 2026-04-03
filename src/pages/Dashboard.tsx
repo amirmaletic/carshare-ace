@@ -62,6 +62,9 @@ export default function Dashboard() {
         <RecentActivity />
       </div>
 
+      {/* Overdrachten overzicht */}
+      <OverdrachtenOverzicht />
+
       {/* Agenda */}
       <UpcomingAgenda />
     </div>
