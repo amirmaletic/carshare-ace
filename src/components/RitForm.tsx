@@ -16,6 +16,9 @@ import { toast } from "sonner";
 interface RitFormProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  defaultChauffeurId?: string | null;
+  defaultVoertuigId?: string | null;
+  hideTrigger?: boolean;
 }
 
 interface RouteInfo {
