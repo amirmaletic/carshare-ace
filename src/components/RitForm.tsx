@@ -130,11 +130,13 @@ export function RitForm({ open, onOpenChange, defaultChauffeurId, defaultVoertui
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="w-4 h-4 mr-1" /> Nieuwe rit
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button size="sm">
+            <Plus className="w-4 h-4 mr-1" /> Nieuwe rit
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nieuwe rit plannen</DialogTitle>
