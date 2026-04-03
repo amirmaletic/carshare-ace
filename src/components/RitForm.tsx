@@ -53,8 +53,8 @@ export function RitForm({ open, onOpenChange, defaultChauffeurId, defaultVoertui
     kosten: 0,
     status: "gepland",
     type: "transport",
-    voertuig_id: null,
-    chauffeur_id: null,
+    voertuig_id: defaultVoertuigId || null,
+    chauffeur_id: defaultChauffeurId || null,
     notitie: "",
   });
 
