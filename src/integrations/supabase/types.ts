@@ -82,6 +82,47 @@ export type Database = {
           },
         ]
       }
+      chauffeur_beschikbaarheid: {
+        Row: {
+          chauffeur_id: string
+          created_at: string
+          eind_datum: string
+          id: string
+          notitie: string | null
+          start_datum: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          chauffeur_id: string
+          created_at?: string
+          eind_datum: string
+          id?: string
+          notitie?: string | null
+          start_datum: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          chauffeur_id?: string
+          created_at?: string
+          eind_datum?: string
+          id?: string
+          notitie?: string | null
+          start_datum?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chauffeur_beschikbaarheid_chauffeur_id_fkey"
+            columns: ["chauffeur_id"]
+            isOneToOne: false
+            referencedRelation: "chauffeurs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chauffeurs: {
         Row: {
           achternaam: string
