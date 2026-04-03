@@ -144,7 +144,6 @@ export function TodayPickups() {
   const allItems = overdrachten;
 
   if (isLoading) return null;
-  if (allItems.length === 0 && contractPickups.length === 0) return null;
 
   return (
     <>

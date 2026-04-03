@@ -36,7 +36,7 @@ export function OverdrachtenOverzicht() {
     enabled: !!user,
   });
 
-  if (overdrachten.length === 0) return null;
+  // Always show, even when empty
 
   return (
     <div className="clean-card p-5">
@@ -44,6 +44,9 @@ export function OverdrachtenOverzicht() {
         <h3 className="font-semibold text-foreground">Overdrachten & Handtekeningen</h3>
         <PenLine className="w-4 h-4 text-muted-foreground" />
       </div>
+      {overdrachten.length === 0 ? (
+        <p className="text-sm text-muted-foreground">Nog geen overdrachten. Maak er een aan bij "Ophaalafspraken vandaag" hierboven.</p>
+      ) : (
       <div className="space-y-3">
         {overdrachten.map((o) => (
           <div key={o.id} className="flex items-start gap-3 p-3 rounded-lg border border-border">
@@ -102,6 +105,7 @@ export function OverdrachtenOverzicht() {
           </div>
         ))}
       </div>
+      )}
     </div>
   );
 }
