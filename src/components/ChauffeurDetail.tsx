@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { toast } from "sonner";
+import { RitForm } from "@/components/RitForm";
 
 interface ChauffeurDetailProps {
   chauffeur: Chauffeur;
@@ -66,6 +67,7 @@ export function ChauffeurDetail({ chauffeur, onClose }: ChauffeurDetailProps) {
   const queryClient = useQueryClient();
   const { voertuigen } = useVoertuigen();
   const [addLeaveOpen, setAddLeaveOpen] = useState(false);
+  const [addRitOpen, setAddRitOpen] = useState(false);
   const [leaveForm, setLeaveForm] = useState({
     type: "verlof",
     start_datum: undefined as Date | undefined,
@@ -336,9 +338,14 @@ export function ChauffeurDetail({ chauffeur, onClose }: ChauffeurDetailProps) {
 
         {/* Ritten */}
         <div>
-          <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5 mb-3">
-            <Truck className="w-4 h-4" /> Recente ritten
-          </h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+              <Truck className="w-4 h-4" /> Recente ritten
+            </h4>
+            <Button size="sm" variant="outline" onClick={() => setAddRitOpen(true)}>
+              <Plus className="w-3.5 h-3.5 mr-1" /> Rit plannen
+            </Button>
+          </div>
           {ritten.length === 0 ? (
             <p className="text-sm text-muted-foreground">Nog geen ritten geregistreerd</p>
           ) : (
@@ -444,6 +451,20 @@ export function ChauffeurDetail({ chauffeur, onClose }: ChauffeurDetailProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Add rit form */}
+      <RitForm
+        open={addRitOpen}
+        onOpenChange={(open) => {
+          setAddRitOpen(open);
+          if (!open) {
+            queryClient.invalidateQueries({ queryKey: ["chauffeur-ritten", chauffeur.id] });
+          }
+        }}
+        defaultChauffeurId={chauffeur.id}
+        defaultVoertuigId={chauffeur.voertuig_id}
+        hideTrigger
+      />
     </div>
   );
 }

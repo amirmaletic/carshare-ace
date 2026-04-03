@@ -16,6 +16,9 @@ import { toast } from "sonner";
 interface RitFormProps {
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  defaultChauffeurId?: string | null;
+  defaultVoertuigId?: string | null;
+  hideTrigger?: boolean;
 }
 
 interface RouteInfo {
@@ -27,7 +30,7 @@ interface RouteInfo {
   end_address: string;
 }
 
-export function RitForm({ open, onOpenChange }: RitFormProps) {
+export function RitForm({ open, onOpenChange, defaultChauffeurId, defaultVoertuigId, hideTrigger }: RitFormProps) {
   const { addRit } = useRitten();
   const { voertuigen } = useVoertuigen();
   const { chauffeurs } = useChauffeurs();
@@ -50,8 +53,8 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
     kosten: 0,
     status: "gepland",
     type: "transport",
-    voertuig_id: null,
-    chauffeur_id: null,
+    voertuig_id: defaultVoertuigId || null,
+    chauffeur_id: defaultChauffeurId || null,
     notitie: "",
   });
 
@@ -127,11 +130,13 @@ export function RitForm({ open, onOpenChange }: RitFormProps) {
 
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <Plus className="w-4 h-4 mr-1" /> Nieuwe rit
-        </Button>
-      </DialogTrigger>
+      {!hideTrigger && (
+        <DialogTrigger asChild>
+          <Button size="sm">
+            <Plus className="w-4 h-4 mr-1" /> Nieuwe rit
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Nieuwe rit plannen</DialogTitle>
