@@ -451,6 +451,20 @@ export function ChauffeurDetail({ chauffeur, onClose }: ChauffeurDetailProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Add rit form */}
+      <RitForm
+        open={addRitOpen}
+        onOpenChange={(open) => {
+          setAddRitOpen(open);
+          if (!open) {
+            queryClient.invalidateQueries({ queryKey: ["chauffeur-ritten", chauffeur.id] });
+          }
+        }}
+        defaultChauffeurId={chauffeur.id}
+        defaultVoertuigId={chauffeur.voertuig_id}
+        hideTrigger
+      />
     </div>
   );
 }
