@@ -368,6 +368,71 @@ export type Database = {
         }
         Relationships: []
       }
+      overdrachten: {
+        Row: {
+          contract_id: string | null
+          created_at: string
+          datum: string
+          handtekening: string | null
+          id: string
+          kilometerstand: number | null
+          klant_email: string | null
+          klant_naam: string
+          ondertekend_op: string | null
+          opmerkingen: string | null
+          status: string
+          type: string
+          user_id: string
+          voertuig_id: string
+          voertuig_kenteken: string
+          voertuig_naam: string
+        }
+        Insert: {
+          contract_id?: string | null
+          created_at?: string
+          datum?: string
+          handtekening?: string | null
+          id?: string
+          kilometerstand?: number | null
+          klant_email?: string | null
+          klant_naam: string
+          ondertekend_op?: string | null
+          opmerkingen?: string | null
+          status?: string
+          type?: string
+          user_id: string
+          voertuig_id: string
+          voertuig_kenteken: string
+          voertuig_naam: string
+        }
+        Update: {
+          contract_id?: string | null
+          created_at?: string
+          datum?: string
+          handtekening?: string | null
+          id?: string
+          kilometerstand?: number | null
+          klant_email?: string | null
+          klant_naam?: string
+          ondertekend_op?: string | null
+          opmerkingen?: string | null
+          status?: string
+          type?: string
+          user_id?: string
+          voertuig_id?: string
+          voertuig_kenteken?: string
+          voertuig_naam?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "overdrachten_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ritten: {
         Row: {
           aankomst_tijd: string | null
