@@ -36,7 +36,7 @@ export function OverdrachtenOverzicht() {
     enabled: !!user,
   });
 
-  if (overdrachten.length === 0) return null;
+  // Always show, even when empty
 
   return (
     <div className="clean-card p-5">
