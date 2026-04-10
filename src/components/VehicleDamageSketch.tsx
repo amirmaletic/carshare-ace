@@ -51,6 +51,7 @@ export function VehicleDamageSketch({ points, onChange, readOnly = false }: Vehi
       y: Math.round(y * 10) / 10,
       label: "",
       ernst: newErnst,
+      grootte: "klein",
     };
 
     onChange([...points, newPoint]);
