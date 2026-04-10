@@ -31,8 +31,21 @@ const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const [isStaff, setIsStaff] = useState<boolean | null>(null);
 
-  if (loading) {
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        const roles = data?.map((r) => r.role) || [];
+        setIsStaff(roles.some((r) => r === "beheerder" || r === "medewerker"));
+      });
+  }, [user]);
+
+  if (loading || (user && isStaff === null)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -41,13 +54,31 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) return <Navigate to="/auth" replace />;
+  if (!isStaff) return <Navigate to="/portaal" replace />;
   return <>{children}</>;
 }
 
 function KlantProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const [role, setRole] = useState<"staff" | "klant" | null>(null);
 
-  if (loading) {
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        const roles = data?.map((r) => r.role) || [];
+        setRole(
+          roles.some((r) => r === "beheerder" || r === "medewerker")
+            ? "staff"
+            : "klant"
+        );
+      });
+  }, [user]);
+
+  if (loading || (user && role === null)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -56,6 +87,7 @@ function KlantProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!user) return <Navigate to="/klant-login" replace />;
+  if (role === "staff") return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
