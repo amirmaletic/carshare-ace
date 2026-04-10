@@ -79,7 +79,7 @@ export default function MijnReserveringen() {
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <p className="font-medium text-foreground">
-                    {format(new Date(r.start_datum), "d MMM yyyy", { locale: nl })} — {format(new Date(r.eind_datum), "d MMM yyyy", { locale: nl })}
+                    {format(new Date(r.start_datum), "d MMM yyyy", { locale: nl })} tot {format(new Date(r.eind_datum), "d MMM yyyy", { locale: nl })}
                   </p>
                   <p className="text-sm text-muted-foreground">
                     Totaal: €{Number(r.totaalprijs).toLocaleString("nl-NL", { minimumFractionDigits: 2 })}

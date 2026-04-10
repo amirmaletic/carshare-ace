@@ -200,7 +200,7 @@ export default function Chauffeurs() {
                             {voertuig ? (
                               <span className="text-xs text-muted-foreground">{voertuig.merk} {voertuig.model}</span>
                             ) : (
-                              <span className="text-xs text-muted-foreground/50">—</span>
+                              <span className="text-xs text-muted-foreground/50">-</span>
                             )}
                           </td>
                           <td className="p-3">

@@ -318,7 +318,7 @@ export function ChauffeurDetail({ chauffeur, onClose }: ChauffeurDetailProps) {
                   </Badge>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-foreground">
-                      {format(parseISO(b.start_datum), "d MMM", { locale: nl })} — {format(parseISO(b.eind_datum), "d MMM yyyy", { locale: nl })}
+                      {format(parseISO(b.start_datum), "d MMM", { locale: nl })} tot {format(parseISO(b.eind_datum), "d MMM yyyy", { locale: nl })}
                     </p>
                     {b.notitie && <p className="text-xs text-muted-foreground truncate">{b.notitie}</p>}
                   </div>

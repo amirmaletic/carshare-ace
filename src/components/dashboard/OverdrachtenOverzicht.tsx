@@ -85,7 +85,7 @@ export function OverdrachtenOverzicht() {
                 {o.voertuig_kenteken} • {o.klant_naam}
               </p>
               <p className="text-xs text-muted-foreground">
-                {o.type === "ophalen" ? "Ophalen" : "Terugbrengen"} — {format(parseISO(o.datum), "d MMM yyyy", { locale: nl })}
+                {o.type === "ophalen" ? "Ophalen" : "Terugbrengen"} · {format(parseISO(o.datum), "d MMM yyyy", { locale: nl })}
                 {o.kilometerstand ? ` • ${o.kilometerstand.toLocaleString("nl-NL")} km` : ""}
               </p>
               {o.opmerkingen && (

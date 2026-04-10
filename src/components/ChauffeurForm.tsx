@@ -261,7 +261,7 @@ export function ChauffeurForm({ open, onOpenChange, chauffeur }: ChauffeurFormPr
                 <SelectItem value="__none__">Geen voertuig</SelectItem>
                 {voertuigen.map((v) => (
                   <SelectItem key={v.id} value={v.id}>
-                    {v.merk} {v.model} — {v.kenteken}
+                    {v.merk} {v.model} · {v.kenteken}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -75,7 +75,7 @@ export default function Contracts() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Contracten & Lease</h1>
-          <p className="text-muted-foreground mt-1">{contracts.length} contracten — {activeContracts.length} actief</p>
+          <p className="text-muted-foreground mt-1">{contracts.length} contracten · {activeContracts.length} actief</p>
         </div>
         <Button className="gap-2" onClick={openCreate}>
           <Plus className="w-4 h-4" />
@@ -194,7 +194,7 @@ export default function Contracts() {
 
                   {vehicle && (
                     <p className="text-xs text-muted-foreground">
-                      {vehicle.merk} {vehicle.model} — <span className="font-mono">{vehicle.kenteken}</span>
+                      {vehicle.merk} {vehicle.model} · <span className="font-mono">{vehicle.kenteken}</span>
                     </p>
                   )}
 
@@ -216,7 +216,7 @@ export default function Contracts() {
                   </div>
 
                   <p className="text-xs text-muted-foreground">
-                    {c.start_datum} — {c.eind_datum}
+                    {c.start_datum} tot {c.eind_datum}
                     {c.verlengbaar && <span className="ml-1 text-primary">• verlengbaar</span>}
                   </p>
                 </div>
@@ -368,7 +368,7 @@ function ContractDetail({
               <InfoBlock label="Status" value={contract.status} />
               <InfoBlock label="Maandprijs" value={`€${Number(contract.maandprijs)}`} />
               {Number(contract.borg) > 0 && <InfoBlock label="Borg" value={`€${Number(contract.borg)}`} />}
-              <InfoBlock label="Looptijd" value={`${contract.start_datum} — ${contract.eind_datum}`} />
+              <InfoBlock label="Looptijd" value={`${contract.start_datum} tot ${contract.eind_datum}`} />
               {contract.km_per_jaar && <InfoBlock label="Km/jaar" value={`${contract.km_per_jaar.toLocaleString("nl-NL")} km`} />}
               {vehicle && <InfoBlock label="Voertuig" value={`${vehicle.merk} ${vehicle.model} (${vehicle.kenteken})`} />}
               {contract.verlengbaar && <InfoBlock label="Verlenging" value={contract.verlengings_termijn || "Ja"} />}
@@ -444,7 +444,7 @@ function ContractDetail({
                           klantNaam: contract.klant_naam,
                           klantEmail: contract.klant_email,
                           klantAdres: contract.klant_adres || undefined,
-                          items: [{ beschrijving: `${getContractTypeLabel(contract.type)} — ${contract.contract_nummer}`, aantal: 1, prijs: Number(f.bedrag) }],
+                          items: [{ beschrijving: `${getContractTypeLabel(contract.type)} · ${contract.contract_nummer}`, aantal: 1, prijs: Number(f.bedrag) }],
                           totaal: Number(f.bedrag),
                           btw: Number(f.bedrag) * 0.21,
                           totaalInclBtw: Number(f.bedrag) * 1.21,

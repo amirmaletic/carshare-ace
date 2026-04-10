@@ -51,7 +51,7 @@ export default function Dashboard() {
         <StatCard icon={Car} title="Voertuigen" value={stats?.totalVehicles ?? 0} subtitle={`${stats?.available ?? 0} beschikbaar`} />
         <StatCard icon={FileText} title="Actieve contracten" value={stats?.activeContracts ?? 0} subtitle={`€${(stats?.monthlyRevenue ?? 0).toLocaleString("nl-NL")}/mnd`} />
         <StatCard icon={Euro} title="Open facturen" value={stats?.openInvoices ?? 0} subtitle="Actie vereist" />
-        <StatCard icon={Wrench} title="Bezettingsgraad" value={stats ? `${Math.round(((stats.totalVehicles - stats.available) / Math.max(stats.totalVehicles, 1)) * 100)}%` : "—"} subtitle="Van de vloot" />
+        <StatCard icon={Wrench} title="Bezettingsgraad" value={stats ? `${Math.round(((stats.totalVehicles - stats.available) / Math.max(stats.totalVehicles, 1)) * 100)}%` : "-"} subtitle="Van de vloot" />
       </div>
 
       {/* Today's pickups */}

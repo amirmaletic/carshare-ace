@@ -9,7 +9,7 @@ const features = [
   {
     icon: Car,
     title: "Voertuigbeheer",
-    description: "Overzicht van je hele vloot met status, locatie, APK-verloopdatum en beschikbaarheid — alles op één plek.",
+    description: "Overzicht van je hele vloot met status, locatie, APK-verloopdatum en beschikbaarheid. Alles op één plek.",
   },
   {
     icon: FileText,
@@ -78,7 +78,7 @@ export default function MarketingHome() {
           <div className="text-center max-w-3xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <Zap className="w-4 h-4" />
-              1 maand gratis — geen creditcard nodig
+              1 maand gratis, geen creditcard nodig
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-tight">
               Jouw wagenpark,{" "}
@@ -86,7 +86,7 @@ export default function MarketingHome() {
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               Van contracten tot schadebeheer, van ritplanning tot facturatie.
-              Alles wat je nodig hebt om je verhuurbedrijf professioneel te runnen — in één platform.
+              Alles wat je nodig hebt om je verhuurbedrijf professioneel te runnen. In één platform.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="gap-2 text-base" asChild>

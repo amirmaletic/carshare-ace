@@ -94,7 +94,7 @@ export default function ReturnHistory({ terugmeldingen, isLoading, onDelete }: R
                   {(t.kilometerstand ?? 0).toLocaleString("nl-NL")} km
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {!isNaN(new Date(t.created_at).getTime()) ? format(new Date(t.created_at), "d MMM yyyy · HH:mm", { locale: nl }) : "—"}
+                  {!isNaN(new Date(t.created_at).getTime()) ? format(new Date(t.created_at), "d MMM yyyy · HH:mm", { locale: nl }) : "-"}
                 </p>
               </div>
               <div className="flex items-center gap-1 shrink-0">

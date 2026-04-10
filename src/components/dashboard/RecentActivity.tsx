@@ -43,7 +43,7 @@ export function RecentActivity() {
       ]);
 
       tmRes.data?.forEach((t) => items.push({ id: `tm-${t.id}`, type: "terugmelding", label: "Terugmelding", detail: `${t.voertuig_naam} (${t.voertuig_kenteken})`, time: t.created_at }));
-      conRes.data?.forEach((c) => items.push({ id: `con-${c.id}`, type: "contract", label: "Contract aangemaakt", detail: `${c.contract_nummer} — ${c.klant_naam}`, time: c.created_at }));
+      conRes.data?.forEach((c) => items.push({ id: `con-${c.id}`, type: "contract", label: "Contract aangemaakt", detail: `${c.contract_nummer} · ${c.klant_naam}`, time: c.created_at }));
       vehRes.data?.forEach((v) => items.push({ id: `veh-${v.id}`, type: "voertuig", label: "Voertuig toegevoegd", detail: `${v.merk} ${v.model} (${v.kenteken})`, time: v.created_at }));
       srvRes.data?.forEach((s) => items.push({ id: `srv-${s.id}`, type: "service", label: "Service geregistreerd", detail: s.omschrijving, time: s.created_at }));
 

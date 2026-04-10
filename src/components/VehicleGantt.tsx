@@ -136,7 +136,7 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
         vehicleId: c.voertuig_id,
         start: new Date(c.start_datum),
         end: new Date(c.eind_datum),
-        label: `${c.contract_nummer} — ${c.klant_naam}`,
+        label: `${c.contract_nummer} · ${c.klant_naam}`,
         type: "contract",
       });
     });
@@ -189,7 +189,7 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
         </div>
 
         <p className="text-sm text-muted-foreground">
-          {format(startDate, "d MMM", { locale: nl })} — {format(endDate, "d MMM yyyy", { locale: nl })}
+          {format(startDate, "d MMM", { locale: nl })} tot {format(endDate, "d MMM yyyy", { locale: nl })}
         </p>
         <div className="flex items-center gap-3 text-xs">
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-primary/70" /> Contract</span>
@@ -311,7 +311,7 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
                           width: Math.max(width, 18),
                           height: ROW_HEIGHT - 12,
                         }}
-                        title={`${block.label}\n${format(block.start, "d MMM yyyy", { locale: nl })} — ${format(block.end, "d MMM yyyy", { locale: nl })}`}
+                        title={`${block.label}\n${format(block.start, "d MMM yyyy", { locale: nl })} tot ${format(block.end, "d MMM yyyy", { locale: nl })}`}
                       >
                         <span className="truncate">{block.label}</span>
                       </div>
