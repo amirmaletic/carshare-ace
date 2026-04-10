@@ -226,6 +226,16 @@ export default function ReturnForm({
             )}
           </div>
 
+          {/* Visuele schadeschets */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-warning" />
+              Schadeschets (optioneel)
+            </Label>
+            <p className="text-xs text-muted-foreground">Klik op de auto-afbeelding om schade te markeren</p>
+            <VehicleDamageSketch points={schadePunten} onChange={setSchadePunten} />
+          </div>
+
           {/* Notes */}
           <div className="space-y-2">
             <Label>Notitie (optioneel)</Label>
