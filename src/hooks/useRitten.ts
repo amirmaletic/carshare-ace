@@ -28,6 +28,7 @@ export type RitInsert = Omit<DbRit, "id" | "user_id" | "created_at" | "updated_a
 
 export function useRitten() {
   const { user } = useAuth();
+  const { organisatieId } = useOrganisatie();
   const queryClient = useQueryClient();
 
   const query = useQuery({
@@ -48,7 +49,7 @@ export function useRitten() {
       if (!user) throw new Error("Niet ingelogd");
       const { data, error } = await supabase
         .from("ritten")
-        .insert({ ...rit, user_id: user.id })
+        .insert({ ...rit, user_id: user.id, organisatie_id: organisatieId })
         .select()
         .single();
       if (error) throw error;

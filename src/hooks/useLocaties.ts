@@ -13,6 +13,7 @@ export interface Locatie {
 
 export function useLocaties() {
   const { user } = useAuth();
+  const { organisatieId } = useOrganisatie();
   const queryClient = useQueryClient();
 
   const query = useQuery({
@@ -33,7 +34,7 @@ export function useLocaties() {
       if (!user) throw new Error("Niet ingelogd");
       const { data, error } = await supabase
         .from("locaties")
-        .insert({ naam, user_id: user.id })
+        .insert({ naam, user_id: user.id, organisatie_id: organisatieId })
         .select()
         .single();
       if (error) throw error;

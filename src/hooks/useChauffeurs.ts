@@ -31,6 +31,7 @@ export type ChauffeurInsert = Omit<Chauffeur, "id" | "user_id" | "created_at" | 
 
 export function useChauffeurs() {
   const { user } = useAuth();
+  const { organisatieId } = useOrganisatie();
   const queryClient = useQueryClient();
 
   const query = useQuery({
@@ -51,7 +52,7 @@ export function useChauffeurs() {
       if (!user) throw new Error("Niet ingelogd");
       const { data, error } = await supabase
         .from("chauffeurs")
-        .insert({ ...chauffeur, user_id: user.id })
+        .insert({ ...chauffeur, user_id: user.id, organisatie_id: organisatieId })
         .select()
         .single();
       if (error) throw error;
