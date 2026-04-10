@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrganisatie } from "@/hooks/useOrganisatie";
 
 interface Activiteit {
   id: string;
@@ -35,6 +36,7 @@ export function useActiviteitenLog(limit = 50) {
 
 export function useLogActiviteit() {
   const { user } = useAuth();
+  const { organisatieId } = useOrganisatie();
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -48,6 +50,7 @@ export function useLogActiviteit() {
       if (!user) return;
       const { error } = await supabase.from("activiteiten_log").insert([{
         user_id: user.id,
+        organisatie_id: organisatieId,
         actie: params.actie,
         beschrijving: params.beschrijving,
         entiteit_type: params.entiteit_type || null,

@@ -14,10 +14,11 @@ export function useCreateInvoice() {
     mutationFn: async (input: CreateInvoiceInput) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Niet ingelogd");
+      const { data: orgId } = await supabase.rpc("get_user_organisatie_id", { _user_id: user.id });
 
       const { data, error } = await supabase
         .from("invoices")
-        .insert({ ...input, user_id: user.id })
+        .insert({ ...input, user_id: user.id, organisatie_id: orgId })
         .select()
         .single();
 

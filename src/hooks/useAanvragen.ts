@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrganisatie } from "@/hooks/useOrganisatie";
 import { toast } from "sonner";
 
 export interface DbAanvraag {
@@ -27,6 +28,7 @@ export type AanvraagInsert = Omit<DbAanvraag, "id" | "user_id" | "created_at" | 
 
 export function useAanvragen() {
   const { user } = useAuth();
+  const { organisatieId } = useOrganisatie();
   const queryClient = useQueryClient();
 
   const query = useQuery({
@@ -49,7 +51,7 @@ export function useAanvragen() {
       // 1. Insert the request
       const { data: newAanvraag, error: insertError } = await supabase
         .from("aanvragen")
-        .insert({ ...aanvraag, user_id: user.id })
+        .insert({ ...aanvraag, user_id: user.id, organisatie_id: organisatieId })
         .select()
         .single();
       if (insertError) throw insertError;

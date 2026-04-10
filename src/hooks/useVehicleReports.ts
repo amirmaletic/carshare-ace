@@ -67,9 +67,10 @@ export function useCreateEigendom() {
     mutationFn: async (input: Omit<EigendomHistorie, "id" | "user_id" | "created_at">) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Niet ingelogd");
+      const { data: orgId } = await supabase.rpc("get_user_organisatie_id", { _user_id: user.id });
       const { data, error } = await supabase
         .from("eigendom_historie")
-        .insert({ ...input, user_id: user.id })
+        .insert({ ...input, user_id: user.id, organisatie_id: orgId })
         .select()
         .single();
       if (error) throw error;
@@ -114,9 +115,10 @@ export function useCreateService() {
     mutationFn: async (input: Omit<ServiceHistorie, "id" | "user_id" | "created_at">) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Niet ingelogd");
+      const { data: orgId } = await supabase.rpc("get_user_organisatie_id", { _user_id: user.id });
       const { data, error } = await supabase
         .from("service_historie")
-        .insert({ ...input, user_id: user.id })
+        .insert({ ...input, user_id: user.id, organisatie_id: orgId })
         .select()
         .single();
       if (error) throw error;
@@ -161,9 +163,10 @@ export function useCreateSchade() {
     mutationFn: async (input: Omit<SchadeRapport, "id" | "user_id" | "created_at">) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Niet ingelogd");
+      const { data: orgId } = await supabase.rpc("get_user_organisatie_id", { _user_id: user.id });
       const { data, error } = await supabase
         .from("schade_rapporten")
-        .insert({ ...input, user_id: user.id })
+        .insert({ ...input, user_id: user.id, organisatie_id: orgId })
         .select()
         .single();
       if (error) throw error;
