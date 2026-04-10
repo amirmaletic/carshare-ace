@@ -87,7 +87,7 @@ export default function MijnReserveringen() {
                 </div>
                 <StatusBadge
                   status={r.status}
-                  variant={statusColors[r.status] ?? "default"}
+                  variant={statusColors[r.status] ?? "muted"}
                 />
               </div>
             </div>
