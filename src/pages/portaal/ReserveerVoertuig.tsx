@@ -36,7 +36,6 @@ export default function ReserveerVoertuig() {
       } catch { /* ignore */ }
     }
   }, []);
-  const [selectedVoertuig, setSelectedVoertuig] = useState<string | null>(null);
 
   const dagen = startDatum && eindDatum ? Math.max(differenceInDays(new Date(eindDatum), new Date(startDatum)), 1) : 0;
 
