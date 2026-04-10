@@ -57,7 +57,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 h-14 border-b border-sidebar-border">
         <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-          <span className="text-primary-foreground font-bold text-lg leading-none">W</span>
+          <span className="text-primary-foreground font-bold text-lg leading-none">F</span>
         </div>
         {!isCollapsed && (
           <span className="font-semibold text-base text-foreground tracking-tight">
