@@ -79,6 +79,7 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
       status: values.status,
       apk_vervaldatum: values.apk_vervaldatum || null,
       verzekering_vervaldatum: values.verzekering_vervaldatum || null,
+      image_url: getVehicleImageUrl(values.merk, values.model),
     };
     addVoertuig.mutate(insert, {
       onSuccess: () => {
