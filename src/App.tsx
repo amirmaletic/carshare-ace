@@ -109,7 +109,7 @@ const App = () => (
           {/* Public / marketing routes */}
           <Route path="/" element={<MarketingLayout><MarketingHome /></MarketingLayout>} />
           <Route path="/prijzen" element={<MarketingLayout><Pricing /></MarketingLayout>} />
-          <Route path="/boeken" element={<MarketingLayout><PubliekBoeken /></MarketingLayout>} />
+          <Route path="/boeken" element={<PubliekBoeken />} />
 
           {/* Auth routes */}
           <Route path="/auth" element={<Auth />} />
