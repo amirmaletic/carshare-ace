@@ -6,7 +6,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 
-const statusColors: Record<string, "success" | "warning" | "destructive" | "default"> = {
+const statusColors: Record<string, "success" | "warning" | "destructive" | "muted"> = {
   betaald: "success",
   openstaand: "warning",
   te_laat: "destructive",

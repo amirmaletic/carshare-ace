@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
+import { KlantLayout } from "@/components/KlantLayout";
 import { useAuth } from "@/hooks/useAuth";
 import Dashboard from "./pages/Dashboard";
 import Vehicles from "./pages/Vehicles";
@@ -18,6 +19,11 @@ import Chauffeurs from "./pages/Chauffeurs";
 import Ritten from "./pages/Ritten";
 import Klanten from "./pages/Klanten";
 import Auth from "./pages/Auth";
+import KlantAuth from "./pages/KlantAuth";
+import MijnReserveringen from "./pages/portaal/MijnReserveringen";
+import ReserveerVoertuig from "./pages/portaal/ReserveerVoertuig";
+import MijnFacturen from "./pages/portaal/MijnFacturen";
+import MijnProfiel from "./pages/portaal/MijnProfiel";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +43,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function KlantProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/klant-login" replace />;
+  return <>{children}</>;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -44,7 +65,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Auth routes */}
           <Route path="/auth" element={<Auth />} />
+          <Route path="/klant-login" element={<KlantAuth />} />
+
+          {/* Admin/staff routes */}
           <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
           <Route path="/voertuigen" element={<ProtectedRoute><AppLayout><Vehicles /></AppLayout></ProtectedRoute>} />
           <Route path="/terugmelden" element={<ProtectedRoute><AppLayout><Terugmelden /></AppLayout></ProtectedRoute>} />
@@ -57,6 +82,13 @@ const App = () => (
           <Route path="/ritten" element={<ProtectedRoute><AppLayout><Ritten /></AppLayout></ProtectedRoute>} />
           <Route path="/klanten" element={<ProtectedRoute><AppLayout><Klanten /></AppLayout></ProtectedRoute>} />
           <Route path="/instellingen" element={<ProtectedRoute><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
+
+          {/* Klantportaal routes */}
+          <Route path="/portaal" element={<KlantProtectedRoute><KlantLayout><MijnReserveringen /></KlantLayout></KlantProtectedRoute>} />
+          <Route path="/portaal/reserveren" element={<KlantProtectedRoute><KlantLayout><ReserveerVoertuig /></KlantLayout></KlantProtectedRoute>} />
+          <Route path="/portaal/facturen" element={<KlantProtectedRoute><KlantLayout><MijnFacturen /></KlantLayout></KlantProtectedRoute>} />
+          <Route path="/portaal/profiel" element={<KlantProtectedRoute><KlantLayout><MijnProfiel /></KlantLayout></KlantProtectedRoute>} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

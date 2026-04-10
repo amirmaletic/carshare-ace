@@ -8,11 +8,11 @@ import { Link } from "react-router-dom";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 
-const statusColors: Record<string, "success" | "warning" | "info" | "default" | "destructive"> = {
+const statusColors: Record<string, "success" | "warning" | "info" | "muted" | "destructive"> = {
   bevestigd: "success",
   actief: "info",
   aangevraagd: "warning",
-  voltooid: "default",
+  voltooid: "muted",
   geannuleerd: "destructive",
 };
 
