@@ -1,2 +1,2 @@
-import Dashboard from "./Dashboard";
-export default Dashboard;
+import PubliekBoeken from "./PubliekBoeken";
+export default PubliekBoeken;
