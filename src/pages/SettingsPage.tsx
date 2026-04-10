@@ -264,6 +264,9 @@ export default function SettingsPage() {
           </Card>
         );
 
+      case "team":
+        return <TeamTab />;
+
       case "locaties":
         return <LocatiesTab />;
 
