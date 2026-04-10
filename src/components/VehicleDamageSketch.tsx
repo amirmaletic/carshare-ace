@@ -10,6 +10,7 @@ export interface DamagePoint {
   y: number; // percentage 0-100
   label: string;
   ernst: "licht" | "middel" | "zwaar";
+  grootte: "klein" | "middel" | "groot";
 }
 
 interface VehicleDamageSketchProps {
@@ -50,6 +51,7 @@ export function VehicleDamageSketch({ points, onChange, readOnly = false }: Vehi
       y: Math.round(y * 10) / 10,
       label: "",
       ernst: newErnst,
+      grootte: "klein",
     };
 
     onChange([...points, newPoint]);
@@ -158,39 +160,67 @@ export function VehicleDamageSketch({ points, onChange, readOnly = false }: Vehi
               <div
                 key={point.id}
                 className={cn(
-                  "flex items-center gap-3 p-2 rounded-lg border transition-colors",
+                  "flex flex-col gap-2 p-3 rounded-lg border transition-colors",
                   selectedPoint === point.id ? "border-primary bg-primary/5" : "border-border"
                 )}
                 onClick={() => setSelectedPoint(point.id)}
               >
-                <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0", ernstColors[point.ernst])}>
-                  {i + 1}
+                <div className="flex items-center gap-3">
+                  <div className={cn("w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0", ernstColors[point.ernst])}>
+                    {i + 1}
+                  </div>
+                  {!readOnly ? (
+                    <Input
+                      value={point.label}
+                      onChange={e => updatePoint(point.id, { label: e.target.value })}
+                      placeholder="Beschrijving schade... (verplicht)"
+                      className={cn("h-8 text-sm flex-1", !point.label.trim() && "border-destructive focus-visible:ring-destructive")}
+                      onClick={e => e.stopPropagation()}
+                      required
+                    />
+                  ) : (
+                    <span className="text-sm text-foreground flex-1">{point.label || "Geen beschrijving"}</span>
+                  )}
+                  {!readOnly && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 flex-shrink-0"
+                      onClick={(e) => { e.stopPropagation(); removePoint(point.id); }}
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
+                    </Button>
+                  )}
                 </div>
-                {!readOnly ? (
-                  <Input
-                    value={point.label}
-                    onChange={e => updatePoint(point.id, { label: e.target.value })}
-                    placeholder="Beschrijving schade... (verplicht)"
-                    className={cn("h-8 text-sm flex-1", !point.label.trim() && "border-destructive focus-visible:ring-destructive")}
-                    onClick={e => e.stopPropagation()}
-                    required
-                  />
-                ) : (
-                  <span className="text-sm text-foreground flex-1">{point.label || "Geen beschrijving"}</span>
-                )}
-                <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium text-white flex-shrink-0", ernstColors[point.ernst])}>
-                  {point.ernst}
-                </span>
-                {!readOnly && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 flex-shrink-0"
-                    onClick={(e) => { e.stopPropagation(); removePoint(point.id); }}
-                  >
-                    <Trash2 className="w-3.5 h-3.5 text-muted-foreground" />
-                  </Button>
-                )}
+                <div className="flex items-center gap-2 pl-8">
+                  <span className="text-xs text-muted-foreground">Grootte:</span>
+                  {(["klein", "middel", "groot"] as const).map(g => (
+                    readOnly ? (
+                      point.grootte === g && (
+                        <span key={g} className="text-xs px-2 py-0.5 rounded-full bg-muted font-medium text-foreground">
+                          {g.charAt(0).toUpperCase() + g.slice(1)}
+                        </span>
+                      )
+                    ) : (
+                      <button
+                        key={g}
+                        type="button"
+                        onClick={e => { e.stopPropagation(); updatePoint(point.id, { grootte: g }); }}
+                        className={cn(
+                          "text-xs px-2 py-0.5 rounded-full font-medium transition-colors border",
+                          (point.grootte || "klein") === g
+                            ? "bg-primary text-primary-foreground border-transparent"
+                            : "bg-background text-muted-foreground border-border hover:border-primary/50"
+                        )}
+                      >
+                        {g.charAt(0).toUpperCase() + g.slice(1)}
+                      </button>
+                    )
+                  ))}
+                  <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium text-white flex-shrink-0 ml-auto", ernstColors[point.ernst])}>
+                    {point.ernst}
+                  </span>
+                </div>
               </div>
             ))}
           </div>
