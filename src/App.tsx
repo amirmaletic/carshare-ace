@@ -27,6 +27,7 @@ import MijnReserveringen from "./pages/portaal/MijnReserveringen";
 import ReserveerVoertuig from "./pages/portaal/ReserveerVoertuig";
 import MijnFacturen from "./pages/portaal/MijnFacturen";
 import MijnProfiel from "./pages/portaal/MijnProfiel";
+import MarketingHome from "./pages/MarketingHome";
 import PubliekBoeken from "./pages/PubliekBoeken";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
@@ -106,9 +107,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           {/* Public / marketing routes */}
-          <Route path="/" element={<MarketingLayout><PubliekBoeken /></MarketingLayout>} />
+          <Route path="/" element={<MarketingLayout><MarketingHome /></MarketingLayout>} />
           <Route path="/prijzen" element={<MarketingLayout><Pricing /></MarketingLayout>} />
-          <Route path="/boeken" element={<Navigate to="/" replace />} />
+          <Route path="/boeken" element={<MarketingLayout><PubliekBoeken /></MarketingLayout>} />
 
           {/* Auth routes */}
           <Route path="/auth" element={<Auth />} />
