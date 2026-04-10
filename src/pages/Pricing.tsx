@@ -174,7 +174,7 @@ export default function Pricing() {
                   className={cn("w-full gap-2 mb-8", plan.popular ? "" : "variant-outline")}
                   variant={plan.popular ? "default" : "outline"}
                   size="lg"
-                  onClick={() => navigate("/auth")}
+                  onClick={() => navigate("/auth?mode=signup")}
                 >
                   Start gratis proefperiode
                   <ArrowRight className="w-4 h-4" />
