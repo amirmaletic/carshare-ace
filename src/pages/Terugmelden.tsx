@@ -48,7 +48,6 @@ export default function Terugmelden() {
   const [uploading, setUploading] = useState(false);
 
   const allVehicles = [
-    ...mockVehicles.map(v => ({ id: v.id, label: `${v.merk} ${v.model}`, kenteken: v.kenteken, km: v.kilometerstand })),
     ...dbVoertuigen.map(v => ({ id: v.id, label: `${v.merk} ${v.model}`, kenteken: v.kenteken, km: v.kilometerstand })),
   ];
 
