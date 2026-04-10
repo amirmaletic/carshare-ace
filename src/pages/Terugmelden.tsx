@@ -44,6 +44,7 @@ export default function Terugmelden() {
   const [file, setFile] = useState<File | null>(null);
   const [fotos, setFotos] = useState<File[]>([]);
   const [schadePunten, setSchadePunten] = useState<import("@/components/VehicleDamageSketch").DamagePoint[]>([]);
+  const [schadevrij, setSchadevrij] = useState(false);
   const [uploading, setUploading] = useState(false);
 
   const allVehicles = [
@@ -220,6 +221,8 @@ export default function Terugmelden() {
         setFotos={setFotos}
         schadePunten={schadePunten}
         setSchadePunten={setSchadePunten}
+        schadevrij={schadevrij}
+        setSchadevrij={setSchadevrij}
         uploading={uploading}
         onSubmit={handleSubmit}
       />

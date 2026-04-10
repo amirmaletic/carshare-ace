@@ -281,14 +281,25 @@ export default function ReturnForm({
             )}
           </div>
 
-          {schadePunten.length > 0 && schadePunten.some(p => !p.label.trim()) && (
+          {!schadevrij && schadePunten.length === 0 && (
+            <p className="text-sm text-destructive flex items-center gap-1">
+              <AlertTriangle className="w-4 h-4" />
+              Markeer schade op de schets of vink 'schadevrij' aan
+            </p>
+          )}
+
+          {!schadevrij && schadePunten.length > 0 && schadePunten.some(p => !p.label.trim()) && (
             <p className="text-sm text-destructive flex items-center gap-1">
               <AlertTriangle className="w-4 h-4" />
               Vul bij elke gemarkeerde schade een beschrijving in
             </p>
           )}
 
-          <Button type="submit" disabled={uploading || !!kmError || !kilometerstand || (schadePunten.length > 0 && schadePunten.some(p => !p.label.trim()))} className="gap-2">
+          <Button type="submit" disabled={
+            uploading || !!kmError || !kilometerstand ||
+            (!schadevrij && schadePunten.length === 0) ||
+            (!schadevrij && schadePunten.some(p => !p.label.trim()))
+          } className="gap-2">
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
             {uploading ? "Bezig met verwerken..." : "Terugmelden"}
           </Button>
