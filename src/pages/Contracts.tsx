@@ -32,6 +32,7 @@ const typeFilters: { value: string; label: string; icon: React.ReactNode }[] = [
 
 export default function Contracts() {
   const { data: contracts = [], isLoading } = useContracts();
+  const { voertuigen } = useVoertuigen();
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("Alle");
   const [selectedContract, setSelectedContract] = useState<ContractWithInvoices | null>(null);
@@ -254,6 +255,7 @@ function ContractDetail({
 }) {
   const updateContract = useUpdateContract();
   const updateInvoice = useUpdateInvoice();
+  const { voertuigen } = useVoertuigen();
   const [cancelOpen, setCancelOpen] = useState(false);
   const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
   const [documentOpen, setDocumentOpen] = useState(false);
