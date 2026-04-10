@@ -24,7 +24,7 @@ export interface DbVoertuig {
   updated_at: string;
 }
 
-export type VoertuigInsert = Omit<DbVoertuig, "id" | "user_id" | "created_at" | "updated_at" | "locatie"> & { locatie?: string | null };
+export type VoertuigInsert = Omit<DbVoertuig, "id" | "user_id" | "created_at" | "updated_at" | "locatie" | "image_url"> & { locatie?: string | null; image_url?: string | null };
 
 export function useVoertuigen() {
   const { user } = useAuth();
