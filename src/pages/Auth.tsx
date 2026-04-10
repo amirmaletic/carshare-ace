@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,16 +10,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "@/hooks/use-toast";
 import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
 import { Separator } from "@/components/ui/separator";
+import { ArrowLeft } from "lucide-react";
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
-  const { user, loading } = useAuth();
+  const { user, loading, signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(searchParams.get("mode") !== "signup");
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const { signIn, signUp } = useAuth();
 
   if (loading) {
     return (
@@ -49,6 +50,71 @@ export default function Auth() {
       });
     }
   };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    setSubmitting(false);
+
+    if (error) {
+      toast({ title: "Fout", description: error.message, variant: "destructive" });
+    } else {
+      toast({
+        title: "E-mail verstuurd",
+        description: "Controleer je inbox voor de link om je wachtwoord te resetten.",
+      });
+      setIsForgotPassword(false);
+    }
+  };
+
+  if (isForgotPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <div className="mx-auto mb-3 w-fit">
+              <img src={fleefloLogo} alt="FleeFlo" className="w-16 h-16 object-contain" />
+            </div>
+            <CardTitle className="text-2xl">Wachtwoord vergeten</CardTitle>
+            <CardDescription>
+              Vul je e-mailadres in en we sturen je een link om je wachtwoord te resetten.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">E-mailadres</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="naam@bedrijf.nl"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={submitting}>
+                {submitting ? "Bezig..." : "Verstuur resetlink"}
+              </Button>
+            </form>
+            <button
+              type="button"
+              onClick={() => setIsForgotPassword(false)}
+              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mx-auto"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Terug naar inloggen
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -107,7 +173,18 @@ export default function Auth() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Wachtwoord</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Wachtwoord</Label>
+                {isLogin && (
+                  <button
+                    type="button"
+                    onClick={() => setIsForgotPassword(true)}
+                    className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    Wachtwoord vergeten?
+                  </button>
+                )}
+              </div>
               <Input
                 id="password"
                 type="password"
