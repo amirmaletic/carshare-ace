@@ -96,7 +96,7 @@ export default function MarketingHome() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-base" asChild>
-                <Link to="/auth">Gratis starten</Link>
+                <Link to="/auth?mode=signup">Gratis starten</Link>
               </Button>
             </div>
           </div>
