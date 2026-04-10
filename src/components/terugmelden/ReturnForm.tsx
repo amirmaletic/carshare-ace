@@ -231,9 +231,12 @@ export default function ReturnForm({
             )}
           </div>
 
-          {/* Schadevrij checkbox */}
+          {/* Schade sectie */}
           <div className="space-y-3">
-            <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-muted/30">
+            <div className={cn(
+              "flex items-start gap-3 p-4 rounded-xl border transition-colors",
+              schadevrij ? "border-green-500/30 bg-green-50/50 dark:bg-green-950/20" : "border-border bg-muted/30"
+            )}>
               <Checkbox
                 id="schadevrij"
                 checked={schadevrij}
@@ -246,10 +249,10 @@ export default function ReturnForm({
               <div className="flex-1">
                 <Label htmlFor="schadevrij" className="flex items-center gap-2 cursor-pointer font-medium">
                   <ShieldCheck className="w-4 h-4 text-green-600" />
-                  Voertuig is schadevrij
+                  Geen nieuwe schade waargenomen
                 </Label>
                 <p className="text-xs text-muted-foreground mt-0.5">
-                  Vink aan als er geen schade is geconstateerd bij terugmelding
+                  Vink aan om te bevestigen dat er geen nieuwe schade is geconstateerd
                 </p>
               </div>
             </div>
@@ -258,9 +261,9 @@ export default function ReturnForm({
               <>
                 <Label className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-warning" />
-                  Schadeschets (verplicht als niet schadevrij)
+                  Schadeschets
                 </Label>
-                <p className="text-xs text-muted-foreground">Klik op de auto-afbeelding om schade te markeren</p>
+                <p className="text-xs text-muted-foreground">Markeer de schade op de auto, of vink hierboven aan dat er geen schade is</p>
                 <VehicleDamageSketch points={schadePunten} onChange={setSchadePunten} />
               </>
             )}
