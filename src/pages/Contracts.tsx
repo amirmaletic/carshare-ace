@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ContractDocument } from "@/components/ContractDocument";
+import { InvoicePdfButton } from "@/components/InvoicePdfExport";
 import { KilometerTab } from "@/components/KilometerTab";
 import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle, Printer, Gauge, RotateCcw, Shield, CalendarCheck, Phone, Mail, Building2, MapPin } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -437,6 +438,18 @@ function ContractDetail({
                           status={f.status === "herinnering_verstuurd" ? "herinnering" : f.status === "te_laat" ? "te laat" : f.status}
                           variant={getInvoiceStatusColor(f.status)}
                         />
+                        <InvoicePdfButton invoice={{
+                          factuurNummer: `F-${f.datum.replace(/-/g, "")}-${f.id.slice(0, 4).toUpperCase()}`,
+                          datum: f.datum,
+                          klantNaam: contract.klant_naam,
+                          klantEmail: contract.klant_email,
+                          klantAdres: contract.klant_adres || undefined,
+                          items: [{ beschrijving: `${getContractTypeLabel(contract.type)} — ${contract.contract_nummer}`, aantal: 1, prijs: Number(f.bedrag) }],
+                          totaal: Number(f.bedrag),
+                          btw: Number(f.bedrag) * 0.21,
+                          totaalInclBtw: Number(f.bedrag) * 1.21,
+                          status: f.status === "betaald" ? "Betaald" : "Openstaand",
+                        }} />
                         {f.status !== "betaald" && (
                           <Button size="sm" variant="ghost" className="gap-1 h-7 text-xs" onClick={() => markInvoicePaid(f.id)}>
                             <CheckCircle className="w-3 h-3" /> Betaald

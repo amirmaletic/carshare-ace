@@ -1,12 +1,13 @@
 import { useState } from "react";
 import {
-  Car, Upload, Gauge, FileText, Loader2, RotateCcw, Search, Image as ImageIcon, X,
+  Car, Upload, Gauge, FileText, Loader2, RotateCcw, Search, Image as ImageIcon, X, AlertTriangle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { VehicleDamageSketch, type DamagePoint } from "@/components/VehicleDamageSketch";
 
 interface MatchedVehicle {
   id: string;
@@ -29,6 +30,8 @@ interface ReturnFormProps {
   setFile: (f: File | null) => void;
   fotos: File[];
   setFotos: (f: File[]) => void;
+  schadePunten: DamagePoint[];
+  setSchadePunten: (p: DamagePoint[]) => void;
   uploading: boolean;
   onSubmit: (e: React.FormEvent) => void;
 }
@@ -47,6 +50,8 @@ export default function ReturnForm({
   setFile,
   fotos,
   setFotos,
+  schadePunten,
+  setSchadePunten,
   uploading,
   onSubmit,
 }: ReturnFormProps) {
@@ -219,6 +224,16 @@ export default function ReturnForm({
                 ))}
               </div>
             )}
+          </div>
+
+          {/* Visuele schadeschets */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-warning" />
+              Schadeschets (optioneel)
+            </Label>
+            <p className="text-xs text-muted-foreground">Klik op de auto-afbeelding om schade te markeren</p>
+            <VehicleDamageSketch points={schadePunten} onChange={setSchadePunten} />
           </div>
 
           {/* Notes */}
