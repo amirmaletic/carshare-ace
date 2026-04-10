@@ -1,4 +1,5 @@
 import { useState } from "react";
+import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
 import { Menu } from "lucide-react";
 import { AppSidebar } from "./AppSidebar";
 import { AiAssistant } from "./AiAssistant";

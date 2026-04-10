@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
 import {
   LayoutDashboard,
   Car,
