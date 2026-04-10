@@ -10,14 +10,12 @@ import { toast } from "@/hooks/use-toast";
 import { Car } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
-export default function Auth() {
-  const { user, loading } = useAuth();
+export default function KlantAuth() {
+  const { user, loading, signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const { signIn, signUp } = useAuth();
 
   if (loading) {
     return (
@@ -27,7 +25,7 @@ export default function Auth() {
     );
   }
 
-  if (user) return <Navigate to="/" replace />;
+  if (user) return <Navigate to="/portaal" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,34 +47,37 @@ export default function Auth() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin + "/portaal",
+    });
+
+    if (result.error) {
+      toast({ title: "Fout", description: "Kon niet inloggen met Google", variant: "destructive" });
+    }
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-3 p-3 rounded-xl bg-primary/10 w-fit">
             <Car className="w-8 h-8 text-primary" />
           </div>
           <CardTitle className="text-2xl">
-            {isLogin ? "Inloggen" : "Account aanmaken"}
+            {isLogin ? "Klantportaal" : "Account aanmaken"}
           </CardTitle>
           <CardDescription>
             {isLogin
-              ? "Log in om je wagenpark te beheren"
-              : "Maak een account aan om te beginnen"}
+              ? "Log in om je reserveringen en facturen te bekijken"
+              : "Maak een account aan om voertuigen te reserveren"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button
             variant="outline"
             className="w-full gap-2"
-            onClick={async () => {
-              const result = await lovable.auth.signInWithOAuth("google", {
-                redirect_uri: window.location.origin,
-              });
-              if (result.error) {
-                toast({ title: "Fout", description: "Kon niet inloggen met Google", variant: "destructive" });
-              }
-            }}
+            onClick={handleGoogleLogin}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4" />
@@ -99,7 +100,7 @@ export default function Auth() {
               <Input
                 id="email"
                 type="email"
-                placeholder="naam@bedrijf.nl"
+                placeholder="naam@voorbeeld.nl"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -118,30 +119,25 @@ export default function Auth() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={submitting}>
-              {submitting
-                ? "Bezig..."
-                : isLogin
-                ? "Inloggen"
-                : "Account aanmaken"}
+              {submitting ? "Bezig..." : isLogin ? "Inloggen" : "Account aanmaken"}
             </Button>
           </form>
+
           <div className="text-center space-y-2">
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              {isLogin
-                ? "Nog geen account? Registreer hier"
-                : "Al een account? Log hier in"}
+              {isLogin ? "Nog geen account? Registreer hier" : "Al een account? Log hier in"}
             </button>
           </div>
 
           <Separator />
 
           <div className="text-center">
-            <a href="/klant-login" className="text-xs text-muted-foreground hover:text-primary transition-colors">
-              Klant? Ga naar het klantportaal →
+            <a href="/auth" className="text-xs text-muted-foreground hover:text-primary transition-colors">
+              Medewerker? Log hier in →
             </a>
           </div>
         </CardContent>
