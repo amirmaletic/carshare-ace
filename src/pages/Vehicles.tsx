@@ -53,6 +53,7 @@ export default function Vehicles() {
     dagprijs: Number(v.dagprijs),
     categorie: v.categorie as Vehicle["categorie"],
     kleur: v.kleur,
+    image: v.image_url || undefined,
   }));
 
   const filtered = allVehicles.filter(v => {
@@ -190,7 +191,7 @@ export default function Vehicles() {
                 >
                   <div className="h-36 bg-muted relative overflow-hidden">
                     <img
-                      src={getVehicleImageUrl(vehicle.merk, vehicle.model)}
+                      src={vehicle.image || getVehicleImageUrl(vehicle.merk, vehicle.model)}
                       alt={`${vehicle.merk} ${vehicle.model}`}
                       className="absolute inset-0 w-full h-full object-contain object-center p-3"
                       loading="lazy"

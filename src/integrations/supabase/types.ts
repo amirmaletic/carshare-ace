@@ -1123,6 +1123,7 @@ export type Database = {
           created_at: string
           dagprijs: number
           id: string
+          image_url: string | null
           kenteken: string
           kilometerstand: number
           kleur: string
@@ -1143,6 +1144,7 @@ export type Database = {
           created_at?: string
           dagprijs?: number
           id?: string
+          image_url?: string | null
           kenteken: string
           kilometerstand?: number
           kleur?: string
@@ -1163,6 +1165,7 @@ export type Database = {
           created_at?: string
           dagprijs?: number
           id?: string
+          image_url?: string | null
           kenteken?: string
           kilometerstand?: number
           kleur?: string
