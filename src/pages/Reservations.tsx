@@ -88,7 +88,7 @@ export default function Reservations() {
                       <div className="flex gap-1 flex-wrap">
                         {r.extras.length > 0 ? r.extras.map(e => (
                           <span key={e} className="text-xs px-2 py-0.5 bg-muted rounded-full text-muted-foreground">{e}</span>
-                        )) : <span className="text-xs text-muted-foreground">—</span>}
+                        )) : <span className="text-xs text-muted-foreground">-</span>}
                       </div>
                     </td>
                     <td className="px-5 py-4 text-right">

@@ -48,7 +48,7 @@ function formatKenteken(input: string): string {
 }
 
 function formatDate(dateStr: string): string {
-  if (!dateStr || dateStr.length !== 8) return dateStr || "—";
+  if (!dateStr || dateStr.length !== 8) return dateStr || "-";
   return `${dateStr.slice(6, 8)}-${dateStr.slice(4, 6)}-${dateStr.slice(0, 4)}`;
 }
 
@@ -249,7 +249,7 @@ function InfoItem({ label, value }: { label: string; value?: string | null }) {
   return (
     <div className="p-2.5 rounded-lg bg-muted/50">
       <p className="text-xs text-muted-foreground">{label}</p>
-      <p className="text-sm font-medium text-foreground mt-0.5">{value || "—"}</p>
+      <p className="text-sm font-medium text-foreground mt-0.5">{value || "-"}</p>
     </div>
   );
 }

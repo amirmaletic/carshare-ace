@@ -20,7 +20,7 @@ function formatKenteken(input: string): string {
 }
 
 function formatDate(dateStr: string): string {
-  if (!dateStr || dateStr.length !== 8) return dateStr || "—";
+  if (!dateStr || dateStr.length !== 8) return dateStr || "-";
   return `${dateStr.slice(6, 8)}-${dateStr.slice(4, 6)}-${dateStr.slice(0, 4)}`;
 }
 
@@ -60,8 +60,8 @@ export function RdwLookup({ onVehicleFound }: RdwLookupProps) {
         brandstof: b.brandstof_omschrijving || v.brandstof_omschrijving || "",
         kleur: v.eerste_kleur || "",
         apkVervaldatum: formatDate(v.vervaldatum_apk),
-        catalogusprijs: v.catalogusprijs ? `€${Number(v.catalogusprijs).toLocaleString("nl-NL")}` : "—",
-        co2: b.co2_uitstoot_gecombineerd ? `${b.co2_uitstoot_gecombineerd} g/km` : "—",
+        catalogusprijs: v.catalogusprijs ? `€${Number(v.catalogusprijs).toLocaleString("nl-NL")}` : "-",
+        co2: b.co2_uitstoot_gecombineerd ? `${b.co2_uitstoot_gecombineerd} g/km` : "-",
       };
       setResult(info);
       onVehicleFound?.(info);

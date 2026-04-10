@@ -307,7 +307,7 @@ export function ContractForm({ open, onOpenChange, editContract, prefilledVehicl
                       <SelectContent>
                         {vehicles.map((v) => (
                           <SelectItem key={v.id} value={v.id}>
-                            {v.merk} {v.model} — {v.kenteken}
+                            {v.merk} {v.model} · {v.kenteken}
                           </SelectItem>
                         ))}
                       </SelectContent>

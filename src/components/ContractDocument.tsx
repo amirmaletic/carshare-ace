@@ -219,7 +219,7 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
           {/* Footer */}
           <div className="mt-10 pt-4 border-t border-border text-center">
             <p className="text-xs text-muted-foreground">
-              Dit document is gegenereerd op {today} — {contract.contract_nummer}
+              Dit document is gegenereerd op {today} · {contract.contract_nummer}
             </p>
           </div>
         </div>

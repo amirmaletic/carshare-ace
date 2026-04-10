@@ -89,7 +89,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         })}
       </nav>
 
-      {/* Collapse toggle — desktop only */}
+      {/* Collapse toggle - desktop only */}
       {!isMobile && (
         <div className="p-3 border-t border-sidebar-border">
           <button

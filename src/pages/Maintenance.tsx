@@ -45,7 +45,7 @@ export default function Maintenance() {
                   <h3 className="font-medium text-foreground">{m.type}</h3>
                   <span className="text-xs px-2 py-0.5 bg-muted rounded-full text-muted-foreground font-mono">{vehicle?.kenteken}</span>
                 </div>
-                <p className="text-sm text-muted-foreground mt-0.5">{vehicle?.merk} {vehicle?.model} — {m.beschrijving}</p>
+                <p className="text-sm text-muted-foreground mt-0.5">{vehicle?.merk} {vehicle?.model} · {m.beschrijving}</p>
                 <p className="text-xs text-muted-foreground mt-1">Datum: {m.datum}</p>
               </div>
               <div className="flex items-center gap-4">
