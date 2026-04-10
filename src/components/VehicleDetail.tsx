@@ -8,14 +8,15 @@ import {
   Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw, Clock, Plus,
 } from "lucide-react";
 import {
-  Vehicle, getStatusColor, getVehicleImageUrl,
-  getMaintenanceForVehicle, getReservationsForVehicle,
-  getReservationStatusColor,
+  Vehicle, getStatusColor, getVehicleImageUrl, getReservationStatusColor,
 } from "@/data/mockData";
 import { VehicleReportTabs } from "@/components/VehicleReportTabs";
 import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
 import { VehicleTimeline } from "@/components/VehicleTimeline";
 import { ContractForm } from "@/components/ContractForm";
+import { useServiceHistorie } from "@/hooks/useVehicleReports";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VehicleDetailProps {
   vehicle: Vehicle | null;
@@ -41,10 +42,24 @@ const statusLabels: Record<string, string> = {
 export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProps) {
   const [contractFormOpen, setContractFormOpen] = useState(false);
 
+  const { data: serviceRecords = [] } = useServiceHistorie(vehicle?.id ?? null);
+
+  const { data: reserveringen = [] } = useQuery({
+    queryKey: ["vehicle-reserveringen", vehicle?.id],
+    enabled: !!vehicle,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("reserveringen")
+        .select("*, klanten(voornaam, achternaam)")
+        .eq("voertuig_id", vehicle!.id)
+        .order("start_datum", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
   if (!vehicle) return null;
 
-  const maintenance = getMaintenanceForVehicle(vehicle.id);
-  const reservations = getReservationsForVehicle(vehicle.id);
   const imageUrl = getVehicleImageUrl(vehicle.merk, vehicle.model);
 
   return (
@@ -75,12 +90,10 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
         </div>
 
         <div className="p-5 space-y-5">
-          {/* Action button */}
           <Button size="sm" className="gap-1.5" onClick={() => setContractFormOpen(true)}>
             <Plus className="w-3.5 h-3.5" /> Contract aanmaken
           </Button>
 
-          {/* Quick info grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <QuickInfo icon={Calendar} label="Bouwjaar" value={String(vehicle.bouwjaar)} />
             <QuickInfo icon={Fuel} label="Brandstof" value={vehicle.brandstof} />
@@ -90,35 +103,19 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <QuickInfo icon={MapPin} label="Kleur" value={vehicle.kleur} />
-            <QuickInfo icon={Shield} label="APK vervalt" value={vehicle.apkVervaldatum} />
-            <QuickInfo icon={Shield} label="Verzekering vervalt" value={vehicle.verzekeringsVervaldatum} />
+            <QuickInfo icon={Shield} label="APK vervalt" value={vehicle.apkVervaldatum || "-"} />
+            <QuickInfo icon={Shield} label="Verzekering vervalt" value={vehicle.verzekeringsVervaldatum || "-"} />
           </div>
 
           <Separator />
 
-          {/* Tabs */}
           <Tabs defaultValue="tijdlijn" className="w-full">
             <TabsList className="w-full grid grid-cols-5">
-              <TabsTrigger value="tijdlijn" className="gap-1.5 text-xs">
-                <Clock className="w-3.5 h-3.5" />
-                Tijdlijn
-              </TabsTrigger>
-              <TabsTrigger value="onderhoud" className="gap-1.5 text-xs">
-                <Wrench className="w-3.5 h-3.5" />
-                Onderhoud
-              </TabsTrigger>
-              <TabsTrigger value="terugmeldingen" className="gap-1.5 text-xs">
-                <RotateCcw className="w-3.5 h-3.5" />
-                Retouren
-              </TabsTrigger>
-              <TabsTrigger value="reserveringen" className="gap-1.5 text-xs">
-                <CalendarRange className="w-3.5 h-3.5" />
-                Reserveringen
-              </TabsTrigger>
-              <TabsTrigger value="rapporten" className="gap-1.5 text-xs">
-                <FileText className="w-3.5 h-3.5" />
-                Rapporten
-              </TabsTrigger>
+              <TabsTrigger value="tijdlijn" className="gap-1.5 text-xs"><Clock className="w-3.5 h-3.5" />Tijdlijn</TabsTrigger>
+              <TabsTrigger value="onderhoud" className="gap-1.5 text-xs"><Wrench className="w-3.5 h-3.5" />Onderhoud</TabsTrigger>
+              <TabsTrigger value="terugmeldingen" className="gap-1.5 text-xs"><RotateCcw className="w-3.5 h-3.5" />Retouren</TabsTrigger>
+              <TabsTrigger value="reserveringen" className="gap-1.5 text-xs"><CalendarRange className="w-3.5 h-3.5" />Reserveringen</TabsTrigger>
+              <TabsTrigger value="rapporten" className="gap-1.5 text-xs"><FileText className="w-3.5 h-3.5" />Rapporten</TabsTrigger>
             </TabsList>
 
             <TabsContent value="tijdlijn" className="mt-4">
@@ -126,23 +123,17 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
             </TabsContent>
 
             <TabsContent value="onderhoud" className="mt-4 space-y-3">
-              {maintenance.length === 0 ? (
+              {serviceRecords.length === 0 ? (
                 <EmptyState icon={Wrench} text="Geen onderhoudshistorie" />
               ) : (
-                maintenance.map((m) => (
+                serviceRecords.map((m) => (
                   <div key={m.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 animate-fade-in">
                     <div className="p-2 rounded-md bg-warning/10 mt-0.5">
                       <Wrench className="w-4 h-4 text-warning" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="font-medium text-sm text-foreground">{m.type}</p>
-                        <StatusBadge
-                          status={statusLabels[m.status] || m.status}
-                          variant={getMaintenanceStatusVariant(m.status)}
-                        />
-                      </div>
-                      <p className="text-sm text-muted-foreground mt-0.5">{m.beschrijving}</p>
+                      <p className="font-medium text-sm text-foreground">{m.type}</p>
+                      <p className="text-sm text-muted-foreground mt-0.5">{m.omschrijving}</p>
                       <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
                         <span>{m.datum}</span>
                         <span className="font-medium text-foreground">€{m.kosten}</span>
@@ -158,27 +149,26 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
             </TabsContent>
 
             <TabsContent value="reserveringen" className="mt-4 space-y-3">
-              {reservations.length === 0 ? (
+              {reserveringen.length === 0 ? (
                 <EmptyState icon={CalendarRange} text="Geen reserveringen" />
               ) : (
-                reservations.map((r) => (
+                reserveringen.map((r: any) => (
                   <div key={r.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 animate-fade-in">
                     <div className="p-2 rounded-md bg-info/10 mt-0.5">
                       <CalendarRange className="w-4 h-4 text-info" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="font-medium text-sm text-foreground">{r.klantNaam}</p>
+                        <p className="font-medium text-sm text-foreground">
+                          {r.klanten?.voornaam} {r.klanten?.achternaam}
+                        </p>
                         <StatusBadge status={r.status} variant={getReservationStatusColor(r.status)} />
                       </div>
                       <p className="text-sm text-muted-foreground mt-0.5">
-                        {r.startDatum} t/m {r.eindDatum}
+                        {r.start_datum} t/m {r.eind_datum}
                       </p>
                       <div className="flex items-center gap-3 mt-1.5 text-xs text-muted-foreground">
-                        <span className="font-medium text-foreground">€{r.totaalPrijs}</span>
-                        {r.extras.length > 0 && (
-                          <span>{r.extras.join(', ')}</span>
-                        )}
+                        <span className="font-medium text-foreground">€{r.totaalprijs}</span>
                       </div>
                     </div>
                   </div>

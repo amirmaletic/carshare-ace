@@ -15,21 +15,11 @@ import { VehicleKanban } from "@/components/VehicleKanban";
 import { VehicleGantt } from "@/components/VehicleGantt";
 import { ContractForm } from "@/components/ContractForm";
 import { VehicleImport } from "@/components/VehicleImport";
-import { vehicles as mockVehicles, reservations, getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
+import { getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
 
 const categories = ['Alle', 'Stadsauto', 'SUV', 'Bestelwagen', 'Luxe', 'Elektrisch'] as const;
-
-function isVehicleAvailable(vehicleId: string, from: Date, to: Date): boolean {
-  return !reservations.some(r => {
-    if (r.voertuigId !== vehicleId) return false;
-    if (r.status === 'voltooid' || r.status === 'geannuleerd') return false;
-    const rStart = new Date(r.startDatum);
-    const rEnd = new Date(r.eindDatum);
-    return rStart <= to && rEnd >= from;
-  });
-}
 
 type ViewMode = "lijst" | "locaties" | "tijdlijn";
 
@@ -47,9 +37,9 @@ export default function Vehicles() {
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [viewMode, setViewMode] = useState<ViewMode>("lijst");
 
-  const { voertuigen: dbVoertuigen } = useVoertuigen();
+  const { voertuigen: dbVoertuigen, isLoading } = useVoertuigen();
 
-  const dbAsVehicles: Vehicle[] = dbVoertuigen.map((v) => ({
+  const allVehicles: Vehicle[] = dbVoertuigen.map((v) => ({
     id: v.id,
     kenteken: v.kenteken,
     merk: v.merk,
@@ -65,19 +55,13 @@ export default function Vehicles() {
     kleur: v.kleur,
   }));
 
-  const allVehicles = [...mockVehicles, ...dbAsVehicles];
-  const hasDateFilter = dateFrom && dateTo && dateFrom <= dateTo;
-
   const filtered = allVehicles.filter(v => {
     const matchesSearch =
       v.kenteken.toLowerCase().includes(search.toLowerCase()) ||
       v.merk.toLowerCase().includes(search.toLowerCase()) ||
       v.model.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = activeCategory === "Alle" || v.categorie === activeCategory;
-    const matchesAvailability = !hasDateFilter || (
-      v.status !== 'onderhoud' && isVehicleAvailable(v.id, dateFrom, dateTo)
-    );
-    return matchesSearch && matchesCategory && matchesAvailability;
+    return matchesSearch && matchesCategory;
   });
 
   const openVehicle = (vehicle: Vehicle) => {
@@ -112,9 +96,7 @@ export default function Vehicles() {
             onClick={() => setViewMode("lijst")}
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-              viewMode === "lijst"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+              viewMode === "lijst" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <List className="w-4 h-4" />
@@ -124,9 +106,7 @@ export default function Vehicles() {
             onClick={() => setViewMode("tijdlijn")}
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-              viewMode === "tijdlijn"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+              viewMode === "tijdlijn" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <GanttChart className="w-4 h-4" />
@@ -136,9 +116,7 @@ export default function Vehicles() {
             onClick={() => setViewMode("locaties")}
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
-              viewMode === "locaties"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+              viewMode === "locaties" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <MapPin className="w-4 h-4" />
@@ -172,9 +150,7 @@ export default function Vehicles() {
                   onClick={() => setActiveCategory(cat)}
                   className={cn(
                     "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
-                    activeCategory === cat
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-secondary text-secondary-foreground hover:bg-accent"
+                    activeCategory === cat ? "bg-primary text-primary-foreground" : "bg-secondary text-secondary-foreground hover:bg-accent"
                   )}
                 >
                   {cat}
@@ -183,98 +159,75 @@ export default function Vehicles() {
             </div>
           </div>
 
-          {/* Date range filter */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <CalendarRange className="w-4 h-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Beschikbaar van</span>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
             </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}>
-                  {dateFrom ? format(dateFrom, "d MMM yyyy", { locale: nl }) : "Startdatum"}
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-16">
+              <Car className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-foreground mb-1">Geen voertuigen gevonden</h3>
+              <p className="text-muted-foreground text-sm mb-4">
+                {allVehicles.length === 0
+                  ? "Voeg je eerste voertuig toe om te beginnen."
+                  : "Pas je zoekcriteria aan."}
+              </p>
+              {allVehicles.length === 0 && (
+                <Button onClick={() => setFormOpen(true)} className="gap-2">
+                  <Plus className="w-4 h-4" />
+                  Voertuig toevoegen
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus className="p-3 pointer-events-auto" locale={nl} />
-              </PopoverContent>
-            </Popover>
-            <span className="text-sm text-muted-foreground">t/m</span>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal", !dateTo && "text-muted-foreground")}>
-                  {dateTo ? format(dateTo, "d MMM yyyy", { locale: nl }) : "Einddatum"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar mode="single" selected={dateTo} onSelect={setDateTo} disabled={(date) => dateFrom ? date < dateFrom : false} initialFocus className="p-3 pointer-events-auto" locale={nl} />
-              </PopoverContent>
-            </Popover>
-            {hasDateFilter && (
-              <Button variant="ghost" size="sm" onClick={() => { setDateFrom(undefined); setDateTo(undefined); }} className="gap-1 text-muted-foreground">
-                <X className="w-3 h-3" />
-                Wis periode
-              </Button>
-            )}
-            {hasDateFilter && (
-              <span className="text-sm text-muted-foreground ml-auto">{filtered.length} beschikbaar</span>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map((vehicle, i) => (
-              <div
-                key={vehicle.id}
-                onClick={() => openVehicle(vehicle)}
-                className="clean-card overflow-hidden hover:shadow-md transition-all cursor-pointer hover:-translate-y-0.5 animate-fade-in"
-                style={{ animationDelay: `${i * 60}ms` }}
-              >
-                <div className="h-36 bg-muted relative overflow-hidden">
-                  <img
-                    src={getVehicleImageUrl(vehicle.merk, vehicle.model)}
-                    alt={`${vehicle.merk} ${vehicle.model}`}
-                    className="absolute inset-0 w-full h-full object-contain object-center p-3"
-                    loading="lazy"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
-                  />
-                  <div className="absolute inset-0 items-center justify-center hidden">
-                    <Car className="w-12 h-12 text-muted-foreground/40" />
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              {filtered.map((vehicle, i) => (
+                <div
+                  key={vehicle.id}
+                  onClick={() => openVehicle(vehicle)}
+                  className="clean-card overflow-hidden hover:shadow-md transition-all cursor-pointer hover:-translate-y-0.5 animate-fade-in"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                >
+                  <div className="h-36 bg-muted relative overflow-hidden">
+                    <img
+                      src={getVehicleImageUrl(vehicle.merk, vehicle.model)}
+                      alt={`${vehicle.merk} ${vehicle.model}`}
+                      className="absolute inset-0 w-full h-full object-contain object-center p-3"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
+                        if (fallback) fallback.style.display = 'flex';
+                      }}
+                    />
+                    <div className="absolute inset-0 items-center justify-center hidden">
+                      <Car className="w-12 h-12 text-muted-foreground/40" />
+                    </div>
                   </div>
-                </div>
-                <div className="p-5 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold text-foreground">{vehicle.merk} {vehicle.model}</h3>
-                      <p className="text-sm text-muted-foreground font-mono">{vehicle.kenteken}</p>
+                  <div className="p-5 space-y-3">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold text-foreground">{vehicle.merk} {vehicle.model}</h3>
+                        <p className="text-sm text-muted-foreground font-mono">{vehicle.kenteken}</p>
+                      </div>
+                      <StatusBadge status={vehicle.status} variant={getStatusColor(vehicle.status)} />
                     </div>
-                    <StatusBadge status={vehicle.status} variant={getStatusColor(vehicle.status)} />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
-                    <div className="text-center">
-                      <Fuel className="w-3.5 h-3.5 text-muted-foreground mx-auto mb-1" />
-                      <p className="text-xs text-muted-foreground">{vehicle.brandstof}</p>
-                    </div>
-                    <div className="text-center">
-                      <Gauge className="w-3.5 h-3.5 text-muted-foreground mx-auto mb-1" />
-                      <p className="text-xs text-muted-foreground">{(vehicle.kilometerstand / 1000).toFixed(0)}k km</p>
-                    </div>
-                    <div className="text-center">
-                      <span className="text-xs font-medium text-primary">€{vehicle.dagprijs}/dag</span>
+                    <div className="grid grid-cols-3 gap-3 pt-2 border-t border-border">
+                      <div className="text-center">
+                        <Fuel className="w-3.5 h-3.5 text-muted-foreground mx-auto mb-1" />
+                        <p className="text-xs text-muted-foreground">{vehicle.brandstof}</p>
+                      </div>
+                      <div className="text-center">
+                        <Gauge className="w-3.5 h-3.5 text-muted-foreground mx-auto mb-1" />
+                        <p className="text-xs text-muted-foreground">{(vehicle.kilometerstand / 1000).toFixed(0)}k km</p>
+                      </div>
+                      <div className="text-center">
+                        <span className="text-xs font-medium text-primary">€{vehicle.dagprijs}/dag</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {filtered.length === 0 && (
-            <div className="text-center py-12">
-              <Car className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-              <p className="text-muted-foreground">Geen voertuigen gevonden</p>
+              ))}
             </div>
           )}
         </div>

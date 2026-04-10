@@ -3,7 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Printer, Download } from "lucide-react";
 import { type ContractWithInvoices } from "@/hooks/useContracts";
-import { getVehicleById, getContractTypeLabel } from "@/data/mockData";
+import { getContractTypeLabel } from "@/data/mockData";
+import { useVoertuigen } from "@/hooks/useVoertuigen";
 
 interface ContractDocumentProps {
   contract: ContractWithInvoices | null;

@@ -17,7 +17,8 @@ import { useContracts, useUpdateContract, type ContractWithInvoices } from "@/ho
 import { useUpdateInvoice } from "@/hooks/useInvoices";
 import { ContractForm } from "@/components/ContractForm";
 import { InvoiceForm } from "@/components/InvoiceForm";
-import { getVehicleById, getContractStatusColor, getContractTypeLabel, getContractTypeIcon, getInvoiceStatusColor } from "@/data/mockData";
+import { getContractStatusColor, getContractTypeLabel, getContractTypeIcon, getInvoiceStatusColor } from "@/data/mockData";
+import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
 import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
 
