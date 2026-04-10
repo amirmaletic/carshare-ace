@@ -185,6 +185,7 @@ export default function Terugmelden() {
       setNotitie("");
       setFile(null);
       setFotos([]);
+      setSchadevrij(false);
       setKmError("");
     } catch (err: any) {
       toast.error("Fout bij terugmelden: " + err.message);
