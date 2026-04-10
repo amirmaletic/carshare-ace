@@ -170,9 +170,10 @@ export function VehicleDamageSketch({ points, onChange, readOnly = false }: Vehi
                   <Input
                     value={point.label}
                     onChange={e => updatePoint(point.id, { label: e.target.value })}
-                    placeholder="Beschrijving schade..."
-                    className="h-8 text-sm flex-1"
+                    placeholder="Beschrijving schade... (verplicht)"
+                    className={cn("h-8 text-sm flex-1", !point.label.trim() && "border-destructive focus-visible:ring-destructive")}
                     onClick={e => e.stopPropagation()}
+                    required
                   />
                 ) : (
                   <span className="text-sm text-foreground flex-1">{point.label || "Geen beschrijving"}</span>
