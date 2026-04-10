@@ -10,16 +10,32 @@ import { toast } from "sonner";
 import { Car, Calendar, Check } from "lucide-react";
 import { differenceInDays, format, isAfter, isBefore, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect } from "react";
 
 export default function ReserveerVoertuig() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
 
   const [startDatum, setStartDatum] = useState("");
   const [eindDatum, setEindDatum] = useState("");
   const [selectedVoertuig, setSelectedVoertuig] = useState<string | null>(null);
+
+  // Restore pending reservation from public booking page
+  useEffect(() => {
+    const pending = sessionStorage.getItem("pendingReservering");
+    if (pending) {
+      try {
+        const data = JSON.parse(pending);
+        if (data.start_datum) setStartDatum(data.start_datum);
+        if (data.eind_datum) setEindDatum(data.eind_datum);
+        if (data.voertuig_id) setSelectedVoertuig(data.voertuig_id);
+        sessionStorage.removeItem("pendingReservering");
+      } catch { /* ignore */ }
+    }
+  }, []);
 
   const dagen = startDatum && eindDatum ? Math.max(differenceInDays(new Date(eindDatum), new Date(startDatum)), 1) : 0;
 

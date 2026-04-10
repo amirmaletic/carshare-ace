@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,8 @@ import { Car } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export default function KlantAuth() {
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/portaal";
   const { user, loading, signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -25,7 +27,7 @@ export default function KlantAuth() {
     );
   }
 
-  if (user) return <Navigate to="/portaal" replace />;
+  if (user) return <Navigate to={redirectTo} replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
