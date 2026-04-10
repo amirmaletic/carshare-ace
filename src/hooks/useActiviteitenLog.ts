@@ -46,14 +46,14 @@ export function useLogActiviteit() {
       metadata?: Record<string, unknown>;
     }) => {
       if (!user) return;
-      const { error } = await supabase.from("activiteiten_log").insert({
+      const { error } = await supabase.from("activiteiten_log").insert([{
         user_id: user.id,
         actie: params.actie,
         beschrijving: params.beschrijving,
         entiteit_type: params.entiteit_type || null,
         entiteit_id: params.entiteit_id || null,
-        metadata: params.metadata || {},
-      });
+        metadata: (params.metadata || {}) as any,
+      }]);
       if (error) throw error;
     },
     onSuccess: () => {

@@ -103,7 +103,6 @@ export function VehicleDamageSketch({ points, onChange, readOnly = false }: Vehi
         {/* Top-down car outline SVG */}
         <svg
           viewBox="0 0 440 200"
-          className="absolute inset-0 w-full h-full p-4"
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
