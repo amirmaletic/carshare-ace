@@ -82,6 +82,39 @@ export type Database = {
           },
         ]
       }
+      activiteiten_log: {
+        Row: {
+          actie: string
+          beschrijving: string
+          created_at: string
+          entiteit_id: string | null
+          entiteit_type: string | null
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          actie: string
+          beschrijving: string
+          created_at?: string
+          entiteit_id?: string | null
+          entiteit_type?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          actie?: string
+          beschrijving?: string
+          created_at?: string
+          entiteit_id?: string | null
+          entiteit_type?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       chauffeur_beschikbaarheid: {
         Row: {
           chauffeur_id: string
@@ -708,6 +741,7 @@ export type Database = {
           locatie_schade: string | null
           notitie: string | null
           omschrijving: string
+          schade_punten: Json | null
           user_id: string
           verzekerd: boolean | null
           voertuig_id: string
@@ -724,6 +758,7 @@ export type Database = {
           locatie_schade?: string | null
           notitie?: string | null
           omschrijving: string
+          schade_punten?: Json | null
           user_id: string
           verzekerd?: boolean | null
           voertuig_id: string
@@ -740,6 +775,7 @@ export type Database = {
           locatie_schade?: string | null
           notitie?: string | null
           omschrijving?: string
+          schade_punten?: Json | null
           user_id?: string
           verzekerd?: boolean | null
           voertuig_id?: string
