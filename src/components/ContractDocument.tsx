@@ -91,7 +91,7 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
           {/* Header */}
           <div className="flex justify-between items-start mb-8 pb-4 border-b-2 border-primary">
             <div>
-              <h1 className="text-2xl font-bold text-primary">FleetManager</h1>
+              <h1 className="text-2xl font-bold text-primary">FleeFlo</h1>
               <p className="text-xs text-muted-foreground">Wagenpark & Leasebeheer</p>
             </div>
             <div className="text-right">
@@ -205,7 +205,7 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
             <div>
               <p className="text-xs text-muted-foreground mb-1">Verhuurder / Leasemaatschappij</p>
               <div className="border-b border-foreground h-16 mb-2" />
-              <p className="text-sm font-medium">FleetManager B.V.</p>
+              <p className="text-sm font-medium">FleeFlo B.V.</p>
               <p className="text-xs text-muted-foreground">Datum: _______________</p>
             </div>
             <div>

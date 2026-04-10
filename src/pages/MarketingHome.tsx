@@ -55,7 +55,7 @@ export default function MarketingHome() {
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "SoftwareApplication",
-            name: "FleetManager",
+            name: "FleeFlo",
             applicationCategory: "BusinessApplication",
             operatingSystem: "Web",
             description:
@@ -105,7 +105,7 @@ export default function MarketingHome() {
           <div className="max-w-5xl mx-auto">
             <img
               src={productDashboard}
-              alt="FleetManager dashboard met overzicht van voertuigen, contracten en openstaande taken"
+              alt="FleeFlo dashboard met overzicht van voertuigen, contracten en openstaande taken"
               className="w-full rounded-xl shadow-2xl shadow-primary/10"
               loading="eager"
               width={1400}
