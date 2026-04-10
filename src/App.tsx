@@ -95,33 +95,8 @@ function KlantProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-function SmartHome() {
-  const { user, loading } = useAuth();
-  const [isStaff, setIsStaff] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    if (!user) { setIsStaff(false); return; }
-    supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", user.id)
-      .then(({ data }) => {
-        const roles = data?.map((r) => r.role) || [];
-        setIsStaff(roles.some((r) => r === "beheerder" || r === "medewerker"));
-      });
-  }, [user]);
-
-  if (loading || (user && isStaff === null)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (user && isStaff) return <Navigate to="/dashboard" replace />;
-  return <PubliekBoeken />;
-}
+// Homepage is now always the public marketing/booking page
+// Staff access their dashboard via /dashboard directly
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -131,7 +106,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           {/* Public / marketing routes */}
-          <Route path="/" element={<MarketingLayout><SmartHome /></MarketingLayout>} />
+          <Route path="/" element={<MarketingLayout><PubliekBoeken /></MarketingLayout>} />
           <Route path="/prijzen" element={<MarketingLayout><Pricing /></MarketingLayout>} />
           <Route path="/boeken" element={<Navigate to="/" replace />} />
 
