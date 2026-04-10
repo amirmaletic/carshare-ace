@@ -44,7 +44,7 @@ export default function Auth() {
     } else if (!isLogin) {
       toast({
         title: "Account aangemaakt",
-        description: "Controleer je e-mail om je account te bevestigen.",
+        description: "Je kunt nu direct aan de slag met je gratis proefperiode van 30 dagen!",
       });
     }
   };
