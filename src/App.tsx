@@ -30,6 +30,7 @@ import MijnProfiel from "./pages/portaal/MijnProfiel";
 import MarketingHome from "./pages/MarketingHome";
 import PubliekBoeken from "./pages/PubliekBoeken";
 import Pricing from "./pages/Pricing";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -113,6 +114,7 @@ const App = () => (
 
           {/* Auth routes */}
           <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/klant-login" element={<KlantAuth />} />
 
           {/* Admin/staff routes */}
