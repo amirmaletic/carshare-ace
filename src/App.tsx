@@ -67,15 +67,15 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           {/* Public routes */}
-          <Route path="/boeken" element={<PubliekBoeken />} />
-          <Route path="/home" element={<Navigate to="/boeken" replace />} />
+          <Route path="/" element={<PubliekBoeken />} />
+          <Route path="/boeken" element={<Navigate to="/" replace />} />
 
           {/* Auth routes */}
           <Route path="/auth" element={<Auth />} />
           <Route path="/klant-login" element={<KlantAuth />} />
 
           {/* Admin/staff routes */}
-          <Route path="/" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
+          <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
           <Route path="/voertuigen" element={<ProtectedRoute><AppLayout><Vehicles /></AppLayout></ProtectedRoute>} />
           <Route path="/terugmelden" element={<ProtectedRoute><AppLayout><Terugmelden /></AppLayout></ProtectedRoute>} />
           <Route path="/contracten" element={<ProtectedRoute><AppLayout><Contracts /></AppLayout></ProtectedRoute>} />
