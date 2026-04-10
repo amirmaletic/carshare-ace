@@ -1,12 +1,13 @@
 import { useState } from "react";
 import {
-  Car, Upload, Gauge, FileText, Loader2, RotateCcw, Search, Image as ImageIcon, X, AlertTriangle,
+  Car, Upload, Gauge, FileText, Loader2, RotateCcw, Search, Image as ImageIcon, X, AlertTriangle, ShieldCheck,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import { VehicleDamageSketch, type DamagePoint } from "@/components/VehicleDamageSketch";
 
 interface MatchedVehicle {
@@ -32,6 +33,8 @@ interface ReturnFormProps {
   setFotos: (f: File[]) => void;
   schadePunten: DamagePoint[];
   setSchadePunten: (p: DamagePoint[]) => void;
+  schadevrij: boolean;
+  setSchadevrij: (v: boolean) => void;
   uploading: boolean;
   onSubmit: (e: React.FormEvent) => void;
 }
@@ -52,6 +55,8 @@ export default function ReturnForm({
   setFotos,
   schadePunten,
   setSchadePunten,
+  schadevrij,
+  setSchadevrij,
   uploading,
   onSubmit,
 }: ReturnFormProps) {
@@ -226,14 +231,39 @@ export default function ReturnForm({
             )}
           </div>
 
-          {/* Visuele schadeschets */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-warning" />
-              Schadeschets (optioneel)
-            </Label>
-            <p className="text-xs text-muted-foreground">Klik op de auto-afbeelding om schade te markeren</p>
-            <VehicleDamageSketch points={schadePunten} onChange={setSchadePunten} />
+          {/* Schadevrij checkbox */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-muted/30">
+              <Checkbox
+                id="schadevrij"
+                checked={schadevrij}
+                onCheckedChange={(checked) => {
+                  setSchadevrij(!!checked);
+                  if (checked) setSchadePunten([]);
+                }}
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <Label htmlFor="schadevrij" className="flex items-center gap-2 cursor-pointer font-medium">
+                  <ShieldCheck className="w-4 h-4 text-green-600" />
+                  Voertuig is schadevrij
+                </Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Vink aan als er geen schade is geconstateerd bij terugmelding
+                </p>
+              </div>
+            </div>
+
+            {!schadevrij && (
+              <>
+                <Label className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-warning" />
+                  Schadeschets (verplicht als niet schadevrij)
+                </Label>
+                <p className="text-xs text-muted-foreground">Klik op de auto-afbeelding om schade te markeren</p>
+                <VehicleDamageSketch points={schadePunten} onChange={setSchadePunten} />
+              </>
+            )}
           </div>
 
           {/* Notes */}
@@ -251,14 +281,25 @@ export default function ReturnForm({
             )}
           </div>
 
-          {schadePunten.length > 0 && schadePunten.some(p => !p.label.trim()) && (
+          {!schadevrij && schadePunten.length === 0 && (
+            <p className="text-sm text-destructive flex items-center gap-1">
+              <AlertTriangle className="w-4 h-4" />
+              Markeer schade op de schets of vink 'schadevrij' aan
+            </p>
+          )}
+
+          {!schadevrij && schadePunten.length > 0 && schadePunten.some(p => !p.label.trim()) && (
             <p className="text-sm text-destructive flex items-center gap-1">
               <AlertTriangle className="w-4 h-4" />
               Vul bij elke gemarkeerde schade een beschrijving in
             </p>
           )}
 
-          <Button type="submit" disabled={uploading || !!kmError || !kilometerstand || (schadePunten.length > 0 && schadePunten.some(p => !p.label.trim()))} className="gap-2">
+          <Button type="submit" disabled={
+            uploading || !!kmError || !kilometerstand ||
+            (!schadevrij && schadePunten.length === 0) ||
+            (!schadevrij && schadePunten.some(p => !p.label.trim()))
+          } className="gap-2">
             {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <RotateCcw className="w-4 h-4" />}
             {uploading ? "Bezig met verwerken..." : "Terugmelden"}
           </Button>
