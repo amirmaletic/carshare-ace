@@ -80,7 +80,7 @@ export default function MijnFacturen() {
               </div>
               <StatusBadge
                 status={f.status.replace("_", " ")}
-                variant={statusColors[f.status] ?? "default"}
+                variant={statusColors[f.status] ?? "muted"}
               />
             </div>
           ))}
