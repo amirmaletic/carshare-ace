@@ -231,14 +231,39 @@ export default function ReturnForm({
             )}
           </div>
 
-          {/* Visuele schadeschets */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-warning" />
-              Schadeschets (optioneel)
-            </Label>
-            <p className="text-xs text-muted-foreground">Klik op de auto-afbeelding om schade te markeren</p>
-            <VehicleDamageSketch points={schadePunten} onChange={setSchadePunten} />
+          {/* Schadevrij checkbox */}
+          <div className="space-y-3">
+            <div className="flex items-start gap-3 p-4 rounded-xl border border-border bg-muted/30">
+              <Checkbox
+                id="schadevrij"
+                checked={schadevrij}
+                onCheckedChange={(checked) => {
+                  setSchadevrij(!!checked);
+                  if (checked) setSchadePunten([]);
+                }}
+                className="mt-0.5"
+              />
+              <div className="flex-1">
+                <Label htmlFor="schadevrij" className="flex items-center gap-2 cursor-pointer font-medium">
+                  <ShieldCheck className="w-4 h-4 text-green-600" />
+                  Voertuig is schadevrij
+                </Label>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Vink aan als er geen schade is geconstateerd bij terugmelding
+                </p>
+              </div>
+            </div>
+
+            {!schadevrij && (
+              <>
+                <Label className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-warning" />
+                  Schadeschets (verplicht als niet schadevrij)
+                </Label>
+                <p className="text-xs text-muted-foreground">Klik op de auto-afbeelding om schade te markeren</p>
+                <VehicleDamageSketch points={schadePunten} onChange={setSchadePunten} />
+              </>
+            )}
           </div>
 
           {/* Notes */}
