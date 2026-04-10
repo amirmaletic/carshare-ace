@@ -1,12 +1,13 @@
 import { useState } from "react";
 import {
-  Car, Upload, Gauge, FileText, Loader2, RotateCcw, Search, Image as ImageIcon, X, AlertTriangle,
+  Car, Upload, Gauge, FileText, Loader2, RotateCcw, Search, Image as ImageIcon, X, AlertTriangle, ShieldCheck,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 import { VehicleDamageSketch, type DamagePoint } from "@/components/VehicleDamageSketch";
 
 interface MatchedVehicle {
@@ -32,6 +33,8 @@ interface ReturnFormProps {
   setFotos: (f: File[]) => void;
   schadePunten: DamagePoint[];
   setSchadePunten: (p: DamagePoint[]) => void;
+  schadevrij: boolean;
+  setSchadevrij: (v: boolean) => void;
   uploading: boolean;
   onSubmit: (e: React.FormEvent) => void;
 }
@@ -52,6 +55,8 @@ export default function ReturnForm({
   setFotos,
   schadePunten,
   setSchadePunten,
+  schadevrij,
+  setSchadevrij,
   uploading,
   onSubmit,
 }: ReturnFormProps) {
