@@ -6,6 +6,7 @@ import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { UpcomingAgenda } from "@/components/dashboard/UpcomingAgenda";
 import { TodayPickups } from "@/components/dashboard/TodayPickups";
 import { OverdrachtenOverzicht } from "@/components/dashboard/OverdrachtenOverzicht";
+import { ActiviteitenLog } from "@/components/ActiviteitenLog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -65,8 +66,11 @@ export default function Dashboard() {
       {/* Overdrachten overzicht */}
       <OverdrachtenOverzicht />
 
-      {/* Agenda */}
-      <UpcomingAgenda />
+      {/* Agenda + Activiteitenlog */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <UpcomingAgenda />
+        <ActiviteitenLog />
+      </div>
     </div>
   );
 }
