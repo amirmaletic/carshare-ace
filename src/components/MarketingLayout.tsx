@@ -9,7 +9,6 @@ function MarketingHeader() {
   const navLinks = [
     { to: "/", label: "Home" },
     { to: "/prijzen", label: "Prijzen" },
-    { to: "/boeken", label: "Voertuigen" },
   ];
 
   return (
