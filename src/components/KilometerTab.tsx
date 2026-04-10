@@ -95,7 +95,7 @@ export function KilometerTab({ contractId, kmPerJaar, startDatum, eindDatum }: K
         <div className="flex items-center gap-2 p-3 rounded-lg bg-warning/10 border border-warning/20 text-sm">
           <AlertTriangle className="w-4 h-4 text-warning shrink-0" />
           <span className="text-foreground">
-            Verwacht jaarverbruik: <strong>{projectedYearKm.toLocaleString("nl-NL")} km</strong> — limiet is {kmPerJaar?.toLocaleString("nl-NL")} km/jaar
+            Verwacht jaarverbruik: <strong>{projectedYearKm.toLocaleString("nl-NL")} km</strong>, limiet is {kmPerJaar?.toLocaleString("nl-NL")} km/jaar
           </span>
         </div>
       )}
@@ -135,7 +135,7 @@ export function KilometerTab({ contractId, kmPerJaar, startDatum, eindDatum }: K
               <div>
                 <span className="font-medium">{r.kilometerstand.toLocaleString("nl-NL")} km</span>
                 <span className="text-muted-foreground ml-2">{r.datum}</span>
-                {r.notitie && <span className="text-muted-foreground ml-2">— {r.notitie}</span>}
+                {r.notitie && <span className="text-muted-foreground ml-2">· {r.notitie}</span>}
               </div>
               <Button
                 size="icon"

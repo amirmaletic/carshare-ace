@@ -91,7 +91,7 @@ export function VehicleTerugmeldingen({ voertuigId, kenteken }: VehicleTerugmeld
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <StatBlock icon={RotateCcw} label="Totaal meldingen" value={String(totaalRitten)} color="text-primary" />
         <StatBlock icon={Gauge} label="Hoogste km" value={`${hoogsteKm.toLocaleString("nl-NL")} km`} color="text-success" />
-        <StatBlock icon={TrendingUp} label="Gem. km/rit" value={gemiddeldKmPerRit > 0 ? `${gemiddeldKmPerRit.toLocaleString("nl-NL")} km` : "—"} color="text-warning" />
+        <StatBlock icon={TrendingUp} label="Gem. km/rit" value={gemiddeldKmPerRit > 0 ? `${gemiddeldKmPerRit.toLocaleString("nl-NL")} km` : "-"} color="text-warning" />
         <StatBlock icon={User} label="Medewerkers" value={String(medewerkers.length)} color="text-info" />
       </div>
 

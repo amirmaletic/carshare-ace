@@ -81,7 +81,7 @@ export default function Pricing() {
         <div className="max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
             <Zap className="w-4 h-4" />
-            1 maand gratis proberen — geen creditcard nodig
+            1 maand gratis proberen, geen creditcard nodig
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight">
             Beheer je wagenpark{" "}
