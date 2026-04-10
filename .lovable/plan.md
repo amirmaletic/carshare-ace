@@ -1,37 +1,36 @@
 
 
-## Mobiele responsive aanpassingen
+## Plan: Marketing/Pricing loskoppelen van de applicatie
 
-Het probleem is duidelijk zichtbaar: de sidebar neemt op mobiel (390px) bijna het hele scherm in beslag, waardoor de content onbruikbaar wordt.
+### Probleem
+De pricing-pagina en publieke boekingspagina delen nu dezelfde React-app en routing als de medewerker- en klantkant. Dit moet een volledig losstaande ervaring worden.
 
 ### Aanpak
 
-**1. Sidebar omzetten naar mobiel-vriendelijk menu**
-- Op mobiel (`< 768px`): sidebar verbergen, hamburger-menu icon tonen in een sticky header
-- Klikken op hamburger opent de sidebar als een `Sheet` (slide-in overlay van links)
-- Na navigatie-klik sluit de sheet automatisch
-- Op desktop: huidige sidebar-gedrag behouden
+**1. Nieuw marketing-layout component maken**
+- `src/components/MarketingLayout.tsx` — bevat eigen header (logo, navigatie naar Home, Prijzen, Inloggen) en footer
+- Consistent design, maar volledig los van `AppLayout` en `KlantLayout`
 
-**2. AppLayout aanpassen**
-- Mobiele header toevoegen met Waggie logo + hamburger-knop (alleen zichtbaar op `< md`)
-- Content padding verkleinen op mobiel (`p-4` i.p.v. `p-6`)
+**2. Marketing-pagina's bundelen**
+- **Homepage** (`/`): De publieke boekingspagina (`PubliekBoeken`) inbedden in het marketing-layout, met hero-sectie en CTA's naar pricing en registratie
+- **Prijzen** (`/prijzen`): Bestaande `Pricing.tsx` refactoren om `MarketingLayout` te gebruiken (eigen header/footer uit Pricing verwijderen)
+- Optioneel later uitbreidbaar met bijv. `/over-ons`, `/contact`
 
-**3. Dashboard responsive fixes**
-- StatCards grid: `grid-cols-2` op mobiel i.p.v. `grid-cols-1` (compacter)
-- Grafieken sectie: volledige breedte op mobiel
-- Tabellen/lijsten: horizontale scroll waar nodig
+**3. Routing aanpassen in `App.tsx`**
+- Publieke routes (`/`, `/prijzen`, `/boeken`) wrappen in `MarketingLayout`
+- Auth-routes (`/auth`, `/klant-login`) blijven standalone
+- Staff-routes (`/dashboard`, etc.) blijven in `AppLayout`
+- Klantportaal (`/portaal/*`) blijft in `KlantLayout`
 
-**4. Overige pagina's**
-- Voertuigen: kaarten al `grid-cols-1` op mobiel (OK), maar header-knoppen stacken verticaal
-- Terugmelden/Contracten: formulieren en tabellen responsive controleren
-- Padding en font-sizes op kleine schermen aanpassen
+**4. Navigatie in MarketingLayout**
+- Links: Home, Prijzen, Voertuigen bekijken
+- Rechts: "Inloggen" (klant) en "Medewerker login" knoppen
+- Geen verwijzingen naar interne dashboards of portaal-functies
 
-### Bestanden die wijzigen
-
-| Bestand | Wijziging |
-|---|---|
-| `src/components/AppSidebar.tsx` | Accepteert `onClose` prop, mobiele Sheet-wrapper |
-| `src/components/AppLayout.tsx` | Mobiele header met hamburger, `useIsMobile()` check |
-| `src/pages/Dashboard.tsx` | Grid breakpoints en padding finetunen |
-| `src/pages/Vehicles.tsx` | Knoppen en filters stapelen op mobiel |
+### Bestanden
+| Actie | Bestand |
+|-------|---------|
+| Nieuw | `src/components/MarketingLayout.tsx` |
+| Wijzig | `src/pages/Pricing.tsx` — header/footer verwijderen, layout via wrapper |
+| Wijzig | `src/App.tsx` — publieke routes wrappen in MarketingLayout |
 
