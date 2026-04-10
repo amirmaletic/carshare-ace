@@ -114,6 +114,7 @@ const App = () => (
 
           {/* Auth routes */}
           <Route path="/auth" element={<Auth />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/klant-login" element={<KlantAuth />} />
 
           {/* Admin/staff routes */}
