@@ -24,6 +24,7 @@ import MijnReserveringen from "./pages/portaal/MijnReserveringen";
 import ReserveerVoertuig from "./pages/portaal/ReserveerVoertuig";
 import MijnFacturen from "./pages/portaal/MijnFacturen";
 import MijnProfiel from "./pages/portaal/MijnProfiel";
+import PubliekBoeken from "./pages/PubliekBoeken";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
+          <Route path="/boeken" element={<PubliekBoeken />} />
+
           {/* Auth routes */}
           <Route path="/auth" element={<Auth />} />
           <Route path="/klant-login" element={<KlantAuth />} />
