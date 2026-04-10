@@ -68,6 +68,7 @@ export function ContractForm({ open, onOpenChange, editContract, prefilledVehicl
   const isEdit = !!editContract;
   const createMutation = useCreateContract();
   const updateMutation = useUpdateContract();
+  const { voertuigen: vehicles } = useVoertuigen();
 
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(() => getInitialForm(editContract));

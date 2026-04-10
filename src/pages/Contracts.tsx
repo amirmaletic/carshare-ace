@@ -162,7 +162,7 @@ export default function Contracts() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((c, i) => {
-            const vehicle = c.voertuig_id ? getVehicleById(c.voertuig_id) : null;
+            const vehicle = c.voertuig_id ? voertuigen.find(v => v.id === c.voertuig_id) : null;
             const openInvoices = c.invoices.filter((inv) => inv.status !== "betaald").length;
             return (
               <div
@@ -259,7 +259,7 @@ function ContractDetail({
   const [documentOpen, setDocumentOpen] = useState(false);
 
   if (!contract) return null;
-  const vehicle = contract.voertuig_id ? getVehicleById(contract.voertuig_id) : null;
+  const vehicle = contract.voertuig_id ? voertuigen.find(v => v.id === contract.voertuig_id) : null;
 
   const handleCancel = async () => {
     try {
