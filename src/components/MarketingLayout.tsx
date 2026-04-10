@@ -19,7 +19,7 @@ function MarketingHeader() {
             <div className="p-2 bg-primary rounded-lg">
               <Car className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold text-foreground">FleetManager</span>
+            <span className="text-lg font-bold text-foreground">FleeFlo</span>
           </Link>
           <nav className="hidden sm:flex items-center gap-1">
             {navLinks.map((link) => (
@@ -59,9 +59,9 @@ function MarketingFooter() {
           <div className="p-1.5 bg-primary rounded-md">
             <Car className="w-3.5 h-3.5 text-primary-foreground" />
           </div>
-          <span className="font-semibold text-foreground">FleetManager</span>
+          <span className="font-semibold text-foreground">FleeFlo</span>
         </div>
-        <p>© {new Date().getFullYear()} FleetManager. Alle rechten voorbehouden.</p>
+        <p>© {new Date().getFullYear()} FleeFlo. Alle rechten voorbehouden.</p>
       </div>
     </footer>
   );
