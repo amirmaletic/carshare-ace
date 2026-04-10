@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrganisatie } from "@/hooks/useOrganisatie";
 import { toast } from "sonner";
 
 export interface DbVoertuig {
@@ -28,6 +29,7 @@ export type VoertuigInsert = Omit<DbVoertuig, "id" | "user_id" | "created_at" | 
 
 export function useVoertuigen() {
   const { user } = useAuth();
+  const { organisatieId } = useOrganisatie();
   const queryClient = useQueryClient();
 
   const query = useQuery({
@@ -46,9 +48,10 @@ export function useVoertuigen() {
   const addVoertuig = useMutation({
     mutationFn: async (voertuig: VoertuigInsert) => {
       if (!user) throw new Error("Niet ingelogd");
+      if (!organisatieId) throw new Error("Geen organisatie gevonden");
       const { data, error } = await supabase
         .from("voertuigen")
-        .insert({ ...voertuig, user_id: user.id })
+        .insert({ ...voertuig, user_id: user.id, organisatie_id: organisatieId })
         .select()
         .single();
       if (error) throw error;
