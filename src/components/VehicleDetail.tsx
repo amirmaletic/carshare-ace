@@ -60,7 +60,7 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
   if (!vehicle) return null;
 
-  const imageUrl = getVehicleImageUrl(vehicle.merk, vehicle.model);
+  const imageUrl = vehicle.image || getVehicleImageUrl(vehicle.merk, vehicle.model);
 
   return (
     <>
