@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { vehicles as mockVehicles } from "@/data/mockData";
+
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { toast } from "sonner";
 import { RotateCcw } from "lucide-react";
@@ -48,7 +48,6 @@ export default function Terugmelden() {
   const [uploading, setUploading] = useState(false);
 
   const allVehicles = [
-    ...mockVehicles.map(v => ({ id: v.id, label: `${v.merk} ${v.model}`, kenteken: v.kenteken, km: v.kilometerstand })),
     ...dbVoertuigen.map(v => ({ id: v.id, label: `${v.merk} ${v.model}`, kenteken: v.kenteken, km: v.kilometerstand })),
   ];
 

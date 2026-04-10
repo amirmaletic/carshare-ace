@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
-import { vehicles as mockVehicles, reservations, type Vehicle } from "@/data/mockData";
+import { type Vehicle } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { useLocaties } from "@/hooks/useLocaties";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -13,18 +13,10 @@ import { cn } from "@/lib/utils";
 import { format, addDays, startOfWeek, differenceInDays, isWithinInterval, addWeeks } from "date-fns";
 import { nl } from "date-fns/locale";
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
+  ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 
 interface GanttBlock {
@@ -56,10 +48,7 @@ function getBlockColor(type: GanttBlock["type"], status?: string) {
 function getEffectiveStatus(vehicle: Vehicle, blocks: GanttBlock[]): Vehicle["status"] {
   const today = new Date();
   const hasActiveBlock = blocks.some(
-    (b) =>
-      b.vehicleId === vehicle.id &&
-      b.type === "contract" &&
-      isWithinInterval(today, { start: b.start, end: b.end })
+    (b) => b.vehicleId === vehicle.id && b.type === "contract" && isWithinInterval(today, { start: b.start, end: b.end })
   );
   if (hasActiveBlock) return "verhuurd";
   if (vehicle.status === "onderhoud") return "onderhoud";
@@ -84,7 +73,6 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
     () => startOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 }),
     [weekOffset]
   );
-
   const days = useMemo(
     () => Array.from({ length: DAYS_VISIBLE }, (_, i) => addDays(startDate, i)),
     [startDate]
@@ -102,7 +90,7 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
     },
   });
 
-  const dbAsVehicles: Vehicle[] = dbVoertuigen.map((v) => ({
+  const allVehicles: (Vehicle & { _locatie?: string | null })[] = dbVoertuigen.map((v) => ({
     id: v.id,
     kenteken: v.kenteken,
     merk: v.merk,
@@ -119,12 +107,10 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
     _locatie: v.locatie,
   }));
 
-  const allVehicles = [...mockVehicles.map(v => ({ ...v, _locatie: null as string | null })), ...dbAsVehicles];
-
   const filteredVehicles = useMemo(() => {
     if (locationFilter === "alle") return allVehicles;
-    if (locationFilter === "geen") return allVehicles.filter(v => !(v as any)._locatie);
-    return allVehicles.filter(v => (v as any)._locatie === locationFilter);
+    if (locationFilter === "geen") return allVehicles.filter(v => !v._locatie);
+    return allVehicles.filter(v => v._locatie === locationFilter);
   }, [allVehicles, locationFilter]);
 
   const blocks: GanttBlock[] = useMemo(() => {
@@ -140,67 +126,49 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
         type: "contract",
       });
     });
-    reservations.forEach((r) => {
-      if (r.status === "geannuleerd" || r.status === "voltooid") return;
-      result.push({
-        id: `res-${r.id}`,
-        vehicleId: r.voertuigId,
-        start: new Date(r.startDatum),
-        end: new Date(r.eindDatum),
-        label: r.klantNaam,
-        type: "reservation",
-      });
-    });
     return result;
   }, [dbContracts]);
 
   const endDate = days[days.length - 1];
 
+  if (allVehicles.length === 0) {
+    return (
+      <div className="clean-card text-center py-16">
+        <p className="text-muted-foreground">Voeg voertuigen toe om de tijdlijn te gebruiken.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="clean-card overflow-hidden">
-      {/* Header nav */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWeekOffset((o) => o - 1)}>
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setWeekOffset(0)}>
-            Vandaag
-          </Button>
-          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWeekOffset((o) => o + 1)}>
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWeekOffset((o) => o - 1)}><ChevronLeft className="w-4 h-4" /></Button>
+          <Button variant="outline" size="sm" onClick={() => setWeekOffset(0)}>Vandaag</Button>
+          <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => setWeekOffset((o) => o + 1)}><ChevronRight className="w-4 h-4" /></Button>
         </div>
-
         <div className="flex items-center gap-2">
           <Filter className="w-3.5 h-3.5 text-muted-foreground" />
           <Select value={locationFilter} onValueChange={setLocationFilter}>
-            <SelectTrigger className="h-8 w-[160px] text-xs">
-              <SelectValue placeholder="Alle locaties" />
-            </SelectTrigger>
+            <SelectTrigger className="h-8 w-[160px] text-xs"><SelectValue placeholder="Alle locaties" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="alle">Alle locaties</SelectItem>
               <SelectItem value="geen">Geen locatie</SelectItem>
-              {locaties.map((l) => (
-                <SelectItem key={l.id} value={l.naam}>{l.naam}</SelectItem>
-              ))}
+              {locaties.map((l) => (<SelectItem key={l.id} value={l.naam}>{l.naam}</SelectItem>))}
             </SelectContent>
           </Select>
         </div>
-
         <p className="text-sm text-muted-foreground">
           {format(startDate, "d MMM", { locale: nl })} tot {format(endDate, "d MMM yyyy", { locale: nl })}
         </p>
         <div className="flex items-center gap-3 text-xs">
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-primary/70" /> Contract</span>
           <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-warning/70" /> Concept</span>
-          <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded bg-info/70" /> Reservering</span>
         </div>
       </div>
 
       <div className="overflow-x-auto" ref={scrollRef}>
         <div className="flex min-w-fit">
-          {/* Vehicle column */}
           <div className="sticky left-0 z-10 bg-background border-r border-border shrink-0" style={{ width: 220 }}>
             <div className="h-10 border-b border-border" />
             {filteredVehicles.map((v) => {
@@ -221,41 +189,23 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
                     </div>
                   </ContextMenuTrigger>
                   <ContextMenuContent>
-                    <ContextMenuItem onClick={() => onSelectVehicle?.(v)} className="gap-2">
-                      <Eye className="w-3.5 h-3.5" />
-                      Voertuig openen
-                    </ContextMenuItem>
-                    <ContextMenuItem onClick={() => onCreateContract?.(v)} className="gap-2">
-                      <FileText className="w-3.5 h-3.5" />
-                      Contract aanmaken
-                    </ContextMenuItem>
+                    <ContextMenuItem onClick={() => onSelectVehicle?.(v)} className="gap-2"><Eye className="w-3.5 h-3.5" />Voertuig openen</ContextMenuItem>
+                    <ContextMenuItem onClick={() => onCreateContract?.(v)} className="gap-2"><FileText className="w-3.5 h-3.5" />Contract aanmaken</ContextMenuItem>
                     <ContextMenuSeparator />
-                    <ContextMenuItem onClick={() => onReturnVehicle?.(v)} className="gap-2">
-                      <RotateCcw className="w-3.5 h-3.5" />
-                      Terugmelden
-                    </ContextMenuItem>
+                    <ContextMenuItem onClick={() => onReturnVehicle?.(v)} className="gap-2"><RotateCcw className="w-3.5 h-3.5" />Terugmelden</ContextMenuItem>
                   </ContextMenuContent>
                 </ContextMenu>
               );
             })}
           </div>
 
-          {/* Gantt grid */}
           <div className="relative flex-1">
             <div className="flex border-b border-border h-10">
               {days.map((d, i) => {
                 const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
                 const isWeekend = d.getDay() === 0 || d.getDay() === 6;
                 return (
-                  <div
-                    key={i}
-                    className={cn(
-                      "shrink-0 flex flex-col items-center justify-center border-r border-border text-[10px]",
-                      isToday && "bg-primary/10 font-bold text-primary",
-                      isWeekend && !isToday && "bg-muted/50 text-muted-foreground"
-                    )}
-                    style={{ width: CELL_WIDTH }}
-                  >
+                  <div key={i} className={cn("shrink-0 flex flex-col items-center justify-center border-r border-border text-[10px]", isToday && "bg-primary/10 font-bold text-primary", isWeekend && !isToday && "bg-muted/50 text-muted-foreground")} style={{ width: CELL_WIDTH }}>
                     <span>{format(d, "EEE", { locale: nl })}</span>
                     <span>{format(d, "d")}</span>
                   </div>
@@ -271,48 +221,20 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
                     {days.map((d, i) => {
                       const isWeekend = d.getDay() === 0 || d.getDay() === 6;
                       const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
-                      return (
-                        <div
-                          key={i}
-                          className={cn(
-                            "shrink-0 border-r border-border",
-                            isWeekend && "bg-muted/30",
-                            isToday && "bg-primary/5"
-                          )}
-                          style={{ width: CELL_WIDTH }}
-                        />
-                      );
+                      return (<div key={i} className={cn("shrink-0 border-r border-border", isWeekend && "bg-muted/30", isToday && "bg-primary/5")} style={{ width: CELL_WIDTH }} />);
                     })}
                   </div>
-
                   {vehicleBlocks.map((block) => {
                     const blockStart = differenceInDays(block.start, startDate);
                     const blockEnd = differenceInDays(block.end, startDate);
                     const clampedStart = Math.max(0, blockStart);
                     const clampedEnd = Math.min(DAYS_VISIBLE - 1, blockEnd);
                     if (clampedStart > DAYS_VISIBLE - 1 || clampedEnd < 0) return null;
-
                     const left = clampedStart * CELL_WIDTH;
                     const width = (clampedEnd - clampedStart + 1) * CELL_WIDTH - 4;
-
-                    const contractStatus = block.id.startsWith("con-")
-                      ? dbContracts.find((c: any) => `con-${c.id}` === block.id)?.status
-                      : undefined;
-
+                    const contractStatus = block.id.startsWith("con-") ? dbContracts.find((c: any) => `con-${c.id}` === block.id)?.status : undefined;
                     return (
-                      <div
-                        key={block.id}
-                        className={cn(
-                          "absolute top-1.5 rounded-md border text-[10px] font-medium px-1.5 flex items-center truncate z-[1] shadow-sm",
-                          getBlockColor(block.type, contractStatus)
-                        )}
-                        style={{
-                          left: left + 2,
-                          width: Math.max(width, 18),
-                          height: ROW_HEIGHT - 12,
-                        }}
-                        title={`${block.label}\n${format(block.start, "d MMM yyyy", { locale: nl })} tot ${format(block.end, "d MMM yyyy", { locale: nl })}`}
-                      >
+                      <div key={block.id} className={cn("absolute top-1.5 rounded-md border text-[10px] font-medium px-1.5 flex items-center truncate z-[1] shadow-sm", getBlockColor(block.type, contractStatus))} style={{ left: left + 2, width: Math.max(width, 18), height: ROW_HEIGHT - 12 }} title={`${block.label}\n${format(block.start, "d MMM yyyy", { locale: nl })} tot ${format(block.end, "d MMM yyyy", { locale: nl })}`}>
                         <span className="truncate">{block.label}</span>
                       </div>
                     );
@@ -324,12 +246,7 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
             {(() => {
               const todayOffset = differenceInDays(new Date(), startDate);
               if (todayOffset < 0 || todayOffset >= DAYS_VISIBLE) return null;
-              return (
-                <div
-                  className="absolute top-0 bottom-0 w-0.5 bg-primary z-[2]"
-                  style={{ left: todayOffset * CELL_WIDTH + CELL_WIDTH / 2 }}
-                />
-              );
+              return (<div className="absolute top-0 bottom-0 w-0.5 bg-primary z-[2]" style={{ left: todayOffset * CELL_WIDTH + CELL_WIDTH / 2 }} />);
             })()}
           </div>
         </div>
