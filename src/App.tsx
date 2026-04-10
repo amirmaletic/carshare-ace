@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { KlantLayout } from "@/components/KlantLayout";
+import { MarketingLayout } from "@/components/MarketingLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import Dashboard from "./pages/Dashboard";
@@ -129,9 +130,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<SmartHome />} />
-          <Route path="/prijzen" element={<Pricing />} />
+          {/* Public / marketing routes */}
+          <Route path="/" element={<MarketingLayout><SmartHome /></MarketingLayout>} />
+          <Route path="/prijzen" element={<MarketingLayout><Pricing /></MarketingLayout>} />
           <Route path="/boeken" element={<Navigate to="/" replace />} />
 
           {/* Auth routes */}
