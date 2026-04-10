@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
 import {
   LayoutDashboard,
   Car,
@@ -56,9 +57,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 h-14 border-b border-sidebar-border">
-        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-          <span className="text-primary-foreground font-bold text-lg leading-none">F</span>
-        </div>
+        <img src={fleefloLogo} alt="FleeFlo" className="w-8 h-8 object-contain flex-shrink-0" />
         {!isCollapsed && (
           <span className="font-semibold text-base text-foreground tracking-tight">
             FleeFlo

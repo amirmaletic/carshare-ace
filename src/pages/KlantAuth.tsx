@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { Car } from "lucide-react";
+import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
 import { Separator } from "@/components/ui/separator";
 
 export default function KlantAuth() {
@@ -63,8 +63,8 @@ export default function KlantAuth() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-3 p-3 rounded-xl bg-primary/10 w-fit">
-            <Car className="w-8 h-8 text-primary" />
+          <div className="mx-auto mb-3 w-fit">
+            <img src={fleefloLogo} alt="FleeFlo" className="w-16 h-16 object-contain" />
           </div>
           <CardTitle className="text-2xl">
             {isLogin ? "Klantportaal" : "Account aanmaken"}
