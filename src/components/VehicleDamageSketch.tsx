@@ -10,6 +10,7 @@ export interface DamagePoint {
   y: number; // percentage 0-100
   label: string;
   ernst: "licht" | "middel" | "zwaar";
+  grootte: "klein" | "middel" | "groot";
 }
 
 interface VehicleDamageSketchProps {
