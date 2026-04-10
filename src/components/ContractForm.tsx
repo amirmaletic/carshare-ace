@@ -11,8 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { useCreateContract, useUpdateContract, type ContractWithInvoices, type CreateContractInput } from "@/hooks/useContracts";
-import { type Vehicle } from "@/data/mockData";
-import { useVoertuigen } from "@/hooks/useVoertuigen";
+import { useVoertuigen, type DbVoertuig } from "@/hooks/useVoertuigen";
 import { RdwLookup, type RdwVehicleInfo } from "@/components/RdwLookup";
 import { KvkSearch } from "@/components/KvkSearch";
 import { FileText, User, Car, Euro, Shield, ScrollText } from "lucide-react";
@@ -40,7 +39,7 @@ const contractSchema = z.object({
   verlengings_termijn: z.string().max(50).nullable(),
 });
 
-const defaultKmPerDayByCategory: Record<Vehicle["categorie"], number> = {
+const defaultKmPerDayByCategory: Record<string, number> = {
   Stadsauto: 100, SUV: 150, Bestelwagen: 200, Luxe: 120, Elektrisch: 130,
 };
 

@@ -14,10 +14,11 @@ interface ContractDocumentProps {
 
 export function ContractDocument({ contract, open, onOpenChange }: ContractDocumentProps) {
   const printRef = useRef<HTMLDivElement>(null);
+  const { voertuigen } = useVoertuigen();
 
   if (!contract) return null;
 
-  const vehicle = contract.voertuig_id ? getVehicleById(contract.voertuig_id) : null;
+  const vehicle = contract.voertuig_id ? voertuigen.find(v => v.id === contract.voertuig_id) : null;
   const today = new Date().toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
 
   const handlePrint = () => {
