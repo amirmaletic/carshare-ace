@@ -56,7 +56,7 @@ export default function Kosten() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={Euro} title="Totale TCO" value={`€${Math.round(samenvatting.totaalTCO).toLocaleString("nl-NL")}`} subtitle={`${samenvatting.aantalVoertuigen} voertuigen`} />
-        <StatCard icon={Calculator} title="Gem. kosten/km" value={samenvatting.gemiddeldeKostenPerKm ? `€${samenvatting.gemiddeldeKostenPerKm.toFixed(2)}` : "—"} subtitle="Over alle voertuigen" />
+        <StatCard icon={Calculator} title="Gem. kosten/km" value={samenvatting.gemiddeldeKostenPerKm ? `€${samenvatting.gemiddeldeKostenPerKm.toFixed(2)}` : "-"} subtitle="Over alle voertuigen" />
         <StatCard icon={TrendingUp} title="Prognose komende maand" value={`€${Math.round(samenvatting.prognoseKomendeMaand).toLocaleString("nl-NL")}`} subtitle="Op basis van trend" />
         <StatCard icon={Car} title="Voertuigen met data" value={samenvatting.aantalVoertuigen} subtitle="Actieve contracten" />
       </div>
@@ -174,7 +174,7 @@ export default function Kosten() {
                   {samenvatting.voertuigKosten.map(v => (
                     <tr key={v.voertuigId} className="border-b border-border">
                       <td className="py-3 px-2 font-medium text-foreground">{v.voertuigId.slice(0, 8)}</td>
-                      <td className="py-3 px-2 text-muted-foreground">{v.klantNaam ?? "—"}</td>
+                      <td className="py-3 px-2 text-muted-foreground">{v.klantNaam ?? "-"}</td>
                       <td className="py-3 px-2 text-right text-foreground">€{Math.round(v.leaseKosten).toLocaleString("nl-NL")}</td>
                       <td className="py-3 px-2 text-right text-foreground">€{Math.round(v.serviceKosten).toLocaleString("nl-NL")}</td>
                       <td className="py-3 px-2 text-right text-foreground">€{Math.round(v.schadeKosten).toLocaleString("nl-NL")}</td>
