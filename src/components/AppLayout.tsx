@@ -26,9 +26,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
               <Menu className="w-5 h-5 text-foreground" />
             </button>
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-              <span className="text-primary-foreground font-bold text-lg leading-none">W</span>
+              <span className="text-primary-foreground font-bold text-lg leading-none">F</span>
             </div>
-            <span className="font-semibold text-base text-foreground tracking-tight">Waggie</span>
+            <span className="font-semibold text-base text-foreground tracking-tight">FleeFlo</span>
           </div>
 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>

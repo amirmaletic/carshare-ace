@@ -96,7 +96,7 @@ export default function MarketingHome() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-base" asChild>
-                <Link to="/auth">Gratis starten</Link>
+                <Link to="/auth?mode=signup">Gratis starten</Link>
               </Button>
             </div>
           </div>
@@ -233,7 +233,7 @@ export default function MarketingHome() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="gap-2 text-base" asChild>
-              <Link to="/auth">
+              <Link to="/auth?mode=signup">
                 Gratis starten
                 <ArrowRight className="w-4 h-4" />
               </Link>
