@@ -394,6 +394,66 @@ export type Database = {
           },
         ]
       }
+      klanten: {
+        Row: {
+          achternaam: string
+          adres: string | null
+          auth_user_id: string | null
+          bedrijfsnaam: string | null
+          created_at: string
+          email: string
+          id: string
+          kvk_nummer: string | null
+          notities: string | null
+          plaats: string | null
+          postcode: string | null
+          rijbewijs_nummer: string | null
+          rijbewijs_verloopt: string | null
+          telefoon: string | null
+          type: string
+          updated_at: string
+          voornaam: string
+        }
+        Insert: {
+          achternaam: string
+          adres?: string | null
+          auth_user_id?: string | null
+          bedrijfsnaam?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          kvk_nummer?: string | null
+          notities?: string | null
+          plaats?: string | null
+          postcode?: string | null
+          rijbewijs_nummer?: string | null
+          rijbewijs_verloopt?: string | null
+          telefoon?: string | null
+          type?: string
+          updated_at?: string
+          voornaam: string
+        }
+        Update: {
+          achternaam?: string
+          adres?: string | null
+          auth_user_id?: string | null
+          bedrijfsnaam?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          kvk_nummer?: string | null
+          notities?: string | null
+          plaats?: string | null
+          postcode?: string | null
+          rijbewijs_nummer?: string | null
+          rijbewijs_verloopt?: string | null
+          telefoon?: string | null
+          type?: string
+          updated_at?: string
+          voornaam?: string
+        }
+        Relationships: []
+      }
       locaties: {
         Row: {
           created_at: string
@@ -476,6 +536,59 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reserveringen: {
+        Row: {
+          created_at: string
+          dagprijs: number
+          eind_datum: string
+          extras: string[]
+          id: string
+          klant_id: string
+          notities: string | null
+          start_datum: string
+          status: string
+          totaalprijs: number
+          updated_at: string
+          voertuig_id: string
+        }
+        Insert: {
+          created_at?: string
+          dagprijs?: number
+          eind_datum: string
+          extras?: string[]
+          id?: string
+          klant_id: string
+          notities?: string | null
+          start_datum: string
+          status?: string
+          totaalprijs?: number
+          updated_at?: string
+          voertuig_id: string
+        }
+        Update: {
+          created_at?: string
+          dagprijs?: number
+          eind_datum?: string
+          extras?: string[]
+          id?: string
+          klant_id?: string
+          notities?: string | null
+          start_datum?: string
+          status?: string
+          totaalprijs?: number
+          updated_at?: string
+          voertuig_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reserveringen_klant_id_fkey"
+            columns: ["klant_id"]
+            isOneToOne: false
+            referencedRelation: "klanten"
             referencedColumns: ["id"]
           },
         ]
