@@ -228,8 +228,8 @@ export default function OnboardingWizard({ onComplete }: Props) {
         {step === 3 && (
           <Card>
             <CardHeader className="text-center pb-2">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-green-100 flex items-center justify-center mb-4">
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                <CheckCircle2 className="w-8 h-8 text-primary" />
               </div>
               <CardTitle className="text-2xl">Je bent klaar! 🎉</CardTitle>
               <CardDescription className="text-base mt-2">
