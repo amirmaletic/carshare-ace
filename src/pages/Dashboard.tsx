@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Car, CalendarRange, Wrench, Euro, FileText } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
@@ -10,9 +11,42 @@ import { ActiviteitenLog } from "@/components/ActiviteitenLog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import OnboardingWizard from "@/components/OnboardingWizard";
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+
+  // Check if onboarding is needed
+  const { data: needsOnboarding } = useQuery({
+    queryKey: ["onboarding-check", user?.id],
+    queryFn: async () => {
+      // Already completed onboarding?
+      if (localStorage.getItem("fleetflow_onboarding_done") === "true") return false;
+      // Has any vehicles? If yes, skip onboarding
+      const { count } = await supabase.from("voertuigen").select("id", { count: "exact", head: true });
+      if (count && count > 0) {
+        localStorage.setItem("fleetflow_onboarding_done", "true");
+        return false;
+      }
+      // Has bedrijfsgegevens saved?
+      const saved = localStorage.getItem("fleetflow_bedrijf");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.bedrijfsnaam) {
+          localStorage.setItem("fleetflow_onboarding_done", "true");
+          return false;
+        }
+      }
+      return true;
+    },
+    enabled: !!user,
+    staleTime: Infinity,
+  });
+
+  useEffect(() => {
+    if (needsOnboarding !== undefined) setShowOnboarding(needsOnboarding);
+  }, [needsOnboarding]);
 
   const { data: stats } = useQuery({
     queryKey: ["dashboard-stats"],
@@ -33,8 +67,20 @@ export default function Dashboard() {
         openInvoices: invoices.length,
       };
     },
-    enabled: !!user,
+    enabled: !!user && showOnboarding === false,
   });
+
+  if (showOnboarding === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (showOnboarding) {
+    return <OnboardingWizard onComplete={() => setShowOnboarding(false)} />;
+  }
 
   return (
     <div className="space-y-6">
