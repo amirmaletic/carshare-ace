@@ -30,6 +30,7 @@ export type Database = {
           klant_naam: string
           klant_telefoon: string | null
           notitie: string | null
+          organisatie_id: string | null
           status: string
           updated_at: string
           user_id: string
@@ -49,6 +50,7 @@ export type Database = {
           klant_naam: string
           klant_telefoon?: string | null
           notitie?: string | null
+          organisatie_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -68,6 +70,7 @@ export type Database = {
           klant_naam?: string
           klant_telefoon?: string | null
           notitie?: string | null
+          organisatie_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -78,6 +81,13 @@ export type Database = {
             columns: ["gekoppeld_voertuig_id"]
             isOneToOne: false
             referencedRelation: "voertuigen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aanvragen_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
             referencedColumns: ["id"]
           },
         ]
@@ -91,6 +101,7 @@ export type Database = {
           entiteit_type: string | null
           id: string
           metadata: Json | null
+          organisatie_id: string | null
           user_id: string
         }
         Insert: {
@@ -101,6 +112,7 @@ export type Database = {
           entiteit_type?: string | null
           id?: string
           metadata?: Json | null
+          organisatie_id?: string | null
           user_id: string
         }
         Update: {
@@ -111,9 +123,18 @@ export type Database = {
           entiteit_type?: string | null
           id?: string
           metadata?: Json | null
+          organisatie_id?: string | null
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "activiteiten_log_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       chauffeur_beschikbaarheid: {
         Row: {
@@ -122,6 +143,7 @@ export type Database = {
           eind_datum: string
           id: string
           notitie: string | null
+          organisatie_id: string | null
           start_datum: string
           type: string
           user_id: string
@@ -132,6 +154,7 @@ export type Database = {
           eind_datum: string
           id?: string
           notitie?: string | null
+          organisatie_id?: string | null
           start_datum: string
           type?: string
           user_id: string
@@ -142,6 +165,7 @@ export type Database = {
           eind_datum?: string
           id?: string
           notitie?: string | null
+          organisatie_id?: string | null
           start_datum?: string
           type?: string
           user_id?: string
@@ -152,6 +176,13 @@ export type Database = {
             columns: ["chauffeur_id"]
             isOneToOne: false
             referencedRelation: "chauffeurs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chauffeur_beschikbaarheid_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
             referencedColumns: ["id"]
           },
         ]
@@ -166,6 +197,7 @@ export type Database = {
           heeft_trailer: boolean
           id: string
           notities: string | null
+          organisatie_id: string | null
           plaats: string | null
           postcode: string | null
           rijbewijs_categorie: string
@@ -188,6 +220,7 @@ export type Database = {
           heeft_trailer?: boolean
           id?: string
           notities?: string | null
+          organisatie_id?: string | null
           plaats?: string | null
           postcode?: string | null
           rijbewijs_categorie?: string
@@ -210,6 +243,7 @@ export type Database = {
           heeft_trailer?: boolean
           id?: string
           notities?: string | null
+          organisatie_id?: string | null
           plaats?: string | null
           postcode?: string | null
           rijbewijs_categorie?: string
@@ -223,7 +257,15 @@ export type Database = {
           voertuig_id?: string | null
           voornaam?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "chauffeurs_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contracts: {
         Row: {
@@ -246,6 +288,7 @@ export type Database = {
           notities: string | null
           ondertekend: boolean | null
           ondertekend_op: string | null
+          organisatie_id: string | null
           start_datum: string
           status: Database["public"]["Enums"]["contract_status"]
           type: Database["public"]["Enums"]["contract_type"]
@@ -275,6 +318,7 @@ export type Database = {
           notities?: string | null
           ondertekend?: boolean | null
           ondertekend_op?: string | null
+          organisatie_id?: string | null
           start_datum: string
           status?: Database["public"]["Enums"]["contract_status"]
           type: Database["public"]["Enums"]["contract_type"]
@@ -304,6 +348,7 @@ export type Database = {
           notities?: string | null
           ondertekend?: boolean | null
           ondertekend_op?: string | null
+          organisatie_id?: string | null
           start_datum?: string
           status?: Database["public"]["Enums"]["contract_status"]
           type?: Database["public"]["Enums"]["contract_type"]
@@ -313,7 +358,15 @@ export type Database = {
           verlengings_termijn?: string | null
           voertuig_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contracts_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       eigendom_historie: {
         Row: {
@@ -323,6 +376,7 @@ export type Database = {
           eind_datum: string | null
           id: string
           notitie: string | null
+          organisatie_id: string | null
           start_datum: string
           user_id: string
           voertuig_id: string
@@ -334,6 +388,7 @@ export type Database = {
           eind_datum?: string | null
           id?: string
           notitie?: string | null
+          organisatie_id?: string | null
           start_datum: string
           user_id: string
           voertuig_id: string
@@ -345,11 +400,20 @@ export type Database = {
           eind_datum?: string | null
           id?: string
           notitie?: string | null
+          organisatie_id?: string | null
           start_datum?: string
           user_id?: string
           voertuig_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "eigendom_historie_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invoices: {
         Row: {
@@ -358,6 +422,7 @@ export type Database = {
           created_at: string
           datum: string
           id: string
+          organisatie_id: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           user_id: string
         }
@@ -367,6 +432,7 @@ export type Database = {
           created_at?: string
           datum: string
           id?: string
+          organisatie_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           user_id: string
         }
@@ -376,6 +442,7 @@ export type Database = {
           created_at?: string
           datum?: string
           id?: string
+          organisatie_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           user_id?: string
         }
@@ -385,6 +452,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
             referencedColumns: ["id"]
           },
         ]
@@ -397,6 +471,7 @@ export type Database = {
           id: string
           kilometerstand: number
           notitie: string | null
+          organisatie_id: string | null
           user_id: string
         }
         Insert: {
@@ -406,6 +481,7 @@ export type Database = {
           id?: string
           kilometerstand: number
           notitie?: string | null
+          organisatie_id?: string | null
           user_id: string
         }
         Update: {
@@ -415,6 +491,7 @@ export type Database = {
           id?: string
           kilometerstand?: number
           notitie?: string | null
+          organisatie_id?: string | null
           user_id?: string
         }
         Relationships: [
@@ -423,6 +500,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kilometer_registraties_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
             referencedColumns: ["id"]
           },
         ]
@@ -492,19 +576,51 @@ export type Database = {
           created_at: string
           id: string
           naam: string
+          organisatie_id: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           naam: string
+          organisatie_id?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
           naam?: string
+          organisatie_id?: string | null
           user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locaties_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organisaties: {
+        Row: {
+          created_at: string
+          eigenaar_id: string
+          id: string
+          naam: string
+        }
+        Insert: {
+          created_at?: string
+          eigenaar_id: string
+          id?: string
+          naam?: string
+        }
+        Update: {
+          created_at?: string
+          eigenaar_id?: string
+          id?: string
+          naam?: string
         }
         Relationships: []
       }
@@ -520,6 +636,7 @@ export type Database = {
           klant_naam: string
           ondertekend_op: string | null
           opmerkingen: string | null
+          organisatie_id: string | null
           status: string
           type: string
           user_id: string
@@ -538,6 +655,7 @@ export type Database = {
           klant_naam: string
           ondertekend_op?: string | null
           opmerkingen?: string | null
+          organisatie_id?: string | null
           status?: string
           type?: string
           user_id: string
@@ -556,6 +674,7 @@ export type Database = {
           klant_naam?: string
           ondertekend_op?: string | null
           opmerkingen?: string | null
+          organisatie_id?: string | null
           status?: string
           type?: string
           user_id?: string
@@ -569,6 +688,13 @@ export type Database = {
             columns: ["contract_id"]
             isOneToOne: false
             referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "overdrachten_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
             referencedColumns: ["id"]
           },
         ]
@@ -638,6 +764,7 @@ export type Database = {
           kosten: number | null
           naar_locatie: string
           notitie: string | null
+          organisatie_id: string | null
           status: string
           type: string
           updated_at: string
@@ -657,6 +784,7 @@ export type Database = {
           kosten?: number | null
           naar_locatie: string
           notitie?: string | null
+          organisatie_id?: string | null
           status?: string
           type?: string
           updated_at?: string
@@ -676,6 +804,7 @@ export type Database = {
           kosten?: number | null
           naar_locatie?: string
           notitie?: string | null
+          organisatie_id?: string | null
           status?: string
           type?: string
           updated_at?: string
@@ -690,6 +819,13 @@ export type Database = {
             columns: ["chauffeur_id"]
             isOneToOne: false
             referencedRelation: "chauffeurs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ritten_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
             referencedColumns: ["id"]
           },
           {
@@ -741,6 +877,7 @@ export type Database = {
           locatie_schade: string | null
           notitie: string | null
           omschrijving: string
+          organisatie_id: string | null
           schade_punten: Json | null
           user_id: string
           verzekerd: boolean | null
@@ -758,6 +895,7 @@ export type Database = {
           locatie_schade?: string | null
           notitie?: string | null
           omschrijving: string
+          organisatie_id?: string | null
           schade_punten?: Json | null
           user_id: string
           verzekerd?: boolean | null
@@ -775,12 +913,21 @@ export type Database = {
           locatie_schade?: string | null
           notitie?: string | null
           omschrijving?: string
+          organisatie_id?: string | null
           schade_punten?: Json | null
           user_id?: string
           verzekerd?: boolean | null
           voertuig_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "schade_rapporten_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_historie: {
         Row: {
@@ -792,6 +939,7 @@ export type Database = {
           kosten: number | null
           notitie: string | null
           omschrijving: string
+          organisatie_id: string | null
           type: string
           user_id: string
           voertuig_id: string
@@ -805,6 +953,7 @@ export type Database = {
           kosten?: number | null
           notitie?: string | null
           omschrijving: string
+          organisatie_id?: string | null
           type?: string
           user_id: string
           voertuig_id: string
@@ -818,11 +967,20 @@ export type Database = {
           kosten?: number | null
           notitie?: string | null
           omschrijving?: string
+          organisatie_id?: string | null
           type?: string
           user_id?: string
           voertuig_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "service_historie_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       terugmeldingen: {
         Row: {
@@ -834,6 +992,7 @@ export type Database = {
           kilometerstand: number
           medewerker_email: string | null
           notitie: string | null
+          organisatie_id: string | null
           user_id: string
           voertuig_id: string
           voertuig_kenteken: string
@@ -848,6 +1007,7 @@ export type Database = {
           kilometerstand: number
           medewerker_email?: string | null
           notitie?: string | null
+          organisatie_id?: string | null
           user_id: string
           voertuig_id: string
           voertuig_kenteken: string
@@ -862,33 +1022,97 @@ export type Database = {
           kilometerstand?: number
           medewerker_email?: string | null
           notitie?: string | null
+          organisatie_id?: string | null
           user_id?: string
           voertuig_id?: string
           voertuig_kenteken?: string
           voertuig_naam?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "terugmeldingen_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uitnodigingen: {
+        Row: {
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          organisatie_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          token: string
+          uitgenodigd_door: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          organisatie_id: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          token?: string
+          uitgenodigd_door: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          organisatie_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          token?: string
+          uitgenodigd_door?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uitnodigingen_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
           created_at: string
           id: string
+          organisatie_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          organisatie_id?: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          organisatie_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       voertuigen: {
         Row: {
@@ -905,6 +1129,7 @@ export type Database = {
           locatie: string | null
           merk: string
           model: string
+          organisatie_id: string | null
           status: string
           updated_at: string
           user_id: string
@@ -924,6 +1149,7 @@ export type Database = {
           locatie?: string | null
           merk: string
           model: string
+          organisatie_id?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -943,18 +1169,28 @@ export type Database = {
           locatie?: string | null
           merk?: string
           model?: string
+          organisatie_id?: string | null
           status?: string
           updated_at?: string
           user_id?: string
           verzekering_vervaldatum?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "voertuigen_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_user_organisatie_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
