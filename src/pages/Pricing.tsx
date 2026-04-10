@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Zap, Shield, Crown, ArrowRight, Car } from "lucide-react";
+import { Check, Zap, Shield, Crown, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
