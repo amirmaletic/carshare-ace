@@ -61,7 +61,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         </div>
         {!isCollapsed && (
           <span className="font-semibold text-base text-foreground tracking-tight">
-            Waggie
+            FleeFlo
           </span>
         )}
       </div>
