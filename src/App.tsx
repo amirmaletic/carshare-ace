@@ -30,6 +30,7 @@ import MijnProfiel from "./pages/portaal/MijnProfiel";
 import MarketingHome from "./pages/MarketingHome";
 import PubliekBoeken from "./pages/PubliekBoeken";
 import Pricing from "./pages/Pricing";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
