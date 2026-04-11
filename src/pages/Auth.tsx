@@ -10,13 +10,161 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "@/hooks/use-toast";
 import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
+
+function EmailVerificationScreen({ email, onBack }: { email: string; onBack: () => void }) {
+  const [resending, setResending] = useState(false);
+
+  const handleResend = async () => {
+    setResending(true);
+    const { error } = await supabase.auth.resend({ type: "signup", email });
+    setResending(false);
+    if (error) {
+      toast({ title: "Fout", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Verstuurd!", description: "We hebben een nieuwe verificatie-e-mail gestuurd." });
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-3 w-fit">
+            <img src={fleefloLogo} alt="FleeFlo" className="w-16 h-16 object-contain" />
+          </div>
+          <div className="mx-auto mb-4 p-4 rounded-full bg-primary/10 w-fit">
+            <Mail className="w-10 h-10 text-primary" />
+          </div>
+          <CardTitle className="text-2xl">Controleer je inbox</CardTitle>
+          <CardDescription className="text-base mt-2">
+            We hebben een verificatie-e-mail gestuurd naar
+          </CardDescription>
+          <p className="font-semibold text-foreground mt-1">{email}</p>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <div className="bg-muted/50 rounded-xl p-4 space-y-3">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <p className="text-sm text-muted-foreground">
+                Klik op de link in de e-mail om je account te activeren
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <p className="text-sm text-muted-foreground">
+                Check ook je spam/ongewenste map als je de e-mail niet ziet
+              </p>
+            </div>
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+              <p className="text-sm text-muted-foreground">
+                Na verificatie kun je direct inloggen en starten met je 30-dagen proefperiode
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center space-y-3">
+            <p className="text-sm text-muted-foreground">Geen e-mail ontvangen?</p>
+            <Button variant="outline" className="w-full" onClick={handleResend} disabled={resending}>
+              {resending ? "Bezig met versturen..." : "Verificatie-e-mail opnieuw versturen"}
+            </Button>
+          </div>
+
+          <Separator />
+
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mx-auto"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Terug naar inloggen
+          </button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function ForgotPasswordScreen({
+  email,
+  setEmail,
+  onBack,
+}: {
+  email: string;
+  setEmail: (v: string) => void;
+  onBack: () => void;
+}) {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSubmitting(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setSubmitting(false);
+    if (error) {
+      toast({ title: "Fout", description: error.message, variant: "destructive" });
+    } else {
+      toast({
+        title: "E-mail verstuurd",
+        description: "Controleer je inbox voor de link om je wachtwoord te resetten.",
+      });
+      onBack();
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-3 w-fit">
+            <img src={fleefloLogo} alt="FleeFlo" className="w-16 h-16 object-contain" />
+          </div>
+          <CardTitle className="text-2xl">Wachtwoord vergeten</CardTitle>
+          <CardDescription>
+            Vul je e-mailadres in en we sturen je een link om je wachtwoord te resetten.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="reset-email">E-mailadres</Label>
+              <Input
+                id="reset-email"
+                type="email"
+                placeholder="naam@bedrijf.nl"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={submitting}>
+              {submitting ? "Bezig..." : "Verstuur resetlink"}
+            </Button>
+          </form>
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mx-auto"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Terug naar inloggen
+          </button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const { user, loading, signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(searchParams.get("mode") !== "signup");
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  const [showVerification, setShowVerification] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -31,90 +179,48 @@ export default function Auth() {
 
   if (user) return <Navigate to="/dashboard" replace />;
 
+  if (showVerification) {
+    return (
+      <EmailVerificationScreen
+        email={email}
+        onBack={() => {
+          setShowVerification(false);
+          setIsLogin(true);
+        }}
+      />
+    );
+  }
+
+  if (isForgotPassword) {
+    return (
+      <ForgotPasswordScreen
+        email={email}
+        setEmail={setEmail}
+        onBack={() => setIsForgotPassword(false)}
+      />
+    );
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
-    const { error } = isLogin
-      ? await signIn(email, password)
-      : await signUp(email, password);
-
-    setSubmitting(false);
-
-    if (error) {
-      toast({ title: "Fout", description: error.message, variant: "destructive" });
-    } else if (!isLogin) {
-      toast({
-        title: "Account aangemaakt",
-        description: "Je kunt nu direct aan de slag met je gratis proefperiode van 30 dagen!",
-      });
-    }
-  };
-
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-
-    setSubmitting(false);
-
-    if (error) {
-      toast({ title: "Fout", description: error.message, variant: "destructive" });
+    if (isLogin) {
+      const { error } = await signIn(email, password);
+      setSubmitting(false);
+      if (error) {
+        toast({ title: "Fout", description: error.message, variant: "destructive" });
+      }
     } else {
-      toast({
-        title: "E-mail verstuurd",
-        description: "Controleer je inbox voor de link om je wachtwoord te resetten.",
-      });
-      setIsForgotPassword(false);
+      const { error } = await signUp(email, password);
+      setSubmitting(false);
+      if (error) {
+        toast({ title: "Fout", description: error.message, variant: "destructive" });
+      } else {
+        setShowVerification(true);
+      }
     }
   };
-
-  if (isForgotPassword) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-3 w-fit">
-              <img src={fleefloLogo} alt="FleeFlo" className="w-16 h-16 object-contain" />
-            </div>
-            <CardTitle className="text-2xl">Wachtwoord vergeten</CardTitle>
-            <CardDescription>
-              Vul je e-mailadres in en we sturen je een link om je wachtwoord te resetten.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reset-email">E-mailadres</Label>
-                <Input
-                  id="reset-email"
-                  type="email"
-                  placeholder="naam@bedrijf.nl"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={submitting}>
-                {submitting ? "Bezig..." : "Verstuur resetlink"}
-              </Button>
-            </form>
-            <button
-              type="button"
-              onClick={() => setIsForgotPassword(false)}
-              className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mx-auto"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Terug naar inloggen
-            </button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -129,7 +235,7 @@ export default function Auth() {
           <CardDescription>
             {isLogin
               ? "Log in om je wagenpark te beheren"
-              : "Maak een account aan om te beginnen"}
+              : "Start je gratis proefperiode van 30 dagen"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
