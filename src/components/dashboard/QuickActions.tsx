@@ -4,12 +4,12 @@ import { Car, FileText, RotateCcw, UserPlus, CalendarPlus, Wrench, Plus, ArrowRi
 import { cn } from "@/lib/utils";
 
 const actions = [
-  { icon: Car, label: "Voertuig", sub: "toevoegen", path: "/vehicles", gradient: "from-primary/20 to-primary/5", ring: "ring-primary/20", iconColor: "text-primary" },
-  { icon: FileText, label: "Contract", sub: "aanmaken", path: "/contracts", gradient: "from-success/20 to-success/5", ring: "ring-success/20", iconColor: "text-success" },
+  { icon: Car, label: "Voertuig", sub: "toevoegen", path: "/voertuigen", gradient: "from-primary/20 to-primary/5", ring: "ring-primary/20", iconColor: "text-primary" },
+  { icon: FileText, label: "Contract", sub: "aanmaken", path: "/contracten", gradient: "from-success/20 to-success/5", ring: "ring-success/20", iconColor: "text-success" },
   { icon: RotateCcw, label: "Terug-", sub: "melden", path: "/terugmelden", gradient: "from-warning/20 to-warning/5", ring: "ring-warning/20", iconColor: "text-warning" },
   { icon: UserPlus, label: "Chauffeur", sub: "toevoegen", path: "/chauffeurs", gradient: "from-info/20 to-info/5", ring: "ring-info/20", iconColor: "text-info" },
   { icon: CalendarPlus, label: "Rit", sub: "plannen", path: "/ritten", gradient: "from-primary/15 to-accent/10", ring: "ring-primary/15", iconColor: "text-primary" },
-  { icon: Wrench, label: "Onderhoud", sub: "melden", path: "/maintenance", gradient: "from-destructive/15 to-destructive/5", ring: "ring-destructive/15", iconColor: "text-destructive" },
+  { icon: Wrench, label: "Onderhoud", sub: "melden", path: "/onderhoud", gradient: "from-destructive/15 to-destructive/5", ring: "ring-destructive/15", iconColor: "text-destructive" },
 ];
 
 export function QuickActions() {
