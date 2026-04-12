@@ -6,6 +6,9 @@ import { AiAssistant } from "./AiAssistant";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+import { useTrialStatus } from "@/hooks/useTrialStatus";
+import TrialExpiredScreen from "./TrialExpiredScreen";
+import { Badge } from "@/components/ui/badge";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
