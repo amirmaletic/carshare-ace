@@ -713,19 +713,25 @@ export type Database = {
           created_at: string
           eigenaar_id: string
           id: string
+          is_active: boolean
           naam: string
+          trial_ends_at: string | null
         }
         Insert: {
           created_at?: string
           eigenaar_id: string
           id?: string
+          is_active?: boolean
           naam?: string
+          trial_ends_at?: string | null
         }
         Update: {
           created_at?: string
           eigenaar_id?: string
           id?: string
+          is_active?: boolean
           naam?: string
+          trial_ends_at?: string | null
         }
         Relationships: []
       }
