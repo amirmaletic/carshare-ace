@@ -84,6 +84,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "aanvragen_gekoppeld_voertuig_id_fkey"
+            columns: ["gekoppeld_voertuig_id"]
+            isOneToOne: false
+            referencedRelation: "voertuigen_publiek"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "aanvragen_organisatie_id_fkey"
             columns: ["organisatie_id"]
             isOneToOne: false
@@ -609,6 +616,7 @@ export type Database = {
           id: string
           kvk_nummer: string | null
           notities: string | null
+          organisatie_id: string | null
           plaats: string | null
           postcode: string | null
           rijbewijs_nummer: string | null
@@ -628,6 +636,7 @@ export type Database = {
           id?: string
           kvk_nummer?: string | null
           notities?: string | null
+          organisatie_id?: string | null
           plaats?: string | null
           postcode?: string | null
           rijbewijs_nummer?: string | null
@@ -647,6 +656,7 @@ export type Database = {
           id?: string
           kvk_nummer?: string | null
           notities?: string | null
+          organisatie_id?: string | null
           plaats?: string | null
           postcode?: string | null
           rijbewijs_nummer?: string | null
@@ -656,7 +666,15 @@ export type Database = {
           updated_at?: string
           voornaam?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "klanten_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       locaties: {
         Row: {
@@ -920,6 +938,13 @@ export type Database = {
             columns: ["voertuig_id"]
             isOneToOne: false
             referencedRelation: "voertuigen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ritten_voertuig_id_fkey"
+            columns: ["voertuig_id"]
+            isOneToOne: false
+            referencedRelation: "voertuigen_publiek"
             referencedColumns: ["id"]
           },
         ]
@@ -1301,7 +1326,69 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      reserveringen_beschikbaarheid: {
+        Row: {
+          eind_datum: string | null
+          start_datum: string | null
+          status: string | null
+          voertuig_id: string | null
+        }
+        Insert: {
+          eind_datum?: string | null
+          start_datum?: string | null
+          status?: string | null
+          voertuig_id?: string | null
+        }
+        Update: {
+          eind_datum?: string | null
+          start_datum?: string | null
+          status?: string | null
+          voertuig_id?: string | null
+        }
+        Relationships: []
+      }
+      voertuigen_publiek: {
+        Row: {
+          bouwjaar: number | null
+          brandstof: string | null
+          categorie: string | null
+          dagprijs: number | null
+          id: string | null
+          image_url: string | null
+          kleur: string | null
+          locatie: string | null
+          merk: string | null
+          model: string | null
+          status: string | null
+        }
+        Insert: {
+          bouwjaar?: number | null
+          brandstof?: string | null
+          categorie?: string | null
+          dagprijs?: number | null
+          id?: string | null
+          image_url?: string | null
+          kleur?: string | null
+          locatie?: string | null
+          merk?: string | null
+          model?: string | null
+          status?: string | null
+        }
+        Update: {
+          bouwjaar?: number | null
+          brandstof?: string | null
+          categorie?: string | null
+          dagprijs?: number | null
+          id?: string | null
+          image_url?: string | null
+          kleur?: string | null
+          locatie?: string | null
+          merk?: string | null
+          model?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       delete_email: {
