@@ -17,31 +17,24 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
 
-  // Check if onboarding is needed
+  // Check if onboarding is needed — purely database-driven per organisation
   const { data: needsOnboarding } = useQuery({
     queryKey: ["onboarding-check", user?.id],
     queryFn: async () => {
-      // Already completed onboarding?
-      if (localStorage.getItem("fleetflow_onboarding_done") === "true") return false;
-      // Has any vehicles? If yes, skip onboarding
+      // Has any vehicles in this org? RLS scopes automatically
       const { count } = await supabase.from("voertuigen").select("id", { count: "exact", head: true });
-      if (count && count > 0) {
-        localStorage.setItem("fleetflow_onboarding_done", "true");
-        return false;
-      }
-      // Has bedrijfsgegevens saved?
-      const saved = localStorage.getItem("fleetflow_bedrijf");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.bedrijfsnaam) {
-          localStorage.setItem("fleetflow_onboarding_done", "true");
-          return false;
-        }
-      }
+      if (count && count > 0) return false;
+      // Has any contracts?
+      const { count: contractCount } = await supabase.from("contracts").select("id", { count: "exact", head: true });
+      if (contractCount && contractCount > 0) return false;
+      // Has any chauffeurs?
+      const { count: chauffeurCount } = await supabase.from("chauffeurs").select("id", { count: "exact", head: true });
+      if (chauffeurCount && chauffeurCount > 0) return false;
+      // Completely empty org → show onboarding
       return true;
     },
     enabled: !!user,
-    staleTime: Infinity,
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {
