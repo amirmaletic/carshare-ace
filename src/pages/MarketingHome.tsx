@@ -1,4 +1,4 @@
-import { ArrowRight, Car, BarChart3, FileText, Shield, Users, Zap, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Car, BarChart3, FileText, Shield, Users, Zap, CheckCircle2, Clock, MapPin, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import productDashboard from "@/assets/product-dashboard.png";
@@ -49,6 +49,27 @@ const stats = [
   { value: "< 2 min", label: "Contract aanmaken" },
   { value: "100%", label: "Digitale overdracht" },
   { value: "24/7", label: "Klantportaal toegang" },
+];
+
+const useCases = [
+  {
+    icon: Clock,
+    title: "Tijdsbesparing",
+    description:
+      "Automatiseer repetitieve taken zoals contractverlengingen, factuurherinneringen en voertuigstatuswijzigingen, waardoor je team elke week uren bespaart op administratief werk.",
+  },
+  {
+    icon: MapPin,
+    title: "Locatiebeheer",
+    description:
+      "Houd bij waar elk voertuig zich bevindt, beheer meerdere standplaatsen en optimaliseer de verdeling van je vloot over verschillende locaties binnen je organisatie.",
+  },
+  {
+    icon: Wrench,
+    title: "Onderhoud & APK",
+    description:
+      "Ontvang automatische meldingen wanneer APK-keuringen of verzekeringsdata verlopen, plan onderhoudsbeurten in en houd de volledige servicehistorie van elk voertuig bij.",
+  },
 ];
 
 export default function MarketingHome() {
@@ -103,7 +124,7 @@ export default function MarketingHome() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-base" asChild>
-                <Link to="/auth?mode=signup">Gratis starten</Link>
+                <Link to="/auth">Gratis proefperiode starten</Link>
               </Button>
             </div>
           </div>
@@ -135,7 +156,7 @@ export default function MarketingHome() {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8" id="features">
+      <section className="py-20 px-4 sm:px-6 lg:px-8" id="functies">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
@@ -165,7 +186,7 @@ export default function MarketingHome() {
       </section>
 
       {/* Screenshot: Voertuigen */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/20">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/20" id="voertuigen">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-3xl font-bold text-foreground mb-4">
@@ -175,7 +196,8 @@ export default function MarketingHome() {
               Als verhuurbedrijf wil je direct zien welke voertuigen beschikbaar zijn en waar ze zich
               bevinden. Met FleeFlo filter je op categorie, brandstoftype of beschikbaarheid en bekijk
               je elk voertuig in detail, inclusief kilometerstand, APK-status en volledige
-              verhuurgeschiedenis. Importeer nieuwe voertuigen eenvoudig via RDW-kenteken.
+              verhuurgeschiedenis. Importeer nieuwe voertuigen eenvoudig via het RDW-kenteken en voeg
+              ze met één klik toe aan je wagenpark.
             </p>
             <ul className="space-y-3">
               {["RDW-kenteken automatisch opzoeken", "Filteren op categorie en beschikbaarheid", "Dagprijzen en statusbeheer per voertuig", "Tijdlijn- en locatieweergave van je wagenpark"].map((item) => (
@@ -200,7 +222,7 @@ export default function MarketingHome() {
       </section>
 
       {/* Screenshot: Contracten */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
+      <section className="py-20 px-4 sm:px-6 lg:px-8" id="contracten">
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div className="order-2 lg:order-1">
             <img
@@ -220,7 +242,8 @@ export default function MarketingHome() {
               Beheer al je lease-, verhuur- en fietsleasecontracten vanuit één overzicht. Volg
               maandelijkse omzet, verloopdata en openstaande facturen in realtime. Genereer
               professionele PDF-contracten met digitale handtekening, zodat je klanten snel en
-              papierloos kunnen tekenen — ideaal voor moderne verhuurbedrijven die tijd willen besparen.
+              papierloos kunnen tekenen — ideaal voor moderne verhuurbedrijven die tijd willen besparen
+              en hun administratie volledig digitaal willen inrichten.
             </p>
             <ul className="space-y-3">
               {["Lease, verhuur en fietslease contracten", "Digitale ondertekening door klanten", "Professionele PDF-export van facturen", "Automatische herinneringen bij verloopdatum"].map((item) => (
@@ -230,6 +253,41 @@ export default function MarketingHome() {
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Extra use cases section for more content */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/20" id="voordelen">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+              Waarom verhuurbedrijven kiezen voor FleeFlo
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Of je nu vijf of vijftig voertuigen beheert, FleeFlo groeit mee met je bedrijf en biedt
+              de tools die je nodig hebt om je dagelijkse operatie soepel te laten verlopen, van
+              eerste klantcontact tot eindafrekening.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-8">
+            {useCases.map((uc) => (
+              <article
+                key={uc.title}
+                className="p-6 rounded-2xl border border-border bg-background"
+              >
+                <div className="p-3 rounded-xl bg-primary/10 w-fit mb-4">
+                  <uc.icon className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{uc.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{uc.description}</p>
+              </article>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Button variant="outline" asChild>
+              <Link to="/prijzen">Bekijk alle functies en prijzen</Link>
+            </Button>
           </div>
         </div>
       </section>
@@ -247,8 +305,8 @@ export default function MarketingHome() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="gap-2 text-base" asChild>
-              <Link to="/auth?mode=signup">
-                Gratis starten
+              <Link to="/auth">
+                Gratis proefperiode starten
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </Button>
