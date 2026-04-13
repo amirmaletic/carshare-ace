@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -15,32 +17,36 @@ function MarketingHeader() {
     { to: "/prijzen", label: "Prijzen" },
   ];
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        <div className="flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={fleefloLogo} alt="FleeFlo wagenparkbeheer" className="w-8 h-8 object-contain" />
-            <span className="text-lg font-bold text-foreground">FleeFlo</span>
-          </Link>
-          <nav className="hidden sm:flex items-center gap-1">
-            {navLinks.map((link) => (
-              <a
-                key={link.to}
-                href={link.to}
-                className={cn(
-                  "px-3 py-2 rounded-md text-sm font-medium transition-colors",
-                  location.pathname === link.to
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
-                )}
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-        </div>
-        <div className="flex items-center gap-3">
+        <Link to="/" className="flex items-center gap-2 flex-shrink-0">
+          <img src={fleefloLogo} alt="FleeFlo wagenparkbeheer" className="w-8 h-8 object-contain" />
+          <span className="text-lg font-bold text-foreground">FleeFlo</span>
+        </Link>
+
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {navLinks.map((link) => (
+            <a
+              key={link.to}
+              href={link.to}
+              className={cn(
+                "px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                location.pathname === link.to
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+              )}
+            >
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        {/* Desktop buttons */}
+        <div className="hidden md:flex items-center gap-3">
           <Button variant="ghost" asChild>
             <Link to="/klant-login">Klant inloggen</Link>
           </Button>
@@ -48,7 +54,49 @@ function MarketingHeader() {
             <Link to="/auth">Medewerker login</Link>
           </Button>
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="md:hidden p-2 rounded-lg hover:bg-accent transition-colors"
+          aria-label="Menu openen"
+        >
+          {mobileMenuOpen ? (
+            <X className="w-5 h-5 text-foreground" />
+          ) : (
+            <Menu className="w-5 h-5 text-foreground" />
+          )}
+        </button>
       </div>
+
+      {/* Mobile menu */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t border-border bg-background px-4 py-4 space-y-2">
+          {navLinks.map((link) => (
+            <a
+              key={link.to}
+              href={link.to}
+              onClick={() => setMobileMenuOpen(false)}
+              className={cn(
+                "block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                location.pathname === link.to
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent"
+              )}
+            >
+              {link.label}
+            </a>
+          ))}
+          <div className="pt-2 border-t border-border space-y-2">
+            <Button variant="outline" className="w-full" asChild>
+              <Link to="/klant-login" onClick={() => setMobileMenuOpen(false)}>Klant inloggen</Link>
+            </Button>
+            <Button className="w-full" asChild>
+              <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Medewerker login</Link>
+            </Button>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

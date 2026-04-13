@@ -99,7 +99,7 @@ export default function MarketingHome() {
       />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-28 px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden pt-12 pb-14 sm:pt-24 sm:pb-28 px-4 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
         <div className="max-w-7xl mx-auto relative">
           <div className="text-center max-w-3xl mx-auto mb-12">
@@ -107,11 +107,11 @@ export default function MarketingHome() {
               <Zap className="w-4 h-4" />
               1 maand gratis uitproberen, geen creditcard nodig
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-tight">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-tight">
               Professioneel wagenparkbeheer{" "}
               <span className="text-primary">voor verhuurbedrijven</span>
             </h1>
-            <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="mt-4 sm:mt-6 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               Van contracten en schadebeheer tot ritplanning en facturatie — FleeFlo biedt je alles
               wat je nodig hebt om je wagenpark slim te beheren en je verhuurbedrijf professioneel
               te laten groeien, allemaal vanuit één centraal platform.
