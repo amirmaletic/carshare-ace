@@ -9,32 +9,38 @@ const features = [
   {
     icon: Car,
     title: "Voertuigbeheer",
-    description: "Overzicht van je hele vloot met status, locatie, APK-verloopdatum en beschikbaarheid. Alles op één plek.",
+    description:
+      "Houd je volledige wagenpark overzichtelijk bij met actuele statussen, locaties, APK-verloopdatums en directe beschikbaarheidsinformatie, zodat je altijd weet welk voertuig waar staat en wanneer het ingezet kan worden.",
   },
   {
     icon: FileText,
     title: "Contracten & Lease",
-    description: "Maak contracten aan, volg verloopdata en beheer borg en maandprijzen. Inclusief digitale ondertekening.",
+    description:
+      "Maak professionele huur- en leasecontracten aan met automatische verloopdata, borgbeheer en maandprijzen, inclusief digitale ondertekening waardoor je binnen twee minuten een compleet contract klaarzet.",
   },
   {
     icon: BarChart3,
     title: "Rapportages & Inzicht",
-    description: "Realtime dashboards met omzet, bezettingsgraad, openstaande facturen en kostenoverzicht.",
+    description:
+      "Krijg realtime dashboards met gedetailleerde overzichten van je omzet, bezettingsgraad, openstaande facturen en totale kostenstructuur, zodat je datagedreven beslissingen kunt nemen voor je verhuurbedrijf.",
   },
   {
     icon: Users,
     title: "Klant- & Chauffeursbeheer",
-    description: "Beheer klantgegevens, rijbewijzen, beschikbaarheid van chauffeurs en koppel ze direct aan ritten.",
+    description:
+      "Beheer alle klantgegevens, rijbewijsinformatie en chauffeursbeschikbaarheid op één centrale plek en koppel chauffeurs direct aan geplande ritten en voertuigen binnen je organisatie.",
   },
   {
     icon: Shield,
     title: "Schadebeheer",
-    description: "Registreer schades visueel met een voertuigschets, volg herstellingen en verzekeringsafhandeling.",
+    description:
+      "Registreer schades visueel met een interactieve voertuigschets, volg de voortgang van herstellingen en beheer de verzekeringsafhandeling, zodat je altijd grip hebt op de staat van elk voertuig in je vloot.",
   },
   {
     icon: Zap,
     title: "AI-assistent",
-    description: "Slimme aanbevelingen voor voertuigkoppeling, kostenberekening en optimalisatie van je wagenpark.",
+    description:
+      "Ontvang slimme aanbevelingen voor voertuigkoppeling, automatische kostenberekening en geavanceerde optimalisatie van je wagenpark, aangedreven door kunstmatige intelligentie die meeleert met je bedrijfsprocessen.",
   },
 ];
 
@@ -78,15 +84,16 @@ export default function MarketingHome() {
           <div className="text-center max-w-3xl mx-auto mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
               <Zap className="w-4 h-4" />
-              1 maand gratis, geen creditcard nodig
+              1 maand gratis uitproberen, geen creditcard nodig
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-tight">
-              Jouw wagenpark,{" "}
-              <span className="text-primary">slim beheerd</span>
+              Professioneel wagenparkbeheer{" "}
+              <span className="text-primary">voor verhuurbedrijven</span>
             </h1>
             <p className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Van contracten tot schadebeheer, van ritplanning tot facturatie.
-              Alles wat je nodig hebt om je verhuurbedrijf professioneel te runnen. In één platform.
+              Van contracten en schadebeheer tot ritplanning en facturatie — FleeFlo biedt je alles
+              wat je nodig hebt om je wagenpark slim te beheren en je verhuurbedrijf professioneel
+              te laten groeien, allemaal vanuit één centraal platform.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="gap-2 text-base" asChild>
@@ -105,7 +112,7 @@ export default function MarketingHome() {
           <div className="max-w-5xl mx-auto">
             <img
               src={productDashboard}
-              alt="FleeFlo dashboard met overzicht van voertuigen, contracten en openstaande taken"
+              alt="FleeFlo dashboard met overzicht van voertuigen, contracten en openstaande taken voor wagenparkbeheer"
               className="w-full rounded-xl shadow-2xl shadow-primary/10"
               loading="eager"
               width={1400}
@@ -135,7 +142,9 @@ export default function MarketingHome() {
               Alles voor professioneel wagenparkbeheer
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Één platform voor al je voertuigen, contracten, chauffeurs en klanten.
+              Met FleeFlo beheer je al je voertuigen, contracten, chauffeurs en klanten op één
+              centrale plek, speciaal ontworpen voor verhuurbedrijven die efficiënt en overzichtelijk
+              willen werken.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -160,14 +169,16 @@ export default function MarketingHome() {
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div>
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Overzicht van je hele vloot
+              Compleet overzicht van je hele vloot
             </h2>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              Filter op categorie, brandstof of beschikbaarheid. Bekijk elk voertuig in detail
-              met kilometerstand, APK-status en verhuurgeschiedenis. Importeer voertuigen via RDW-kenteken.
+              Als verhuurbedrijf wil je direct zien welke voertuigen beschikbaar zijn en waar ze zich
+              bevinden. Met FleeFlo filter je op categorie, brandstoftype of beschikbaarheid en bekijk
+              je elk voertuig in detail, inclusief kilometerstand, APK-status en volledige
+              verhuurgeschiedenis. Importeer nieuwe voertuigen eenvoudig via RDW-kenteken.
             </p>
             <ul className="space-y-3">
-              {["RDW-kenteken opzoeken", "Filter op categorie & beschikbaarheid", "Dagprijzen en statusbeheer", "Tijdlijn- en locatieweergave"].map((item) => (
+              {["RDW-kenteken automatisch opzoeken", "Filteren op categorie en beschikbaarheid", "Dagprijzen en statusbeheer per voertuig", "Tijdlijn- en locatieweergave van je wagenpark"].map((item) => (
                 <li key={item} className="flex items-center gap-3 text-sm text-foreground">
                   <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
                   {item}
@@ -178,7 +189,7 @@ export default function MarketingHome() {
           <div>
             <img
               src={productVoertuigen}
-              alt="Voertuigenbeheer scherm met filters, categorieën en voertuigkaarten"
+              alt="Voertuigenbeheer scherm met filters, categorieën en voertuigkaarten in het FleeFlo wagenparkbeheer platform"
               className="w-full rounded-xl shadow-xl"
               loading="lazy"
               width={1400}
@@ -194,7 +205,7 @@ export default function MarketingHome() {
           <div className="order-2 lg:order-1">
             <img
               src={productContracten}
-              alt="Contractenbeheer met overzicht van actieve lease- en verhuurcontracten"
+              alt="Contractenbeheer met overzicht van actieve lease- en verhuurcontracten in FleeFlo"
               className="w-full rounded-xl shadow-xl"
               loading="lazy"
               width={1400}
@@ -203,14 +214,16 @@ export default function MarketingHome() {
           </div>
           <div className="order-1 lg:order-2">
             <h2 className="text-3xl font-bold text-foreground mb-4">
-              Contracten & facturatie op orde
+              Contracten en facturatie altijd op orde
             </h2>
             <p className="text-muted-foreground mb-6 leading-relaxed">
-              Beheer lease-, verhuur- en fietsleasecontracten. Volg maandomzet,
-              verloopdata en openstaande facturen. Genereer professionele PDF-contracten met digitale handtekening.
+              Beheer al je lease-, verhuur- en fietsleasecontracten vanuit één overzicht. Volg
+              maandelijkse omzet, verloopdata en openstaande facturen in realtime. Genereer
+              professionele PDF-contracten met digitale handtekening, zodat je klanten snel en
+              papierloos kunnen tekenen — ideaal voor moderne verhuurbedrijven die tijd willen besparen.
             </p>
             <ul className="space-y-3">
-              {["Lease, verhuur & fietslease", "Digitale ondertekening", "PDF-export van facturen", "Automatische herinneringen"].map((item) => (
+              {["Lease, verhuur en fietslease contracten", "Digitale ondertekening door klanten", "Professionele PDF-export van facturen", "Automatische herinneringen bij verloopdatum"].map((item) => (
                 <li key={item} className="flex items-center gap-3 text-sm text-foreground">
                   <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
                   {item}
@@ -225,11 +238,12 @@ export default function MarketingHome() {
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-primary/5">
         <div className="max-w-3xl mx-auto text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-            Klaar om je wagenpark slim te beheren?
+            Klaar om je wagenpark professioneel te beheren?
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Start vandaag met een gratis proefperiode van 30 dagen. Geen creditcard nodig,
-            volledige toegang tot alle functies.
+            Start vandaag nog met een gratis proefperiode van 30 dagen en ontdek hoe FleeFlo
+            je verhuurbedrijf helpt om efficiënter te werken. Geen creditcard nodig, en je krijgt
+            direct volledige toegang tot alle functies van het platform.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" className="gap-2 text-base" asChild>
