@@ -122,6 +122,7 @@ function MarketingFooter() {
               <li><a href="/#voertuigen" className="text-muted-foreground hover:text-foreground transition-colors">Voertuigbeheer</a></li>
               <li><a href="/#contracten" className="text-muted-foreground hover:text-foreground transition-colors">Contractbeheer</a></li>
               <li><a href="/#voordelen" className="text-muted-foreground hover:text-foreground transition-colors">Voordelen</a></li>
+              <li><Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
             </ul>
           </div>
           <div>

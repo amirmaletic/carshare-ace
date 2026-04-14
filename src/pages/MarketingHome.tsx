@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import productDashboard from "@/assets/product-dashboard.png";
 import productVoertuigen from "@/assets/product-voertuigen.png";
 import productContracten from "@/assets/product-contracten.png";
+import FaqSection from "@/components/marketing/FaqSection";
+import BlogPreviewSection from "@/components/marketing/BlogPreviewSection";
 
 const features = [
   {
@@ -291,6 +293,12 @@ export default function MarketingHome() {
           </div>
         </div>
       </section>
+
+      {/* Blog Preview */}
+      <BlogPreviewSection />
+
+      {/* FAQ */}
+      <FaqSection />
 
       {/* CTA Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8 bg-primary/5">
