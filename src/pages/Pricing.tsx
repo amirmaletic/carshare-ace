@@ -235,6 +235,86 @@ export default function Pricing() {
         </div>
       </section>
 
+      {/* FAQ */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8" id="faq">
+        <div className="max-w-3xl mx-auto">
+          <div className="text-center mb-14">
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+              Veelgestelde vragen over abonnementen
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground">
+              Alles wat je wilt weten over onze plannen, betaling en wat FleeFlo voor jouw bedrijf kan betekenen.
+            </p>
+          </div>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="faq-0">
+              <AccordionTrigger className="text-left text-base font-medium text-foreground">
+                Kan ik tussentijds upgraden of downgraden?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-relaxed">
+                Ja, je kunt op elk moment overstappen naar een ander plan. Bij een upgrade krijg je direct toegang tot de extra functies en wordt het verschil pro rata verrekend. Bij een downgrade gaat de wijziging in aan het einde van je huidige facturatieperiode, zodat je nooit betaalt voor functies die je niet meer gebruikt.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-1">
+              <AccordionTrigger className="text-left text-base font-medium text-foreground">
+                Hoe werkt de betaling na de gratis proefperiode?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-relaxed">
+                Na je gratis proefperiode van 30 dagen kies je een plan en voer je je betaalgegevens in. Je kunt kiezen voor maandelijkse of jaarlijkse facturatie. Bij jaarlijkse betaling bespaar je tot 20% ten opzichte van maandelijks. Je ontvangt elke periode automatisch een factuur per e-mail.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-2">
+              <AccordionTrigger className="text-left text-base font-medium text-foreground">
+                Wat gebeurt er als mijn proefperiode afloopt?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-relaxed">
+                Je ontvangt ruim van tevoren een herinnering dat je proefperiode bijna eindigt. Na afloop wordt je account tijdelijk gepauzeerd totdat je een betaald plan activeert. Je gegevens blijven bewaard, zodat je precies verder kunt waar je gebleven was zodra je een abonnement afsluit.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-3">
+              <AccordionTrigger className="text-left text-base font-medium text-foreground">
+                Hoeveel tijd bespaart FleeFlo mijn team dagelijks?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-relaxed">
+                Verhuurbedrijven die FleeFlo gebruiken besparen gemiddeld één tot twee uur per dag op administratieve taken. Denk aan het automatisch aanmaken van contracten, het digitaal laten ondertekenen door klanten, automatische APK en verzekeringsherinneringen en het in één klik genereren van facturen. Die uren kun je besteden aan het laten groeien van je bedrijf.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-4">
+              <AccordionTrigger className="text-left text-base font-medium text-foreground">
+                Hoe helpt FleeFlo mij om meer omzet te genereren?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-relaxed">
+                FleeFlo geeft je realtime inzicht in de bezettingsgraad van je vloot, zodat je snel kunt zien welke voertuigen niet worden benut. Met het klantportaal kunnen klanten 24/7 zelf reserveren, waardoor je geen boekingen mist buiten kantoortijden. Daarnaast helpen de rapportages je om te zien welke voertuigen het meest rendabel zijn, zodat je slimmer kunt investeren in je wagenpark.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-5">
+              <AccordionTrigger className="text-left text-base font-medium text-foreground">
+                Wat maakt FleeFlo beter dan een spreadsheet?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-relaxed">
+                Een spreadsheet biedt geen automatische meldingen, geen digitale contracten, geen klantportaal en geen visueel schadebeheer. FleeFlo combineert al deze functies in één overzichtelijk platform dat speciaal is gebouwd voor verhuurbedrijven. Bovendien werkt FleeFlo realtime samen met je team, waardoor iedereen altijd met dezelfde actuele gegevens werkt en fouten door verouderde bestanden tot het verleden behoren.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-6">
+              <AccordionTrigger className="text-left text-base font-medium text-foreground">
+                Kan ik FleeFlo ook gebruiken voor fietsen of elektrische voertuigen?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-relaxed">
+                Absoluut. FleeFlo ondersteunt alle typen voertuigen, van personenauto's en busjes tot fietsen en elektrische voertuigen. Je kunt per voertuig de categorie instellen en aparte contracttypes aanmaken zoals fietslease of EV lease. Zo beheer je je gehele vloot vanuit één systeem, ongeacht het type voertuig.
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="faq-7">
+              <AccordionTrigger className="text-left text-base font-medium text-foreground">
+                Is er een opzegtermijn aan het abonnement verbonden?
+              </AccordionTrigger>
+              <AccordionContent className="text-muted-foreground leading-relaxed">
+                Nee, bij maandelijkse betaling kun je op elk moment opzeggen. Je abonnement loopt dan af aan het einde van de lopende maand. Bij jaarlijkse betaling geldt het abonnement voor de volledige jaarperiode, maar ook dan wordt het niet automatisch verlengd tenzij je dat zelf instelt. We geloven dat de kwaliteit van ons product reden genoeg is om te blijven.
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      </section>
+
     </div>
   );
 }
