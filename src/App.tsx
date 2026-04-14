@@ -30,6 +30,8 @@ import MijnProfiel from "./pages/portaal/MijnProfiel";
 import MarketingHome from "./pages/MarketingHome";
 import PubliekBoeken from "./pages/PubliekBoeken";
 import Pricing from "./pages/Pricing";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
@@ -110,6 +112,8 @@ const App = () => (
           {/* Public / marketing routes */}
           <Route path="/" element={<MarketingLayout><MarketingHome /></MarketingLayout>} />
           <Route path="/prijzen" element={<MarketingLayout><Pricing /></MarketingLayout>} />
+          <Route path="/blog" element={<MarketingLayout><Blog /></MarketingLayout>} />
+          <Route path="/blog/:slug" element={<MarketingLayout><BlogPost /></MarketingLayout>} />
           <Route path="/boeken" element={<PubliekBoeken />} />
 
           {/* Auth routes */}
