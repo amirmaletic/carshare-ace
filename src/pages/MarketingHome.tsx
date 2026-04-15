@@ -244,7 +244,7 @@ export default function MarketingHome() {
               Beheer al je lease-, verhuur- en fietsleasecontracten vanuit één overzicht. Volg
               maandelijkse omzet, verloopdata en openstaande facturen in realtime. Genereer
               professionele PDF-contracten met digitale handtekening, zodat je klanten snel en
-              papierloos kunnen tekenen — ideaal voor moderne verhuurbedrijven die tijd willen besparen
+              papierloos kunnen tekenen. Dit is ideaal voor moderne verhuurbedrijven die tijd willen besparen
               en hun administratie volledig digitaal willen inrichten.
             </p>
             <ul className="space-y-3">
