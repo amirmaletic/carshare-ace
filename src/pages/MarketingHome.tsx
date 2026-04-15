@@ -114,7 +114,7 @@ export default function MarketingHome() {
               <span className="text-primary">voor verhuurbedrijven</span>
             </h1>
             <p className="mt-4 sm:mt-6 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Van contracten en schadebeheer tot ritplanning en facturatie — FleeFlo biedt je alles
+              Van contracten en schadebeheer tot ritplanning en facturatie. FleeFlo biedt je alles
               wat je nodig hebt om je wagenpark slim te beheren en je verhuurbedrijf professioneel
               te laten groeien, allemaal vanuit één centraal platform.
             </p>
@@ -244,7 +244,7 @@ export default function MarketingHome() {
               Beheer al je lease-, verhuur- en fietsleasecontracten vanuit één overzicht. Volg
               maandelijkse omzet, verloopdata en openstaande facturen in realtime. Genereer
               professionele PDF-contracten met digitale handtekening, zodat je klanten snel en
-              papierloos kunnen tekenen — ideaal voor moderne verhuurbedrijven die tijd willen besparen
+              papierloos kunnen tekenen. Dit is ideaal voor moderne verhuurbedrijven die tijd willen besparen
               en hun administratie volledig digitaal willen inrichten.
             </p>
             <ul className="space-y-3">
