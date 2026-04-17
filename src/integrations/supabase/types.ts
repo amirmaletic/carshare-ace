@@ -509,6 +509,106 @@ export type Database = {
         }
         Relationships: []
       }
+      goedkeuring_regels: {
+        Row: {
+          actie_type: string
+          actief: boolean
+          created_at: string
+          drempel_bedrag: number | null
+          id: string
+          organisatie_id: string
+          updated_at: string
+        }
+        Insert: {
+          actie_type: string
+          actief?: boolean
+          created_at?: string
+          drempel_bedrag?: number | null
+          id?: string
+          organisatie_id: string
+          updated_at?: string
+        }
+        Update: {
+          actie_type?: string
+          actief?: boolean
+          created_at?: string
+          drempel_bedrag?: number | null
+          id?: string
+          organisatie_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goedkeuring_regels_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goedkeuringen: {
+        Row: {
+          aangevraagd_door: string
+          actie_type: string
+          bedrag: number | null
+          beoordeeld_door: string | null
+          beoordeeld_op: string | null
+          beschrijving: string
+          created_at: string
+          entiteit_id: string | null
+          entiteit_type: string | null
+          id: string
+          organisatie_id: string
+          payload: Json | null
+          reden_afwijzing: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          aangevraagd_door: string
+          actie_type: string
+          bedrag?: number | null
+          beoordeeld_door?: string | null
+          beoordeeld_op?: string | null
+          beschrijving: string
+          created_at?: string
+          entiteit_id?: string | null
+          entiteit_type?: string | null
+          id?: string
+          organisatie_id: string
+          payload?: Json | null
+          reden_afwijzing?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          aangevraagd_door?: string
+          actie_type?: string
+          bedrag?: number | null
+          beoordeeld_door?: string | null
+          beoordeeld_op?: string | null
+          beschrijving?: string
+          created_at?: string
+          entiteit_id?: string | null
+          entiteit_type?: string | null
+          id?: string
+          organisatie_id?: string
+          payload?: Json | null
+          reden_afwijzing?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goedkeuringen_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           bedrag: number
@@ -1432,7 +1532,12 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "beheerder" | "medewerker" | "chauffeur" | "klant"
+      app_role:
+        | "beheerder"
+        | "medewerker"
+        | "chauffeur"
+        | "klant"
+        | "leidinggevende"
       contract_status: "actief" | "verlopen" | "opgezegd" | "concept"
       contract_type: "lease" | "verhuur" | "fietslease" | "ev-lease"
       invoice_status:
@@ -1567,7 +1672,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["beheerder", "medewerker", "chauffeur", "klant"],
+      app_role: [
+        "beheerder",
+        "medewerker",
+        "chauffeur",
+        "klant",
+        "leidinggevende",
+      ],
       contract_status: ["actief", "verlopen", "opgezegd", "concept"],
       contract_type: ["lease", "verhuur", "fietslease", "ev-lease"],
       invoice_status: [

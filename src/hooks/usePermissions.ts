@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export type AppRole = "beheerder" | "medewerker" | "chauffeur" | "klant";
+export type AppRole = "beheerder" | "leidinggevende" | "medewerker" | "chauffeur" | "klant";
 
 export interface ModuleFunction {
   key: string;
@@ -112,6 +112,7 @@ export const APP_MODULES: AppModule[] = [
 
 export const ROLES: { key: AppRole; label: string }[] = [
   { key: "beheerder", label: "Beheerder" },
+  { key: "leidinggevende", label: "Leidinggevende" },
   { key: "medewerker", label: "Medewerker" },
   { key: "chauffeur", label: "Chauffeur" },
   { key: "klant", label: "Klant" },
