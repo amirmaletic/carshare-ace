@@ -275,6 +275,9 @@ export default function SettingsPage() {
       case "autorisatie":
         return <AutorisatieTab />;
 
+      case "goedkeuringen":
+        return <GoedkeuringenTab />;
+
       case "algemeen":
         return (
           <Card>
