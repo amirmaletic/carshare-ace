@@ -53,12 +53,11 @@ export function useGoedkeuringRegels() {
   const { data: regels = [], isLoading } = useQuery({
     queryKey: ["goedkeuring_regels", organisatieId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("goedkeuring_regels")
+      const { data, error } = await (supabase.from("goedkeuring_regels") as any)
         .select("*")
         .eq("organisatie_id", organisatieId!);
       if (error) throw error;
-      return data as GoedkeuringRegel[];
+      return (data ?? []) as GoedkeuringRegel[];
     },
     enabled: !!organisatieId,
   });
@@ -68,13 +67,12 @@ export function useGoedkeuringRegels() {
       if (!organisatieId) throw new Error("Geen organisatie");
       const existing = regels.find(r => r.actie_type === input.actie_type);
       if (existing) {
-        const { error } = await supabase
-          .from("goedkeuring_regels")
+        const { error } = await (supabase.from("goedkeuring_regels") as any)
           .update({ actief: input.actief, drempel_bedrag: input.drempel_bedrag })
           .eq("id", existing.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from("goedkeuring_regels").insert({
+        const { error } = await (supabase.from("goedkeuring_regels") as any).insert({
           organisatie_id: organisatieId,
           actie_type: input.actie_type,
           actief: input.actief,
@@ -100,13 +98,12 @@ export function useGoedkeuringen() {
   const { data: goedkeuringen = [], isLoading } = useQuery({
     queryKey: ["goedkeuringen", organisatieId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("goedkeuringen")
+      const { data, error } = await (supabase.from("goedkeuringen") as any)
         .select("*")
         .eq("organisatie_id", organisatieId!)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Goedkeuring[];
+      return (data ?? []) as Goedkeuring[];
     },
     enabled: !!organisatieId,
   });
@@ -140,8 +137,7 @@ export function useGoedkeuringen() {
   const beslissen = useMutation({
     mutationFn: async (input: { id: string; status: "goedgekeurd" | "afgewezen"; reden?: string }) => {
       if (!user) throw new Error("Niet ingelogd");
-      const { error } = await supabase
-        .from("goedkeuringen")
+      const { error } = await (supabase.from("goedkeuringen") as any)
         .update({
           status: input.status,
           reden_afwijzing: input.reden ?? null,
