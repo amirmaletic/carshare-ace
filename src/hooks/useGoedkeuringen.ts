@@ -121,7 +121,7 @@ export function useGoedkeuringen() {
       payload?: Record<string, unknown>;
     }) => {
       if (!user || !organisatieId) throw new Error("Niet ingelogd");
-      const { data, error } = await supabase.from("goedkeuringen").insert({
+      const { data, error } = await (supabase.from("goedkeuringen") as any).insert({
         organisatie_id: organisatieId,
         aangevraagd_door: user.id,
         actie_type: input.actie_type,
