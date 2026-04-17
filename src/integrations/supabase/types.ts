@@ -1432,7 +1432,12 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "beheerder" | "medewerker" | "chauffeur" | "klant"
+      app_role:
+        | "beheerder"
+        | "medewerker"
+        | "chauffeur"
+        | "klant"
+        | "leidinggevende"
       contract_status: "actief" | "verlopen" | "opgezegd" | "concept"
       contract_type: "lease" | "verhuur" | "fietslease" | "ev-lease"
       invoice_status:
@@ -1567,7 +1572,13 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["beheerder", "medewerker", "chauffeur", "klant"],
+      app_role: [
+        "beheerder",
+        "medewerker",
+        "chauffeur",
+        "klant",
+        "leidinggevende",
+      ],
       contract_status: ["actief", "verlopen", "opgezegd", "concept"],
       contract_type: ["lease", "verhuur", "fietslease", "ev-lease"],
       invoice_status: [
