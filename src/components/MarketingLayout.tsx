@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
 
 function MarketingHeader() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navLinks = [
     { to: "/", label: "Home" },
@@ -18,6 +19,25 @@ function MarketingHeader() {
   ];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, to: string) => {
+    if (to.startsWith("/#")) {
+      e.preventDefault();
+      const id = to.slice(2);
+      if (location.pathname !== "/") {
+        navigate("/");
+        setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }), 100);
+      } else {
+        document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+      }
+      setMobileMenuOpen(false);
+    } else if (!to.startsWith("/#")) {
+      e.preventDefault();
+      navigate(to);
+      setMobileMenuOpen(false);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   return (
     <header className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -33,6 +53,7 @@ function MarketingHeader() {
             <a
               key={link.to}
               href={link.to}
+              onClick={(e) => handleNavClick(e, link.to)}
               className={cn(
                 "px-3 py-2 rounded-md text-sm font-medium transition-colors",
                 location.pathname === link.to
@@ -76,7 +97,7 @@ function MarketingHeader() {
             <a
               key={link.to}
               href={link.to}
-              onClick={() => setMobileMenuOpen(false)}
+              onClick={(e) => handleNavClick(e, link.to)}
               className={cn(
                 "block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                 location.pathname === link.to

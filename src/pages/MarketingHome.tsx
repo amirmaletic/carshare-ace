@@ -1,4 +1,4 @@
-import { ArrowRight, Car, BarChart3, FileText, Shield, Users, Zap, CheckCircle2, Clock, MapPin, Wrench } from "lucide-react";
+import { ArrowRight, Car, BarChart3, FileText, Shield, Users, Zap, CheckCircle2, Clock, MapPin, Wrench, Sparkles, UserPlus, Upload, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import productDashboard from "@/assets/product-dashboard.png";
@@ -74,6 +74,24 @@ const useCases = [
   },
 ];
 
+const stappen = [
+  {
+    icon: UserPlus,
+    title: "1. Maak je account",
+    description: "Start in minder dan 60 seconden je gratis proefperiode van 30 dagen. Geen creditcard, geen verplichtingen.",
+  },
+  {
+    icon: Upload,
+    title: "2. Importeer je vloot",
+    description: "Voeg voertuigen toe via RDW-kenteken of upload een CSV bestand. Klanten en contracten zijn binnen enkele minuten klaar.",
+  },
+  {
+    icon: Rocket,
+    title: "3. Werk efficiënter",
+    description: "Beheer reserveringen, contracten en facturen vanuit één plek. Bespaar elke week uren administratie.",
+  },
+];
+
 export default function MarketingHome() {
   return (
     <div>
@@ -101,33 +119,46 @@ export default function MarketingHome() {
       />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-14 sm:pt-24 sm:pb-28 px-4 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden pt-10 pb-12 sm:pt-20 sm:pb-24 px-4 sm:px-6 lg:px-8">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
         <div className="max-w-7xl mx-auto relative">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-              <Zap className="w-4 h-4" />
-              1 maand gratis uitproberen, geen creditcard nodig
+              <Sparkles className="w-4 h-4" />
+              30 dagen gratis · geen creditcard · in 60 seconden live
             </div>
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-tight">
-              Professioneel wagenparkbeheer{" "}
-              <span className="text-primary">voor verhuurbedrijven</span>
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-[1.1]">
+              Wagenparkbeheer{" "}
+              <span className="text-primary">zonder gedoe</span>
             </h1>
-            <p className="mt-4 sm:mt-6 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Van contracten en schadebeheer tot ritplanning en facturatie. FleeFlo biedt je alles
-              wat je nodig hebt om je wagenpark slim te beheren en je verhuurbedrijf professioneel
-              te laten groeien, allemaal vanuit één centraal platform.
+            <p className="mt-4 sm:mt-6 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              Eén platform voor je voertuigen, contracten, reserveringen en facturatie.
+              Speciaal ontworpen voor verhuurbedrijven die willen groeien zonder extra administratie.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
               <Button size="lg" className="gap-2 text-base" asChild>
-                <Link to="/prijzen">
-                  Bekijk prijzen
+                <Link to="/auth">
+                  Start gratis proefperiode
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </Button>
               <Button size="lg" variant="outline" className="text-base" asChild>
-                <Link to="/auth">Gratis proefperiode starten</Link>
+                <Link to="/prijzen">Bekijk prijzen</Link>
               </Button>
+            </div>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs sm:text-sm text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                Geen installatie
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                Direct bruikbaar
+              </span>
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                Nederlandse support
+              </span>
             </div>
           </div>
 
@@ -138,6 +169,8 @@ export default function MarketingHome() {
               alt="FleeFlo dashboard met overzicht van voertuigen, contracten en openstaande taken voor wagenparkbeheer"
               className="w-full rounded-xl shadow-2xl shadow-primary/10"
               loading="eager"
+              fetchPriority="high"
+              decoding="async"
               width={1400}
               height={900}
             />
@@ -145,8 +178,29 @@ export default function MarketingHome() {
         </div>
       </section>
 
+      {/* Hoe het werkt */}
+      <section className="border-y border-border bg-muted/30 py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground">In 3 stappen aan de slag</h2>
+            <p className="mt-3 text-muted-foreground">Van inschrijving tot eerste contract in minder dan een uur.</p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-6 sm:gap-8">
+            {stappen.map((stap) => (
+              <div key={stap.title} className="text-center sm:text-left">
+                <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4">
+                  <stap.icon className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">{stap.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{stap.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Stats Bar */}
-      <section className="border-y border-border bg-muted/30 py-12 px-4 sm:px-6 lg:px-8">
+      <section className="border-b border-border bg-background py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {stats.map((stat) => (
             <div key={stat.label}>
@@ -216,6 +270,7 @@ export default function MarketingHome() {
               alt="Voertuigenbeheer scherm met filters, categorieën en voertuigkaarten in het FleeFlo wagenparkbeheer platform"
               className="w-full rounded-xl shadow-xl"
               loading="lazy"
+              decoding="async"
               width={1400}
               height={900}
             />
@@ -232,6 +287,7 @@ export default function MarketingHome() {
               alt="Contractenbeheer met overzicht van actieve lease- en verhuurcontracten in FleeFlo"
               className="w-full rounded-xl shadow-xl"
               loading="lazy"
+              decoding="async"
               width={1400}
               height={900}
             />
