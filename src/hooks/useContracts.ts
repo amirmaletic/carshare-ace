@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ContractType, ContractStatus } from "@/data/mockData";
+import { useApprovalGuard } from "@/hooks/useGoedkeuringen";
 
 export interface DbContract {
   id: string;
@@ -140,10 +141,26 @@ export function useUpdateContract() {
 
 export function useDeleteContract() {
   const qc = useQueryClient();
+  const { checkAndRequest } = useApprovalGuard();
   return useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (input: string | { id: string; contractNummer?: string; klantNaam?: string }) => {
+      const id = typeof input === "string" ? input : input.id;
+      const beschrijving = typeof input === "string"
+        ? `Contract ${id} verwijderen`
+        : `Contract ${input.contractNummer ?? id} (${input.klantNaam ?? "onbekend"}) verwijderen`;
+
+      const mayProceed = await checkAndRequest({
+        actie_type: "contract.verwijderen",
+        beschrijving,
+        entiteit_type: "contract",
+        entiteit_id: id,
+      });
+      if (!mayProceed) {
+        return { pending: true as const };
+      }
       const { error } = await supabase.from("contracts").delete().eq("id", id);
       if (error) throw error;
+      return { pending: false as const };
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["contracts"] }),
   });

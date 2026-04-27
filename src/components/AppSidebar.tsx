@@ -19,6 +19,7 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useGoedkeuringen } from "@/hooks/useGoedkeuringen";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -43,6 +44,8 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [collapsed, setCollapsed] = useState(false);
+  const { inBehandeling } = useGoedkeuringen();
+  const openCount = inBehandeling.length;
 
   // On mobile inside Sheet, always show expanded
   const isCollapsed = isMobile ? false : collapsed;
@@ -69,6 +72,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
       <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
+          const showBadge = item.path === "/instellingen" && openCount > 0;
           return (
             <Link
               key={item.path}
@@ -81,8 +85,24 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
                   : "text-sidebar-foreground hover:text-foreground hover:bg-accent"
               )}
             >
-              <item.icon className={cn("w-[18px] h-[18px] flex-shrink-0", isActive && "text-primary")} />
-              {!isCollapsed && <span>{item.label}</span>}
+              <div className="relative flex-shrink-0">
+                <item.icon className={cn("w-[18px] h-[18px]", isActive && "text-primary")} />
+                {showBadge && isCollapsed && (
+                  <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-1 rounded-full bg-primary text-[9px] font-semibold text-primary-foreground flex items-center justify-center">
+                    {openCount > 9 ? "9+" : openCount}
+                  </span>
+                )}
+              </div>
+              {!isCollapsed && (
+                <span className="flex-1 flex items-center justify-between">
+                  {item.label}
+                  {showBadge && (
+                    <span className="ml-2 min-w-[18px] h-[18px] px-1.5 rounded-full bg-primary text-[10px] font-semibold text-primary-foreground flex items-center justify-center">
+                      {openCount > 9 ? "9+" : openCount}
+                    </span>
+                  )}
+                </span>
+              )}
             </Link>
           );
         })}
