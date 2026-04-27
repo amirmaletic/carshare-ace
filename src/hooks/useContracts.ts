@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ContractType, ContractStatus } from "@/data/mockData";
+import { useApprovalGuard } from "@/hooks/useGoedkeuringen";
 
 export interface DbContract {
   id: string;

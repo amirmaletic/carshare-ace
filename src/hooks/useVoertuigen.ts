@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useOrganisatie } from "@/hooks/useOrganisatie";
 import { toast } from "sonner";
+import { useApprovalGuard } from "@/hooks/useGoedkeuringen";
 
 export interface DbVoertuig {
   id: string;
@@ -67,7 +68,21 @@ export function useVoertuigen() {
   });
 
   const deleteVoertuig = useMutation({
-    mutationFn: async (id: string) => {
+    mutationFn: async (input: string | { id: string; kenteken?: string; merk?: string; model?: string }) => {
+      const id = typeof input === "string" ? input : input.id;
+      const beschrijving = typeof input === "string"
+        ? `Voertuig ${id} verwijderen`
+        : `Voertuig ${input.kenteken ?? ""} (${input.merk ?? ""} ${input.model ?? ""}) verwijderen`;
+      const mayProceed = await checkAndRequest({
+        actie_type: "voertuig.verwijderen",
+        beschrijving,
+        entiteit_type: "voertuig",
+        entiteit_id: id,
+      });
+      if (!mayProceed) {
+        toast.info("Verzoek tot verwijderen ingediend voor goedkeuring");
+        return;
+      }
       const { error } = await supabase.from("voertuigen").delete().eq("id", id);
       if (error) throw error;
     },
