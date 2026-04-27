@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,31 +9,43 @@ import { KlantLayout } from "@/components/KlantLayout";
 import { MarketingLayout } from "@/components/MarketingLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import Dashboard from "./pages/Dashboard";
-import Vehicles from "./pages/Vehicles";
-import Terugmelden from "./pages/Terugmelden";
-import Contracts from "./pages/Contracts";
-import Reservations from "./pages/Reservations";
-import Maintenance from "./pages/Maintenance";
-import Reports from "./pages/Reports";
-import SettingsPage from "./pages/SettingsPage";
-import Kosten from "./pages/Kosten";
-import Chauffeurs from "./pages/Chauffeurs";
-import Ritten from "./pages/Ritten";
-import Klanten from "./pages/Klanten";
-import Auth from "./pages/Auth";
-import KlantAuth from "./pages/KlantAuth";
-import MijnReserveringen from "./pages/portaal/MijnReserveringen";
-import ReserveerVoertuig from "./pages/portaal/ReserveerVoertuig";
-import MijnFacturen from "./pages/portaal/MijnFacturen";
-import MijnProfiel from "./pages/portaal/MijnProfiel";
+
+// Marketing/auth: eager (kleine bundles, eerste paint)
 import MarketingHome from "./pages/MarketingHome";
-import PubliekBoeken from "./pages/PubliekBoeken";
-import Pricing from "./pages/Pricing";
-import Blog from "./pages/Blog";
-import BlogPost from "./pages/BlogPost";
-import ResetPassword from "./pages/ResetPassword";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+
+// App-routes: lazy-loaded per route voor kleinere initial bundle
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Vehicles = lazy(() => import("./pages/Vehicles"));
+const Terugmelden = lazy(() => import("./pages/Terugmelden"));
+const Contracts = lazy(() => import("./pages/Contracts"));
+const Reservations = lazy(() => import("./pages/Reservations"));
+const Maintenance = lazy(() => import("./pages/Maintenance"));
+const Reports = lazy(() => import("./pages/Reports"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
+const Kosten = lazy(() => import("./pages/Kosten"));
+const Chauffeurs = lazy(() => import("./pages/Chauffeurs"));
+const Ritten = lazy(() => import("./pages/Ritten"));
+const Klanten = lazy(() => import("./pages/Klanten"));
+const KlantAuth = lazy(() => import("./pages/KlantAuth"));
+const MijnReserveringen = lazy(() => import("./pages/portaal/MijnReserveringen"));
+const ReserveerVoertuig = lazy(() => import("./pages/portaal/ReserveerVoertuig"));
+const MijnFacturen = lazy(() => import("./pages/portaal/MijnFacturen"));
+const MijnProfiel = lazy(() => import("./pages/portaal/MijnProfiel"));
+const PubliekBoeken = lazy(() => import("./pages/PubliekBoeken"));
+const Pricing = lazy(() => import("./pages/Pricing"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+    </div>
+  );
+}
 
 const queryClient = new QueryClient();
 
@@ -108,6 +120,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public / marketing routes */}
           <Route path="/" element={<MarketingLayout><MarketingHome /></MarketingLayout>} />
@@ -143,6 +156,7 @@ const App = () => (
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
