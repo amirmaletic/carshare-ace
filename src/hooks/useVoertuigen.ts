@@ -32,6 +32,7 @@ export function useVoertuigen() {
   const { user } = useAuth();
   const { organisatieId } = useOrganisatie();
   const queryClient = useQueryClient();
+  const { checkAndRequest } = useApprovalGuard();
 
   const query = useQuery({
     queryKey: ["voertuigen"],
