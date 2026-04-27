@@ -154,3 +154,38 @@ export function useGoedkeuringen() {
 
   return { goedkeuringen, inBehandeling, isLoading, aanvragen, beslissen };
 }
+
+/**
+ * Guard hook: bepaalt of een actie direct mag, of eerst goedkeuring nodig heeft.
+ * Maakt automatisch een goedkeuringsverzoek aan en geeft `requiresApproval: true` terug.
+ */
+export function useApprovalGuard() {
+  const { regels } = useGoedkeuringRegels();
+  const { aanvragen } = useGoedkeuringen();
+
+  /**
+   * @returns true als de actie direct uitgevoerd mag worden,
+   *          false als er een goedkeuringsverzoek is aangemaakt.
+   */
+  const checkAndRequest = async (params: {
+    actie_type: string;
+    beschrijving: string;
+    entiteit_type?: string;
+    entiteit_id?: string;
+    bedrag?: number;
+    payload?: Record<string, unknown>;
+  }): Promise<boolean> => {
+    const regel = regels.find(r => r.actie_type === params.actie_type && r.actief);
+    if (!regel) return true; // geen regel actief → direct toegestaan
+
+    // Drempel-check voor financiele acties
+    if (regel.drempel_bedrag !== null && params.bedrag !== undefined) {
+      if (params.bedrag < regel.drempel_bedrag) return true;
+    }
+
+    await aanvragen.mutateAsync(params);
+    return false;
+  };
+
+  return { checkAndRequest, isPending: aanvragen.isPending };
+}
