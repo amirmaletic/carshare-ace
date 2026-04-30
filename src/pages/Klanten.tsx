@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useAanvragen } from "@/hooks/useAanvragen";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
+import { useKlanten, type KlantAccount } from "@/hooks/useKlanten";
+import { KlantDetailDialog } from "@/components/KlantDetailDialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +16,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Car, Sparkles, Trash2, User, Clock, Search } from "lucide-react";
+import { Plus, Car, Sparkles, Trash2, User, Clock, Search, ChevronRight, Mail, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import ReactMarkdown from "react-markdown";
@@ -28,7 +31,10 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
 export default function Klanten() {
   const { aanvragen, isLoading, addAanvraag, deleteAanvraag } = useAanvragen();
   const { voertuigen } = useVoertuigen();
+  const { data: klanten = [], isLoading: klantenLoading } = useKlanten();
   const [search, setSearch] = useState("");
+  const [klantSearch, setKlantSearch] = useState("");
+  const [selectedKlant, setSelectedKlant] = useState<KlantAccount | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -51,6 +57,15 @@ export default function Klanten() {
     a.klant_naam.toLowerCase().includes(search.toLowerCase()) ||
     (a.klant_email || "").toLowerCase().includes(search.toLowerCase())
   );
+
+  const filteredKlanten = klanten.filter((k) => {
+    const q = klantSearch.toLowerCase();
+    return (
+      `${k.voornaam} ${k.achternaam}`.toLowerCase().includes(q) ||
+      k.email.toLowerCase().includes(q) ||
+      (k.bedrijfsnaam || "").toLowerCase().includes(q)
+    );
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,8 +108,8 @@ export default function Klanten() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Klantaanvragen</h1>
-          <p className="text-sm text-muted-foreground">Aanvragen worden automatisch gekoppeld aan beschikbare voertuigen via AI</p>
+          <h1 className="text-2xl font-bold text-foreground">Klanten</h1>
+          <p className="text-sm text-muted-foreground">Beheer klantaccounts en aanvragen vanuit één plek</p>
         </div>
         <Dialog open={formOpen} onOpenChange={setFormOpen}>
           <DialogTrigger asChild>
@@ -190,6 +205,94 @@ export default function Klanten() {
         </Dialog>
       </div>
 
+      <Tabs defaultValue="accounts" className="w-full">
+        <TabsList>
+          <TabsTrigger value="accounts">
+            Klant-accounts {klanten.length > 0 && `(${klanten.length})`}
+          </TabsTrigger>
+          <TabsTrigger value="aanvragen">
+            Aanvragen {aanvragen.length > 0 && `(${aanvragen.length})`}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="accounts" className="space-y-4 mt-4">
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <Card><CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{klanten.length}</p>
+              <p className="text-xs text-muted-foreground">Totaal klanten</p>
+            </CardContent></Card>
+            <Card><CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold text-primary">{klanten.filter((k) => k.auth_user_id).length}</p>
+              <p className="text-xs text-muted-foreground">Met portaal-account</p>
+            </CardContent></Card>
+            <Card><CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{klanten.filter((k) => k.type === "zakelijk").length}</p>
+              <p className="text-xs text-muted-foreground">Zakelijk</p>
+            </CardContent></Card>
+            <Card><CardContent className="p-4 text-center">
+              <p className="text-2xl font-bold text-foreground">{klanten.filter((k) => k.type === "particulier").length}</p>
+              <p className="text-xs text-muted-foreground">Particulier</p>
+            </CardContent></Card>
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Zoek op naam, e-mail of bedrijfsnaam..."
+              value={klantSearch}
+              onChange={(e) => setKlantSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+
+          {/* Klant list */}
+          {klantenLoading ? (
+            <div className="flex items-center justify-center py-10">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+            </div>
+          ) : filteredKlanten.length === 0 ? (
+            <Card><CardContent className="p-8 text-center text-muted-foreground text-sm">
+              {klanten.length === 0
+                ? "Nog geen klanten. Klanten verschijnen hier zodra ze zich registreren via het portaal of worden toegevoegd."
+                : "Geen klanten gevonden voor deze zoekopdracht."}
+            </CardContent></Card>
+          ) : (
+            <div className="space-y-2">
+              {filteredKlanten.map((klant) => (
+                <button
+                  key={klant.id}
+                  onClick={() => setSelectedKlant(klant)}
+                  className="w-full text-left rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors p-4 flex items-center gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-semibold flex-shrink-0">
+                    {klant.voornaam.charAt(0)}{klant.achternaam.charAt(0)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-foreground truncate">
+                        {klant.voornaam} {klant.achternaam}
+                      </span>
+                      {klant.auth_user_id && <Badge variant="default" className="text-[10px]">Portaal</Badge>}
+                      <Badge variant="outline" className="text-[10px]">
+                        {klant.type === "zakelijk" ? "Zakelijk" : "Particulier"}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{klant.email}</span>
+                      {klant.telefoon && <span className="flex items-center gap-1"><Phone className="w-3 h-3" />{klant.telefoon}</span>}
+                      {klant.bedrijfsnaam && <span>· {klant.bedrijfsnaam}</span>}
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                </button>
+              ))}
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="aanvragen" className="space-y-4 mt-4">
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card>
@@ -311,6 +414,10 @@ export default function Klanten() {
           })
         )}
       </div>
+        </TabsContent>
+      </Tabs>
+
+      <KlantDetailDialog klant={selectedKlant} onClose={() => setSelectedKlant(null)} />
     </div>
   );
 }
