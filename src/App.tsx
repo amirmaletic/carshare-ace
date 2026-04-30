@@ -38,6 +38,7 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const AdminPlatform = lazy(() => import("./pages/AdminPlatform"));
 
 function PageLoader() {
   return (
@@ -153,6 +154,9 @@ const App = () => (
           <Route path="/portaal/reserveren" element={<KlantProtectedRoute><KlantLayout><ReserveerVoertuig /></KlantLayout></KlantProtectedRoute>} />
           <Route path="/portaal/facturen" element={<KlantProtectedRoute><KlantLayout><MijnFacturen /></KlantLayout></KlantProtectedRoute>} />
           <Route path="/portaal/profiel" element={<KlantProtectedRoute><KlantLayout><MijnProfiel /></KlantLayout></KlantProtectedRoute>} />
+
+          {/* FleeFlo super-admin */}
+          <Route path="/admin" element={<AdminPlatform />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

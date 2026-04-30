@@ -1497,6 +1497,37 @@ export type Database = {
       }
     }
     Functions: {
+      admin_get_organisatie: { Args: { _org_id: string }; Returns: Json }
+      admin_grant_platform_admin: {
+        Args: { _user_email: string }
+        Returns: undefined
+      }
+      admin_list_organisaties: {
+        Args: never
+        Returns: {
+          contract_count: number
+          created_at: string
+          eigenaar_email: string
+          eigenaar_id: string
+          id: string
+          is_active: boolean
+          klant_count: number
+          laatste_activiteit: string
+          naam: string
+          trial_ends_at: string
+          user_count: number
+          voertuig_count: number
+        }[]
+      }
+      admin_update_organisatie: {
+        Args: {
+          _is_active?: boolean
+          _naam?: string
+          _org_id: string
+          _trial_ends_at?: string
+        }
+        Returns: undefined
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -1513,6 +1544,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_platform_admin: { Args: never; Returns: boolean }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -1538,6 +1570,7 @@ export type Database = {
         | "chauffeur"
         | "klant"
         | "leidinggevende"
+        | "platform_admin"
       contract_status: "actief" | "verlopen" | "opgezegd" | "concept"
       contract_type: "lease" | "verhuur" | "fietslease" | "ev-lease"
       invoice_status:
@@ -1678,6 +1711,7 @@ export const Constants = {
         "chauffeur",
         "klant",
         "leidinggevende",
+        "platform_admin",
       ],
       contract_status: ["actief", "verlopen", "opgezegd", "concept"],
       contract_type: ["lease", "verhuur", "fietslease", "ev-lease"],
