@@ -1538,6 +1538,7 @@ export type Database = {
         | "chauffeur"
         | "klant"
         | "leidinggevende"
+        | "platform_admin"
       contract_status: "actief" | "verlopen" | "opgezegd" | "concept"
       contract_type: "lease" | "verhuur" | "fietslease" | "ev-lease"
       invoice_status:
@@ -1678,6 +1679,7 @@ export const Constants = {
         "chauffeur",
         "klant",
         "leidinggevende",
+        "platform_admin",
       ],
       contract_status: ["actief", "verlopen", "opgezegd", "concept"],
       contract_type: ["lease", "verhuur", "fietslease", "ev-lease"],
