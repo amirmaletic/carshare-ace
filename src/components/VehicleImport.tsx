@@ -423,8 +423,28 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
                 disabled={parsed.valid.length === 0 || importing}
                 onClick={handleImport}
               >
-                {importing ? "Importeren..." : `${parsed.valid.length} voertuig${parsed.valid.length !== 1 ? "en" : ""} importeren`}
+                {importing ? (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Importeren {importProgress.done}/{importProgress.total}...
+                  </span>
+                ) : (
+                  `${parsed.valid.length} voertuig${parsed.valid.length !== 1 ? "en" : ""} importeren`
+                )}
               </Button>
+
+              {importErrors.length > 0 && !importing && (
+                <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 space-y-1 max-h-40 overflow-y-auto">
+                  <p className="text-xs font-medium text-destructive mb-1">
+                    {importErrors.length} voertuig{importErrors.length !== 1 ? "en" : ""} niet geïmporteerd:
+                  </p>
+                  {importErrors.map((err, i) => (
+                    <p key={i} className="text-xs text-destructive">
+                      <span className="font-mono">{err.kenteken}</span>: {err.message}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
