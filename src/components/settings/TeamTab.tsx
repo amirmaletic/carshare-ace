@@ -59,19 +59,54 @@ export default function TeamTab() {
       if (!user || !organisatieId) throw new Error("Niet ingelogd");
       if (!email.trim()) throw new Error("Vul een e-mailadres in");
 
+      const cleanEmail = email.trim().toLowerCase();
+
       // Check if already invited
       const existing = invitations.find(
-        (i) => i.email === email.trim() && i.status === "pending"
+        (i) => i.email === cleanEmail && i.status === "pending"
       );
       if (existing) throw new Error("Dit e-mailadres is al uitgenodigd");
 
-      const { error } = await supabase.from("uitnodigingen").insert({
-        email: email.trim().toLowerCase(),
-        role: role as any,
-        organisatie_id: organisatieId,
-        uitgenodigd_door: user.id,
-      });
+      const { data: inserted, error } = await supabase
+        .from("uitnodigingen")
+        .insert({
+          email: cleanEmail,
+          role: role as any,
+          organisatie_id: organisatieId,
+          uitgenodigd_door: user.id,
+        })
+        .select("id, token")
+        .single();
       if (error) throw error;
+
+      // Haal organisatienaam op voor in de mail
+      const { data: org } = await supabase
+        .from("organisaties")
+        .select("naam")
+        .eq("id", organisatieId)
+        .maybeSingle();
+
+      const origin = typeof window !== "undefined" ? window.location.origin : "https://fleeflo.nl";
+      const acceptUrl = `${origin}/auth?invite=${inserted.token}`;
+      const rolLabel = ROLES.find((r) => r.key === role)?.label ?? role;
+
+      // Verstuur uitnodigingsmail (faalt stil zodat de uitnodiging zelf altijd blijft staan)
+      const { error: mailErr } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "team-invite",
+          recipientEmail: cleanEmail,
+          idempotencyKey: `team-invite-${inserted.id}`,
+          templateData: {
+            organisatieNaam: org?.naam ?? "FleeFlo",
+            rolLabel,
+            acceptUrl,
+            uitgenodigdDoor: user.email ?? undefined,
+          },
+        },
+      });
+      if (mailErr) {
+        console.error("Versturen uitnodigingsmail mislukt:", mailErr);
+      }
     },
     onSuccess: () => {
       toast.success("Uitnodiging verstuurd", {
