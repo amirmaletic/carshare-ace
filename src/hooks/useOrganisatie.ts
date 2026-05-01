@@ -15,7 +15,9 @@ export function useOrganisatie() {
       return data as string | null;
     },
     enabled: !authLoading && !!user,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 
   return { organisatieId: organisatieId ?? null, isLoading: authLoading || (!!user && isLoading) };

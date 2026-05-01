@@ -19,7 +19,9 @@ export function useModuleModus() {
       if (error) throw error;
       return ((data as string) ?? "autoverhuur") as ModuleModus;
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: true,
   });
 }
 
