@@ -41,15 +41,10 @@ export function useTenantPortaal() {
       const { data: byHost, error: hostErr } = await supabase.rpc("get_portaal_by_host", { _host: host });
       if (!hostErr && Array.isArray(byHost) && byHost.length > 0) return byHost[0] as TenantPortaal;
 
-      // Fallback: lookup via slug (voor /t/:slug en lokaal/preview)
+      // Fallback: lookup via slug (voor /t/:slug en preview-omgevingen)
       if (slug) {
-        const { data: bySlug } = await supabase
-          .from("organisaties")
-          .select("id, naam, slug, portaal_naam, portaal_logo_url, portaal_kleur, portaal_welkomtekst, portaal_actief")
-          .eq("slug", slug)
-          .eq("portaal_actief", true)
-          .maybeSingle();
-        if (bySlug) return bySlug as TenantPortaal;
+        const { data: bySlug } = await supabase.rpc("get_portaal_by_slug", { _slug: slug });
+        if (Array.isArray(bySlug) && bySlug.length > 0) return bySlug[0] as TenantPortaal;
       }
       return null;
     },
