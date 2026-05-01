@@ -46,18 +46,36 @@ Deno.serve(async (req) => {
         // Bouw nieuw record op basis van contract
         const { data: contract, error: cErr } = await supabase
           .from('contracts')
-          .select('id, organisatie_id, klant_email')
+          .select('id, organisatie_id, klant_naam, klant_email, klant_telefoon')
           .eq('id', contract_id)
           .maybeSingle()
         if (cErr || !contract) return json({ error: 'Contract niet gevonden' }, 404)
 
-        const { data: klantRec } = await supabase
+        let { data: klantRec } = await supabase
           .from('klanten')
           .select('id')
           .eq('organisatie_id', contract.organisatie_id)
           .ilike('email', contract.klant_email)
           .maybeSingle()
-        if (!klantRec) return json({ error: 'Klant niet gevonden in organisatie' }, 404)
+        if (!klantRec) {
+          const parts = (contract.klant_naam || '').trim().split(/\s+/)
+          const voornaam = parts[0] || 'Klant'
+          const achternaam = parts.length > 1 ? parts.slice(1).join(' ') : '-'
+          const { data: nieuweKlant, error: kErr } = await supabase
+            .from('klanten')
+            .insert({
+              organisatie_id: contract.organisatie_id,
+              voornaam,
+              achternaam,
+              email: (contract.klant_email || '').toLowerCase().trim(),
+              telefoon: contract.klant_telefoon ?? null,
+              type: 'particulier',
+            })
+            .select('id')
+            .single()
+          if (kErr || !nieuweKlant) return json({ error: kErr?.message || 'Kon klant niet aanmaken' }, 500)
+          klantRec = nieuweKlant
+        }
 
         const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '')
         const { data: nieuw, error: nErr } = await supabase
