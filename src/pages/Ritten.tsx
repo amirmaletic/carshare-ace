@@ -60,8 +60,9 @@ export default function Ritten() {
   const actieve = filtered.filter((r) => r.status === "onderweg");
   const afgeronde = filtered.filter((r) => r.status === "afgerond" || r.status === "geannuleerd");
 
-  const totaalKosten = ritten.filter((r) => r.status === "afgerond").reduce((sum, r) => sum + (r.kosten || 0), 0);
-  const totaalKm = ritten.filter((r) => r.status === "afgerond").reduce((sum, r) => sum + (r.afstand_km || 0), 0);
+  const relevant = ritten.filter((r) => r.status !== "geannuleerd");
+  const totaalKosten = relevant.reduce((sum, r) => sum + Number(r.kosten || 0), 0);
+  const totaalKm = relevant.reduce((sum, r) => sum + Number(r.afstand_km || 0), 0);
 
   const handleStatusChange = (id: string, status: string) => {
     updateRit.mutate({ id, status });
