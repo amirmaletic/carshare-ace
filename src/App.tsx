@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
-import { KlantLayout } from "@/components/KlantLayout";
 import { MarketingLayout } from "@/components/MarketingLayout";
 import { TenantPortaalLayout } from "@/components/TenantPortaalLayout";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,7 +28,6 @@ const Kosten = lazy(() => import("./pages/Kosten"));
 const Chauffeurs = lazy(() => import("./pages/Chauffeurs"));
 const Ritten = lazy(() => import("./pages/Ritten"));
 const Klanten = lazy(() => import("./pages/Klanten"));
-const KlantAuth = lazy(() => import("./pages/KlantAuth"));
 const MijnReserveringen = lazy(() => import("./pages/portaal/MijnReserveringen"));
 const ReserveerVoertuig = lazy(() => import("./pages/portaal/ReserveerVoertuig"));
 const MijnFacturen = lazy(() => import("./pages/portaal/MijnFacturen"));
@@ -136,8 +134,6 @@ const App = () => (
           {/* Auth routes */}
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/klant-login" element={<KlantAuth />} />
-
           {/* Admin/staff routes */}
           <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
           <Route path="/voertuigen" element={<ProtectedRoute><AppLayout><Vehicles /></AppLayout></ProtectedRoute>} />
@@ -151,12 +147,6 @@ const App = () => (
           <Route path="/ritten" element={<ProtectedRoute><AppLayout><Ritten /></AppLayout></ProtectedRoute>} />
           <Route path="/klanten" element={<ProtectedRoute><AppLayout><Klanten /></AppLayout></ProtectedRoute>} />
           <Route path="/instellingen" element={<ProtectedRoute><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
-
-          {/* Klantportaal routes */}
-          <Route path="/portaal" element={<KlantProtectedRoute><KlantLayout><MijnReserveringen /></KlantLayout></KlantProtectedRoute>} />
-          <Route path="/portaal/reserveren" element={<KlantProtectedRoute><KlantLayout><ReserveerVoertuig /></KlantLayout></KlantProtectedRoute>} />
-          <Route path="/portaal/facturen" element={<KlantProtectedRoute><KlantLayout><MijnFacturen /></KlantLayout></KlantProtectedRoute>} />
-          <Route path="/portaal/profiel" element={<KlantProtectedRoute><KlantLayout><MijnProfiel /></KlantLayout></KlantProtectedRoute>} />
 
           {/* White-label tenant portal (per organisatie) */}
           <Route path="/t/:slug" element={<TenantPortaalLayout><TenantAanbod /></TenantPortaalLayout>} />
