@@ -163,6 +163,7 @@ const App = () => (
 
           {/* Publieke rijbewijs-upload via token */}
           <Route path="/rijbewijs/:token" element={<RijbewijsUpload />} />
+          <Route path="/betaal-verificatie/:token" element={<BetaalVerificatie />} />
 
           {/* White-label tenant portal (per organisatie) */}
           <Route path="/t/:slug" element={<TenantPortaalLayout><TenantAanbod /></TenantPortaalLayout>} />
