@@ -27,7 +27,7 @@ export default function Dashboard() {
 
   // Check if onboarding is needed — purely database-driven per organisation
   const { data: needsOnboarding } = useQuery({
-    queryKey: ["onboarding-check", user?.id],
+    queryKey: ["onboarding-check", organisatieId],
     queryFn: async () => {
       const [{ count }, { count: contractCount }, { count: chauffeurCount }, { data: org }] = await Promise.all([
         supabase.from("voertuigen").select("id", { count: "exact", head: true }).eq("organisatie_id", organisatieId!),
@@ -46,11 +46,11 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    if (needsOnboarding !== undefined) setShowOnboarding(needsOnboarding);
+    if (!organisatieLoading && needsOnboarding !== undefined) setShowOnboarding(needsOnboarding);
   }, [needsOnboarding]);
 
   const { data: stats } = useQuery({
-    queryKey: ["dashboard-stats"],
+    queryKey: ["dashboard-stats", organisatieId],
     queryFn: async () => {
       const [vehRes, conRes, invRes] = await Promise.all([
         supabase.from("voertuigen").select("id, status"),
@@ -68,7 +68,7 @@ export default function Dashboard() {
         openInvoices: invoices.length,
       };
     },
-    enabled: !!user && showOnboarding === false,
+    enabled: !!user && !!organisatieId && showOnboarding === false,
   });
 
   if (showOnboarding === null) {
