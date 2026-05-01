@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { useAanvragen } from "@/hooks/useAanvragen";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { useKlanten, type KlantAccount } from "@/hooks/useKlanten";
@@ -16,7 +19,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Plus, Car, Sparkles, Trash2, User, Clock, Search, ChevronRight, Mail, Phone } from "lucide-react";
+import { Plus, Car, Sparkles, Trash2, User, Clock, Search, ChevronRight, Mail, Phone, UserPlus } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import ReactMarkdown from "react-markdown";
@@ -26,12 +29,33 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
   gekoppeld: { label: "Gekoppeld", variant: "default" },
   goedgekeurd: { label: "Goedgekeurd", variant: "secondary" },
   afgewezen: { label: "Afgewezen", variant: "destructive" },
+  omgezet: { label: "Omgezet naar klant", variant: "secondary" },
 };
 
 export default function Klanten() {
   const { aanvragen, isLoading, addAanvraag, deleteAanvraag } = useAanvragen();
   const { voertuigen } = useVoertuigen();
   const { data: klanten = [], isLoading: klantenLoading } = useKlanten();
+  const queryClient = useQueryClient();
+  const [convertingId, setConvertingId] = useState<string | null>(null);
+
+  const handleConvertNaarKlant = async (aanvraagId: string) => {
+    setConvertingId(aanvraagId);
+    try {
+      const { data, error } = await supabase.rpc("convert_aanvraag_naar_klant", {
+        _aanvraag_id: aanvraagId,
+      });
+      if (error) throw error;
+      toast.success("Aanvraag omgezet naar klant");
+      queryClient.invalidateQueries({ queryKey: ["aanvragen"] });
+      queryClient.invalidateQueries({ queryKey: ["klanten"] });
+    } catch (err: any) {
+      toast.error("Omzetten mislukt: " + err.message);
+    } finally {
+      setConvertingId(null);
+    }
+  };
+
   const [search, setSearch] = useState("");
   const [klantSearch, setKlantSearch] = useState("");
   const [selectedKlant, setSelectedKlant] = useState<KlantAccount | null>(null);
