@@ -110,13 +110,24 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
           <Separator />
 
           <Tabs defaultValue="beschikbaarheid" className="w-full">
-            <TabsList className="w-full grid grid-cols-6">
-              <TabsTrigger value="beschikbaarheid" className="gap-1 text-[11px]"><CalendarCheck className="w-3.5 h-3.5" />Beschikbaar</TabsTrigger>
-              <TabsTrigger value="tijdlijn" className="gap-1 text-[11px]"><Clock className="w-3.5 h-3.5" />Tijdlijn</TabsTrigger>
-              <TabsTrigger value="onderhoud" className="gap-1 text-[11px]"><Wrench className="w-3.5 h-3.5" />Onderhoud</TabsTrigger>
-              <TabsTrigger value="terugmeldingen" className="gap-1 text-[11px]"><RotateCcw className="w-3.5 h-3.5" />Retouren</TabsTrigger>
-              <TabsTrigger value="reserveringen" className="gap-1 text-[11px]"><CalendarRange className="w-3.5 h-3.5" />Reserv.</TabsTrigger>
-              <TabsTrigger value="rapporten" className="gap-1 text-[11px]"><FileText className="w-3.5 h-3.5" />Rapport</TabsTrigger>
+            <TabsList className="w-full grid grid-cols-6 h-auto p-1.5 bg-muted/60 rounded-xl gap-1">
+              {[
+                { value: "beschikbaarheid", icon: CalendarCheck, label: "Beschikbaar" },
+                { value: "tijdlijn", icon: Clock, label: "Tijdlijn" },
+                { value: "onderhoud", icon: Wrench, label: "Onderhoud" },
+                { value: "terugmeldingen", icon: RotateCcw, label: "Retouren" },
+                { value: "reserveringen", icon: CalendarRange, label: "Reserv." },
+                { value: "rapporten", icon: FileText, label: "Rapport" },
+              ].map(({ value, icon: Icon, label }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="flex flex-col items-center justify-center gap-1 py-2 px-1 h-auto rounded-lg text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-background/60 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:ring-1 data-[state=active]:ring-primary/20 transition-all"
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{label}</span>
+                </TabsTrigger>
+              ))}
             </TabsList>
 
             <TabsContent value="beschikbaarheid" className="mt-4">
