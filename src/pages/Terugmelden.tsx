@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrganisatie } from "@/hooks/useOrganisatie";
 
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { toast } from "sonner";
