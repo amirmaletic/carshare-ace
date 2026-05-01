@@ -199,3 +199,23 @@ export function useAdminImpersonate() {
     },
   });
 }
+
+export type ModuleModus = "autoverhuur" | "wagenpark";
+
+export function useAdminSetModuleModus() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { org_id: string; modus: ModuleModus }) => {
+      const { error } = await supabase.rpc("admin_set_module_modus" as any, {
+        _org_id: input.org_id,
+        _modus: input.modus,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["admin-organisatie", vars.org_id] });
+      qc.invalidateQueries({ queryKey: ["admin-organisaties"] });
+      qc.invalidateQueries({ queryKey: ["module-modus"] });
+    },
+  });
+}

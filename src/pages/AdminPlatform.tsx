@@ -14,6 +14,8 @@ import {
   useAdminListPlatformAdmins,
   useAdminRevokePlatformAdmin,
   useAdminImpersonate,
+  useAdminSetModuleModus,
+  type ModuleModus,
   type AdminOrgRow,
 } from "@/hooks/usePlatformAdmin";
 import { Card, CardContent } from "@/components/ui/card";
@@ -304,6 +306,7 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
   const removeUserMutation = useAdminRemoveUser();
   const inviteMutation = useAdminInviteUser();
   const impersonateMutation = useAdminImpersonate();
+  const setModusMutation = useAdminSetModuleModus();
   const [editNaam, setEditNaam] = useState("");
   const [editTrial, setEditTrial] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -316,6 +319,8 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
   const stats = detail?.stats ?? {};
   const gebruikers = detail?.gebruikers ?? [];
   const activiteit = detail?.recente_activiteit ?? [];
+  const huidigeModus: ModuleModus =
+    (detail?.organisatie?.module_modus as ModuleModus) ?? "autoverhuur";
 
   const currentNaam = editNaam || org.naam;
   const currentTrial = editTrial || (org.trial_ends_at ? org.trial_ends_at.slice(0, 10) : "");
@@ -415,6 +420,31 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
                     </p>
                   </div>
                   <Switch checked={org.is_active} onCheckedChange={handleToggleActive} />
+                </div>
+                <div className="space-y-1.5 pt-2 border-t border-border">
+                  <Label>Module-modus</Label>
+                  <Select
+                    value={huidigeModus}
+                    onValueChange={async (v) => {
+                      try {
+                        await setModusMutation.mutateAsync({ org_id: org.id, modus: v as ModuleModus });
+                        toast.success(`Modus gewijzigd naar ${v}`);
+                      } catch (e: any) {
+                        toast.error(e.message || "Wijzigen mislukt");
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="autoverhuur">Autoverhuur (volledig)</SelectItem>
+                      <SelectItem value="wagenpark">Wagenparkbeheer (intern)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Wagenparkbeheer verbergt Contracten, Reserveringen, Klanten, Rijbewijzen en Terugmelden.
+                  </p>
                 </div>
                 <Button className="w-full" onClick={handleSave} disabled={updateMutation.isPending}>
                   Wijzigingen opslaan

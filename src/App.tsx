@@ -10,6 +10,7 @@ import { MarketingLayout } from "@/components/MarketingLayout";
 import { TenantPortaalLayout } from "@/components/TenantPortaalLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import { useModuleModus, isPathToegestaan } from "@/hooks/useModuleModus";
 
 // Marketing/auth: eager (kleine bundles, eerste paint)
 import MarketingHome from "./pages/MarketingHome";
@@ -124,6 +125,20 @@ function KlantProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * Blokkeert routes die in 'wagenpark'-modus niet beschikbaar zijn.
+ * Stuurt de gebruiker terug naar /dashboard.
+ */
+function ModuleGuard({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const { data: modus, isLoading } = useModuleModus();
+  if (isLoading) return <PageLoader />;
+  if (!isPathToegestaan(location.pathname, modus)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <>{children}</>;
+}
+
 // Homepage is now always the public marketing/booking page
 // Staff access their dashboard via /dashboard directly
 
@@ -149,16 +164,16 @@ const App = () => (
           {/* Admin/staff routes */}
           <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
           <Route path="/voertuigen" element={<ProtectedRoute><AppLayout><Vehicles /></AppLayout></ProtectedRoute>} />
-          <Route path="/terugmelden" element={<ProtectedRoute><AppLayout><Terugmelden /></AppLayout></ProtectedRoute>} />
-          <Route path="/contracten" element={<ProtectedRoute><AppLayout><Contracts /></AppLayout></ProtectedRoute>} />
-          <Route path="/reserveringen" element={<ProtectedRoute><AppLayout><Reservations /></AppLayout></ProtectedRoute>} />
+          <Route path="/terugmelden" element={<ProtectedRoute><ModuleGuard><AppLayout><Terugmelden /></AppLayout></ModuleGuard></ProtectedRoute>} />
+          <Route path="/contracten" element={<ProtectedRoute><ModuleGuard><AppLayout><Contracts /></AppLayout></ModuleGuard></ProtectedRoute>} />
+          <Route path="/reserveringen" element={<ProtectedRoute><ModuleGuard><AppLayout><Reservations /></AppLayout></ModuleGuard></ProtectedRoute>} />
           <Route path="/onderhoud" element={<ProtectedRoute><AppLayout><Maintenance /></AppLayout></ProtectedRoute>} />
           <Route path="/rapportages" element={<ProtectedRoute><AppLayout><Reports /></AppLayout></ProtectedRoute>} />
           <Route path="/kosten" element={<ProtectedRoute><AppLayout><Kosten /></AppLayout></ProtectedRoute>} />
           <Route path="/chauffeurs" element={<ProtectedRoute><AppLayout><Chauffeurs /></AppLayout></ProtectedRoute>} />
           <Route path="/ritten" element={<ProtectedRoute><AppLayout><Ritten /></AppLayout></ProtectedRoute>} />
-          <Route path="/klanten" element={<ProtectedRoute><AppLayout><Klanten /></AppLayout></ProtectedRoute>} />
-          <Route path="/rijbewijzen" element={<ProtectedRoute><AppLayout><Rijbewijzen /></AppLayout></ProtectedRoute>} />
+          <Route path="/klanten" element={<ProtectedRoute><ModuleGuard><AppLayout><Klanten /></AppLayout></ModuleGuard></ProtectedRoute>} />
+          <Route path="/rijbewijzen" element={<ProtectedRoute><ModuleGuard><AppLayout><Rijbewijzen /></AppLayout></ModuleGuard></ProtectedRoute>} />
           <Route path="/instellingen" element={<ProtectedRoute><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
 
           {/* Publieke rijbewijs-upload via token */}
