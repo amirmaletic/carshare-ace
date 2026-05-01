@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useOrganisatie } from "@/hooks/useOrganisatie";
 import { Copy, Key, Webhook, Plus, Trash2, AlertTriangle, CheckCircle2, XCircle, RefreshCcw, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -42,6 +43,7 @@ function generateSecret(): string {
 export default function ApiWebhooksTab() {
   const { toast } = useToast();
   const qc = useQueryClient();
+  const { organisatieId } = useOrganisatie();
 
   // ===== API KEYS =====
   const { data: keys = [] } = useQuery({
@@ -102,9 +104,9 @@ export default function ApiWebhooksTab() {
 
   const saveHook = useMutation({
     mutationFn: async () => {
-      const { data: orgRow } = await supabase.rpc("get_user_organisatie_id", { _user_id: (await supabase.auth.getUser()).data.user?.id! });
+      if (!organisatieId) throw new Error("Geen organisatie gevonden");
       const { error } = await supabase.from("webhook_endpoints").insert({
-        organisatie_id: orgRow as unknown as string,
+        organisatie_id: organisatieId,
         url: hookUrl, beschrijving: hookDesc, events: hookEvents, secret: generateSecret(),
       });
       if (error) throw error;
