@@ -169,6 +169,7 @@ export default function AdminPlatform() {
                     <TableHead className="text-right">Voertuigen</TableHead>
                     <TableHead className="text-right">Contracten</TableHead>
                     <TableHead className="text-right">Klanten</TableHead>
+                    <TableHead>Laatste inlog</TableHead>
                     <TableHead>Laatste activiteit</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -210,6 +211,13 @@ export default function AdminPlatform() {
                         <TableCell className="text-right">{o.voertuig_count}</TableCell>
                         <TableCell className="text-right">{o.contract_count}</TableCell>
                         <TableCell className="text-right">{o.klant_count}</TableCell>
+                        <TableCell>
+                          <span className="text-xs text-muted-foreground">
+                            {o.laatste_inlog_org
+                              ? formatDistanceToNow(new Date(o.laatste_inlog_org), { addSuffix: true, locale: nl })
+                              : "Nooit"}
+                          </span>
+                        </TableCell>
                         <TableCell>
                           <span className="text-xs text-muted-foreground">
                             {o.laatste_activiteit
@@ -402,6 +410,11 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
                     <p className="text-sm font-medium text-foreground">{g.email || g.user_id}</p>
                     <p className="text-xs text-muted-foreground">
                       Toegevoegd {format(new Date(g.created_at), "d MMM yyyy", { locale: nl })}
+                      {" · "}
+                      Laatste inlog:{" "}
+                      {g.last_sign_in_at
+                        ? formatDistanceToNow(new Date(g.last_sign_in_at), { addSuffix: true, locale: nl })
+                        : "nooit"}
                     </p>
                   </div>
                   <Badge variant="outline">{g.role}</Badge>
