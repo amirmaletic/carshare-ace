@@ -410,6 +410,11 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
                     <p className="text-sm font-medium text-foreground">{g.email || g.user_id}</p>
                     <p className="text-xs text-muted-foreground">
                       Toegevoegd {format(new Date(g.created_at), "d MMM yyyy", { locale: nl })}
+                      {" · "}
+                      Laatste inlog:{" "}
+                      {g.last_sign_in_at
+                        ? formatDistanceToNow(new Date(g.last_sign_in_at), { addSuffix: true, locale: nl })
+                        : "nooit"}
                     </p>
                   </div>
                   <Badge variant="outline">{g.role}</Badge>
