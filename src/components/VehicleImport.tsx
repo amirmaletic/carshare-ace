@@ -2,7 +2,9 @@ import { useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, X, Download } from "lucide-react";
+import { Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, X, Download, Search, Loader2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -27,6 +29,46 @@ interface ParsedResult {
 
 const REQUIRED_FIELDS = ["kenteken", "merk", "model", "bouwjaar"];
 const ALL_FIELDS = ["kenteken", "merk", "model", "bouwjaar", "brandstof", "kilometerstand", "categorie", "kleur", "dagprijs", "locatie"];
+
+function formatKenteken(input: string): string {
+  return input.replace(/[\s-]/g, "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+}
+
+const BRANDSTOF_MAP: Record<string, string> = {
+  "Benzine": "Benzine",
+  "Diesel": "Diesel",
+  "Elektriciteit": "Elektrisch",
+  "LPG": "LPG",
+  "CNG": "CNG",
+  "Waterstof": "Waterstof",
+};
+
+async function fetchRdwVehicle(kenteken: string): Promise<ImportRow | null> {
+  const [vehicleRes, brandstofRes] = await Promise.all([
+    fetch(`https://opendata.rdw.nl/resource/m9d7-ebf2.json?kenteken=${kenteken}`),
+    fetch(`https://opendata.rdw.nl/resource/8ys7-d773.json?kenteken=${kenteken}`),
+  ]);
+  const vehicles = await vehicleRes.json();
+  const brandstoffen = await brandstofRes.json();
+  if (!Array.isArray(vehicles) || vehicles.length === 0) return null;
+  const v = vehicles[0];
+  const b = Array.isArray(brandstoffen) && brandstoffen.length > 0 ? brandstoffen[0] : null;
+  const bouwjaarStr: string = v.datum_eerste_toelating || "";
+  const bouwjaar = bouwjaarStr.length >= 4 ? parseInt(bouwjaarStr.slice(0, 4), 10) : new Date().getFullYear();
+  const rawBrandstof = b?.brandstof_omschrijving || v.brandstof_omschrijving || "Benzine";
+  const brandstof = BRANDSTOF_MAP[rawBrandstof] || "Benzine";
+  return {
+    kenteken: v.kenteken,
+    merk: (v.merk || "").toUpperCase(),
+    model: (v.handelsbenaming || "").toUpperCase(),
+    bouwjaar,
+    brandstof,
+    kilometerstand: 0,
+    categorie: brandstof === "Elektrisch" ? "Elektrisch" : "Stadsauto",
+    kleur: v.eerste_kleur || "Onbekend",
+    dagprijs: 0,
+  };
+}
 
 function parseCSV(text: string): ParsedResult {
   const lines = text.trim().split(/\r?\n/);
@@ -91,6 +133,47 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
   const [parsed, setParsed] = useState<ParsedResult | null>(null);
   const [importing, setImporting] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [tab, setTab] = useState<"kenteken" | "csv">("kenteken");
+  const [kentekenInput, setKentekenInput] = useState("");
+  const [lookingUp, setLookingUp] = useState(false);
+  const [lookupProgress, setLookupProgress] = useState({ done: 0, total: 0 });
+
+  const handleKentekenLookup = async () => {
+    const lines = kentekenInput
+      .split(/[\n,;]+/)
+      .map((l) => formatKenteken(l))
+      .filter((l) => l.length >= 4);
+    const unique = Array.from(new Set(lines));
+    if (unique.length === 0) {
+      toast.error("Voer minstens één kenteken in");
+      return;
+    }
+    setLookingUp(true);
+    setLookupProgress({ done: 0, total: unique.length });
+    const valid: ImportRow[] = [];
+    const errors: { row: number; message: string }[] = [];
+    for (let i = 0; i < unique.length; i++) {
+      const k = unique[i];
+      try {
+        const row = await fetchRdwVehicle(k);
+        if (!row) {
+          errors.push({ row: i + 1, message: `${k}: niet gevonden bij RDW` });
+        } else if (!row.merk || !row.model) {
+          errors.push({ row: i + 1, message: `${k}: onvolledige RDW-gegevens` });
+        } else {
+          valid.push(row);
+        }
+      } catch {
+        errors.push({ row: i + 1, message: `${k}: fout bij ophalen` });
+      }
+      setLookupProgress({ done: i + 1, total: unique.length });
+    }
+    setParsed({ valid, errors });
+    setLookingUp(false);
+    if (valid.length > 0) {
+      toast.success(`${valid.length} kenteken${valid.length !== 1 ? "s" : ""} opgehaald via RDW`);
+    }
+  };
 
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -142,6 +225,8 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
   const handleClose = () => {
     setParsed(null);
     setFileName("");
+    setKentekenInput("");
+    setLookupProgress({ done: 0, total: 0 });
     onOpenChange(false);
   };
 
@@ -158,14 +243,52 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Voertuigen importeren</DialogTitle>
-          <DialogDescription>Upload een CSV-bestand met voertuiggegevens.</DialogDescription>
+          <DialogDescription>Importeer via kenteken (automatisch via RDW) of upload een CSV.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Required fields info */}
+        <Tabs value={tab} onValueChange={(v) => { setTab(v as "kenteken" | "csv"); setParsed(null); }}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="kenteken" className="gap-1.5"><Search className="w-3.5 h-3.5" /> Via kenteken</TabsTrigger>
+            <TabsTrigger value="csv" className="gap-1.5"><FileSpreadsheet className="w-3.5 h-3.5" /> Via CSV</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="kenteken" className="space-y-4 mt-4">
+            <div className="rounded-lg border border-border p-3 space-y-1.5 bg-muted/30">
+              <p className="text-sm font-medium text-foreground">Snelle import via RDW</p>
+              <p className="text-xs text-muted-foreground">
+                Plak één kenteken per regel. Merk, model, bouwjaar, brandstof, kleur en APK-datum worden automatisch opgehaald. De voertuigfoto wordt op basis van merk en model gegenereerd.
+              </p>
+            </div>
+            <Textarea
+              placeholder={"AB-123-CD\n12-XY-Z3\nNL-001-A"}
+              value={kentekenInput}
+              onChange={(e) => setKentekenInput(e.target.value)}
+              rows={6}
+              className="font-mono uppercase tracking-wider text-sm"
+            />
+            <Button
+              onClick={handleKentekenLookup}
+              disabled={lookingUp || importing || kentekenInput.trim().length === 0}
+              className="w-full gap-2"
+            >
+              {lookingUp ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Ophalen {lookupProgress.done}/{lookupProgress.total}...
+                </>
+              ) : (
+                <>
+                  <Search className="w-4 h-4" />
+                  Gegevens ophalen via RDW
+                </>
+              )}
+            </Button>
+          </TabsContent>
+
+          <TabsContent value="csv" className="space-y-4 mt-4">
           <div className="rounded-lg border border-border p-3 space-y-2">
             <p className="text-sm font-medium text-foreground">Verplichte kolommen:</p>
             <div className="flex flex-wrap gap-1.5">
@@ -201,7 +324,10 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
               </div>
             )}
           </button>
+          </TabsContent>
+        </Tabs>
 
+        <div className="space-y-4 mt-4">
           {/* Results */}
           {parsed && (
             <div className="space-y-3">
