@@ -216,14 +216,16 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
             {filteredVehicles.map((v) => {
               const vehicleBlocks = blocks.filter((b) => b.vehicleId === v.id);
               return (
-                <div key={v.id} className="relative border-b border-border" style={{ height: ROW_HEIGHT }}>
-                  <div className="absolute inset-0 flex">
+                <ContextMenu key={v.id}>
+                  <ContextMenuTrigger asChild>
+                    <div className="relative border-b border-border cursor-context-menu" style={{ height: ROW_HEIGHT }}>
+                      <div className="absolute inset-0 flex">
                     {days.map((d, i) => {
                       const isWeekend = d.getDay() === 0 || d.getDay() === 6;
                       const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
                       return (<div key={i} className={cn("shrink-0 border-r border-border", isWeekend && "bg-muted/30", isToday && "bg-primary/5")} style={{ width: CELL_WIDTH }} />);
                     })}
-                  </div>
+                      </div>
                   {vehicleBlocks.map((block) => {
                     const blockStart = differenceInDays(block.start, startDate);
                     const blockEnd = differenceInDays(block.end, startDate);
@@ -239,7 +241,15 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
                       </div>
                     );
                   })}
-                </div>
+                    </div>
+                  </ContextMenuTrigger>
+                  <ContextMenuContent>
+                    <ContextMenuItem onClick={() => onSelectVehicle?.(v)} className="gap-2"><Eye className="w-3.5 h-3.5" />Voertuig openen</ContextMenuItem>
+                    <ContextMenuItem onClick={() => onCreateContract?.(v)} className="gap-2"><FileText className="w-3.5 h-3.5" />Contract aanmaken</ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem onClick={() => onReturnVehicle?.(v)} className="gap-2"><RotateCcw className="w-3.5 h-3.5" />Terugmelden</ContextMenuItem>
+                  </ContextMenuContent>
+                </ContextMenu>
               );
             })}
 
