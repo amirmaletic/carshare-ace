@@ -51,6 +51,7 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
   const { addVoertuig } = useVoertuigen();
   const [preview, setPreview] = useState({ merk: "", model: "" });
   const [rdwLoading, setRdwLoading] = useState(false);
+  const [rdwLoaded, setRdwLoaded] = useState(false);
 
   const form = useForm<VehicleFormValues>({
     resolver: zodResolver(vehicleSchema),
@@ -77,6 +78,10 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
   });
 
   const onSubmit = (values: VehicleFormValues) => {
+    if (!rdwLoaded) {
+      toast.error("Haal eerst de gegevens op via RDW");
+      return;
+    }
     const insert: VoertuigInsert = {
       kenteken: values.kenteken.toUpperCase(),
       merk: values.merk,
@@ -102,6 +107,7 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
       onSuccess: () => {
         form.reset();
         setPreview({ merk: "", model: "" });
+        setRdwLoaded(false);
         onOpenChange(false);
       },
     });
@@ -143,9 +149,11 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
       if (data.co2_uitstoot != null) form.setValue("co2_uitstoot", data.co2_uitstoot);
       if (data.massa_ledig != null) form.setValue("massa_ledig", data.massa_ledig);
       setPreview({ merk, model: data.model || "" });
+      setRdwLoaded(true);
 
       toast.success(`${merk} ${data.model} opgehaald van RDW`);
     } catch (err: any) {
+      setRdwLoaded(false);
       toast.error(err?.message || "Ophalen mislukt");
     } finally {
       setRdwLoading(false);
@@ -215,13 +223,10 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                   <FormLabel>Merk</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Bv. Volkswagen, BMW, Toyota..."
+                      placeholder="Wordt opgehaald via RDW"
                       {...field}
-                      onChange={(e) => {
-                        field.onChange(e.target.value);
-                        setPreview(p => ({ ...p, merk: e.target.value }));
-                      }}
-                      maxLength={50}
+                      readOnly
+                      className="bg-muted/50 cursor-not-allowed"
                     />
                   </FormControl>
                   <FormMessage />
@@ -231,10 +236,12 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                 <FormItem>
                   <FormLabel>Model</FormLabel>
                   <FormControl>
-                    <Input placeholder="Golf 8" {...field} onChange={(e) => {
-                      field.onChange(e.target.value);
-                      setPreview(p => ({ ...p, model: e.target.value }));
-                    }} maxLength={50} />
+                    <Input
+                      placeholder="Wordt opgehaald via RDW"
+                      {...field}
+                      readOnly
+                      className="bg-muted/50 cursor-not-allowed"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -247,7 +254,7 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                 <FormItem>
                   <FormLabel>Bouwjaar</FormLabel>
                   <FormControl>
-                    <Input type="number" {...field} min={1990} max={new Date().getFullYear() + 1} />
+                    <Input type="number" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -255,16 +262,9 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
               <FormField control={form.control} name="brandstof" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Brandstof</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {["Benzine", "Diesel", "Elektrisch", "Hybride"].map(b => (
-                        <SelectItem key={b} value={b}>{b}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Input {...field} readOnly className="bg-muted/50 cursor-not-allowed" placeholder="Via RDW" />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -292,7 +292,7 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                 <FormItem>
                   <FormLabel>Kleur</FormLabel>
                   <FormControl>
-                    <Input placeholder="Zwart" {...field} maxLength={30} />
+                    <Input placeholder="Via RDW" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -323,7 +323,7 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                 <FormItem>
                   <FormLabel>Fiscale waarde (€)</FormLabel>
                   <FormControl>
-                    <Input type="number" min={0} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))} />
+                    <Input type="number" value={field.value ?? ""} readOnly className="bg-muted/50 cursor-not-allowed" placeholder="Via RDW" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -336,7 +336,7 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                 <FormItem>
                   <FormLabel>APK vervaldatum</FormLabel>
                   <FormControl>
-                    <Input type="date" value={field.value || ""} onChange={field.onChange} />
+                    <Input type="date" value={field.value || ""} readOnly className="bg-muted/50 cursor-not-allowed" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -366,7 +366,7 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Annuleren
               </Button>
-              <Button type="submit" disabled={addVoertuig.isPending}>
+              <Button type="submit" disabled={addVoertuig.isPending || !rdwLoaded}>
                 {addVoertuig.isPending ? "Toevoegen..." : "Toevoegen"}
               </Button>
             </div>
