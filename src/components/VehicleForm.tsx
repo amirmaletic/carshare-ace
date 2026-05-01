@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useVoertuigen, type VoertuigInsert } from "@/hooks/useVoertuigen";
-import { Car } from "lucide-react";
+import { Car, Loader2, Sparkles } from "lucide-react";
 import { getVehicleImageUrl } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const vehicleSchema = z.object({
   kenteken: z.string().trim().min(1, "Kenteken is verplicht").max(12, "Kenteken mag max 12 tekens zijn")
@@ -30,6 +32,12 @@ const vehicleSchema = z.object({
   apk_vervaldatum: z.string().optional().nullable(),
   verzekering_vervaldatum: z.string().optional().nullable(),
   status: z.enum(["beschikbaar", "verhuurd", "onderhoud", "gereserveerd"]).default("beschikbaar"),
+  catalogusprijs: z.coerce.number().min(0).optional().nullable(),
+  cilinderinhoud: z.coerce.number().min(0).optional().nullable(),
+  co2_uitstoot: z.coerce.number().min(0).optional().nullable(),
+  massa_ledig: z.coerce.number().min(0).optional().nullable(),
+  eerste_toelating: z.string().optional().nullable(),
+  voertuigsoort: z.string().optional().nullable(),
 });
 
 type VehicleFormValues = z.infer<typeof vehicleSchema>;
@@ -46,6 +54,7 @@ const merken = [
 export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
   const { addVoertuig } = useVoertuigen();
   const [preview, setPreview] = useState({ merk: "", model: "" });
+  const [rdwLoading, setRdwLoading] = useState(false);
 
   const form = useForm<VehicleFormValues>({
     resolver: zodResolver(vehicleSchema),
@@ -62,6 +71,12 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
       status: "beschikbaar",
       apk_vervaldatum: null,
       verzekering_vervaldatum: null,
+      catalogusprijs: null,
+      cilinderinhoud: null,
+      co2_uitstoot: null,
+      massa_ledig: null,
+      eerste_toelating: null,
+      voertuigsoort: null,
     },
   });
 
@@ -80,7 +95,13 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
       apk_vervaldatum: values.apk_vervaldatum || null,
       verzekering_vervaldatum: values.verzekering_vervaldatum || null,
       image_url: getVehicleImageUrl(values.merk, values.model),
-    };
+      catalogusprijs: values.catalogusprijs ?? null,
+      cilinderinhoud: values.cilinderinhoud ?? null,
+      co2_uitstoot: values.co2_uitstoot ?? null,
+      massa_ledig: values.massa_ledig ?? null,
+      eerste_toelating: values.eerste_toelating || null,
+      voertuigsoort: values.voertuigsoort || null,
+    } as VoertuigInsert;
     addVoertuig.mutate(insert, {
       onSuccess: () => {
         form.reset();
@@ -88,6 +109,57 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
         onOpenChange(false);
       },
     });
+  };
+
+  const isVAGMerk = (merk: string): boolean => {
+    const vag = ["Volkswagen", "Audi", "Skoda", "Škoda", "Seat", "SEAT", "Cupra", "CUPRA", "Porsche"];
+    return vag.some(m => m.toLowerCase() === merk.toLowerCase());
+  };
+
+  const handleRdwLookup = async () => {
+    const kenteken = form.getValues("kenteken");
+    if (!kenteken || kenteken.length < 4) {
+      toast.error("Vul eerst een geldig kenteken in");
+      return;
+    }
+    setRdwLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("rdw-lookup", {
+        body: { kenteken },
+      });
+      if (error) throw error;
+      if (!data || data.error) throw new Error(data?.error || "Geen data");
+
+      // Normaliseer Skoda spelling
+      let merk = data.merk || "";
+      if (merk.toLowerCase() === "skoda") merk = "Škoda";
+      if (merk.toLowerCase() === "seat") merk = "SEAT";
+      if (merk.toLowerCase() === "cupra") merk = "CUPRA";
+
+      if (merk && !isVAGMerk(merk)) {
+        toast.warning(`Let op: ${merk} is geen VAG-merk. Fleeflo richt zich op VAG-voertuigen.`);
+      }
+
+      form.setValue("merk", merk, { shouldValidate: true });
+      form.setValue("model", data.model || "", { shouldValidate: true });
+      if (data.bouwjaar) form.setValue("bouwjaar", data.bouwjaar, { shouldValidate: true });
+      if (data.brandstof) form.setValue("brandstof", data.brandstof, { shouldValidate: true });
+      if (data.kleur) form.setValue("kleur", data.kleur, { shouldValidate: true });
+      if (data.apk_vervaldatum) form.setValue("apk_vervaldatum", data.apk_vervaldatum);
+      if (data.eerste_toelating) form.setValue("eerste_toelating", data.eerste_toelating);
+      if (data.voertuigsoort) form.setValue("voertuigsoort", data.voertuigsoort);
+      if (data.catalogusprijs != null) form.setValue("catalogusprijs", data.catalogusprijs);
+      if (data.cilinderinhoud != null) form.setValue("cilinderinhoud", data.cilinderinhoud);
+      if (data.co2_uitstoot != null) form.setValue("co2_uitstoot", data.co2_uitstoot);
+      if (data.massa_ledig != null) form.setValue("massa_ledig", data.massa_ledig);
+      setPreview({ merk, model: data.model || "" });
+
+      toast.success(`${merk} ${data.model} opgehaald van RDW`);
+    } catch (err: any) {
+      toast.error(err?.message || "Ophalen mislukt");
+    } finally {
+      setRdwLoading(false);
+    }
   };
 
   const imageUrl = preview.merk && preview.model
@@ -99,7 +171,7 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
       <DialogContent className="sm:max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Voertuig toevoegen</DialogTitle>
-          <DialogDescription>Voeg een nieuw voertuig toe aan het wagenpark.</DialogDescription>
+          <DialogDescription>Vul het kenteken in en haal alle gegevens automatisch op uit het RDW-register.</DialogDescription>
         </DialogHeader>
 
         {/* Image preview */}
@@ -116,17 +188,38 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Row 1: Kenteken + Merk */}
-            <div className="grid grid-cols-2 gap-3">
-              <FormField control={form.control} name="kenteken" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Kenteken</FormLabel>
+            {/* Row 1: Kenteken met RDW knop */}
+            <FormField control={form.control} name="kenteken" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Kenteken</FormLabel>
+                <div className="flex gap-2">
                   <FormControl>
-                    <Input placeholder="AB-123-CD" {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} maxLength={12} />
+                    <Input
+                      placeholder="AB-123-CD"
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleRdwLookup();
+                        }
+                      }}
+                      maxLength={12}
+                      className="font-mono uppercase"
+                    />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
+                  <Button type="button" variant="secondary" onClick={handleRdwLookup} disabled={rdwLoading} className="gap-1.5 shrink-0">
+                    {rdwLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    Ophalen RDW
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Vul het kenteken in en klik 'Ophalen RDW' voor automatische invulling.</p>
+                <FormMessage />
+              </FormItem>
+            )} />
+
+            {/* Row 2: Merk + Model */}
+            <div className="grid grid-cols-2 gap-3">
               <FormField control={form.control} name="merk" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Merk</FormLabel>
@@ -147,10 +240,6 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                   <FormMessage />
                 </FormItem>
               )} />
-            </div>
-
-            {/* Row 2: Model + Bouwjaar */}
-            <div className="grid grid-cols-2 gap-3">
               <FormField control={form.control} name="model" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Model</FormLabel>
@@ -163,6 +252,10 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                   <FormMessage />
                 </FormItem>
               )} />
+            </div>
+
+            {/* Row 3: Bouwjaar + Brandstof */}
+            <div className="grid grid-cols-2 gap-3">
               <FormField control={form.control} name="bouwjaar" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Bouwjaar</FormLabel>
@@ -172,10 +265,6 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                   <FormMessage />
                 </FormItem>
               )} />
-            </div>
-
-            {/* Row 3: Brandstof + Categorie */}
-            <div className="grid grid-cols-2 gap-3">
               <FormField control={form.control} name="brandstof" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Brandstof</FormLabel>
@@ -192,6 +281,10 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                   <FormMessage />
                 </FormItem>
               )} />
+            </div>
+
+            {/* Row 4: Categorie + Kleur */}
+            <div className="grid grid-cols-2 gap-3">
               <FormField control={form.control} name="categorie" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Categorie</FormLabel>
@@ -208,10 +301,6 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                   <FormMessage />
                 </FormItem>
               )} />
-            </div>
-
-            {/* Row 4: Kleur + Kilometerstand + Dagprijs */}
-            <div className="grid grid-cols-3 gap-3">
               <FormField control={form.control} name="kleur" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Kleur</FormLabel>
@@ -221,6 +310,10 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                   <FormMessage />
                 </FormItem>
               )} />
+            </div>
+
+            {/* Row 5: Kilometerstand + Dagprijs + Catalogusprijs */}
+            <div className="grid grid-cols-3 gap-3">
               <FormField control={form.control} name="kilometerstand" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Kilometerstand</FormLabel>
@@ -239,9 +332,18 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                   <FormMessage />
                 </FormItem>
               )} />
+              <FormField control={form.control} name="catalogusprijs" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fiscale waarde (€)</FormLabel>
+                  <FormControl>
+                    <Input type="number" min={0} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value === "" ? null : Number(e.target.value))} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
             </div>
 
-            {/* Row 5: APK + Verzekering */}
+            {/* Row 6: APK + Verzekering */}
             <div className="grid grid-cols-2 gap-3">
               <FormField control={form.control} name="apk_vervaldatum" render={({ field }) => (
                 <FormItem>
@@ -262,6 +364,16 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
                 </FormItem>
               )} />
             </div>
+
+            {/* RDW techniek (samenvatting, alleen als ingevuld) */}
+            {(form.watch("cilinderinhoud") || form.watch("co2_uitstoot") || form.watch("massa_ledig") || form.watch("eerste_toelating")) && (
+              <div className="rounded-lg border border-border bg-muted/40 p-3 text-xs grid grid-cols-2 sm:grid-cols-4 gap-2 text-muted-foreground">
+                {form.watch("eerste_toelating") && <div><span className="block font-medium text-foreground">{form.watch("eerste_toelating")}</span>Eerste toelating</div>}
+                {form.watch("cilinderinhoud") ? <div><span className="block font-medium text-foreground">{form.watch("cilinderinhoud")} cc</span>Cilinderinhoud</div> : null}
+                {form.watch("co2_uitstoot") ? <div><span className="block font-medium text-foreground">{form.watch("co2_uitstoot")} g/km</span>CO₂</div> : null}
+                {form.watch("massa_ledig") ? <div><span className="block font-medium text-foreground">{form.watch("massa_ledig")} kg</span>Leeggewicht</div> : null}
+              </div>
+            )}
 
             <div className="flex justify-end gap-2 pt-2">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
