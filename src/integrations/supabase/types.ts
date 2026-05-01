@@ -1497,6 +1497,10 @@ export type Database = {
       }
     }
     Functions: {
+      admin_delete_organisatie: {
+        Args: { _org_id: string }
+        Returns: undefined
+      }
       admin_get_organisatie: { Args: { _org_id: string }; Returns: Json }
       admin_grant_platform_admin: {
         Args: { _user_email: string }
