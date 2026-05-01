@@ -277,8 +277,11 @@ export default function AdminPlatform() {
 function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: () => void }) {
   const { data: detail, isLoading } = useAdminOrganisatieDetail(org?.id ?? null);
   const updateMutation = useUpdateOrganisatie();
+  const deleteMutation = useDeleteOrganisatie();
   const [editNaam, setEditNaam] = useState("");
   const [editTrial, setEditTrial] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
 
   if (!org) return null;
 
@@ -321,6 +324,19 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
       toast.success(`Trial verlengd met ${days} dagen`);
     } catch (e: any) {
       toast.error(e.message || "Mislukt");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!org) return;
+    try {
+      await deleteMutation.mutateAsync(org.id);
+      toast.success("Omgeving verwijderd");
+      setDeleteOpen(false);
+      setDeleteConfirm("");
+      onClose();
+    } catch (e: any) {
+      toast.error(e.message || "Verwijderen mislukt");
     }
   };
 
@@ -382,6 +398,29 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
                 <p>Eigenaar: <span className="text-foreground">{detail?.eigenaar_email || org.eigenaar_email || "-"}</span></p>
                 <p>Aangemaakt: <span className="text-foreground">{format(new Date(org.created_at), "d MMM yyyy HH:mm", { locale: nl })}</span></p>
                 <p>Organisatie-ID: <code className="text-foreground">{org.id}</code></p>
+              </CardContent>
+            </Card>
+
+            <Card className="border-destructive/40">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-destructive mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Gevarenzone</p>
+                    <p className="text-xs text-muted-foreground">
+                      Verwijder deze omgeving permanent, inclusief alle voertuigen, contracten, klanten en historie. Dit kan niet ongedaan worden gemaakt.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                  Omgeving verwijderen
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>
