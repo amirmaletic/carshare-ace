@@ -8,15 +8,20 @@ import { UpcomingAgenda } from "@/components/dashboard/UpcomingAgenda";
 import { TodayPickups } from "@/components/dashboard/TodayPickups";
 import { OverdrachtenOverzicht } from "@/components/dashboard/OverdrachtenOverzicht";
 import { VervaldatumWaarschuwingen } from "@/components/dashboard/VervaldatumWaarschuwingen";
+import { OnderhoudsAdviseur } from "@/components/dashboard/OnderhoudsAdviseur";
+import { ContractRadar } from "@/components/dashboard/ContractRadar";
 import { ActiviteitenLog } from "@/components/ActiviteitenLog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import OnboardingWizard from "@/components/OnboardingWizard";
+import { useModuleModus } from "@/hooks/useModuleModus";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+  const { data: modus } = useModuleModus();
+  const isWagenpark = modus === "wagenpark";
 
   // Check if onboarding is needed — purely database-driven per organisation
   const { data: needsOnboarding } = useQuery({
@@ -110,6 +115,12 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <VervaldatumWaarschuwingen />
         <UpcomingAgenda />
+      </div>
+
+      {/* AI Onderhoudsadviseur + Contract Radar */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <OnderhoudsAdviseur />
+        {!isWagenpark && <ContractRadar />}
       </div>
 
       {/* Activiteitenlog */}
