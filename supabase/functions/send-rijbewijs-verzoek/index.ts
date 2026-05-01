@@ -11,6 +11,16 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders })
 
   try {
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader?.startsWith('Bearer ')) {
+      return json({ error: 'Niet ingelogd' }, 401)
+    }
+
+    const publishableKey = Deno.env.get('SUPABASE_ANON_KEY') || Deno.env.get('SUPABASE_PUBLISHABLE_KEY')
+    if (!publishableKey) {
+      return json({ error: 'Serverconfiguratie ontbreekt' }, 500)
+    }
+
     const { verificatie_id, contract_id, is_herinnering } = await req.json()
     if (!verificatie_id && !contract_id) {
       return json({ error: 'verificatie_id of contract_id is verplicht' }, 400)
@@ -116,17 +126,18 @@ Deno.serve(async (req) => {
       day: 'numeric', month: 'long', year: 'numeric'
     })
 
-    // Roep send-transactional-email aan via directe HTTP fetch (invoke heeft geen auth context binnen edge functions)
+    // Gebruik de geldige JWT van de oorspronkelijke gebruiker voor de interne functie-aanroep.
     const sendRes = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-transactional-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${Deno.env.get('SUPABASE_ANON_KEY')}`,
-        apikey: Deno.env.get('SUPABASE_ANON_KEY')!,
+        Authorization: authHeader,
+        apikey: publishableKey,
       },
       body: JSON.stringify({
         templateName: 'rijbewijs-verzoek',
         recipientEmail: klant.email,
+        idempotencyKey: `rijbewijs-verzoek-${ver.id}-${is_herinnering ? 'herinnering' : 'eerste'}`,
         templateData: {
           klantNaam: `${klant.voornaam} ${klant.achternaam}`.trim(),
           organisatieNaam: org?.naam ?? 'FleeFlo',
