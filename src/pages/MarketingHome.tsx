@@ -31,6 +31,8 @@ import { Link } from "react-router-dom";
 import productDashboard from "@/assets/product-dashboard.png";
 import productVoertuigen from "@/assets/product-voertuigen.png";
 import productContracten from "@/assets/product-contracten.png";
+import productCopilot from "@/assets/screenshot-copilot.png";
+import productTerugmelden from "@/assets/screenshot-terugmelden.png";
 import FaqSection from "@/components/marketing/FaqSection";
 import BlogPreviewSection from "@/components/marketing/BlogPreviewSection";
 
