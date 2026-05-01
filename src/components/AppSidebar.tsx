@@ -21,6 +21,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGoedkeuringen } from "@/hooks/useGoedkeuringen";
+import { useModuleModus, WAGENPARK_HIDDEN_PATHS } from "@/hooks/useModuleModus";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -48,6 +49,11 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const { inBehandeling } = useGoedkeuringen();
   const openCount = inBehandeling.length;
+  const { data: modus } = useModuleModus();
+
+  const visibleNavItems = navItems.filter((item) =>
+    modus === "wagenpark" ? !WAGENPARK_HIDDEN_PATHS.has(item.path) : true
+  );
 
   // On mobile inside Sheet, always show expanded
   const isCollapsed = isMobile ? false : collapsed;
@@ -72,7 +78,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = location.pathname === item.path;
           const showBadge = item.path === "/instellingen" && openCount > 0;
           return (
