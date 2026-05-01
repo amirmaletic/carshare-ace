@@ -300,10 +300,16 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
   const { data: detail, isLoading } = useAdminOrganisatieDetail(org?.id ?? null);
   const updateMutation = useUpdateOrganisatie();
   const deleteMutation = useDeleteOrganisatie();
+  const setRoleMutation = useAdminSetUserRole();
+  const removeUserMutation = useAdminRemoveUser();
+  const inviteMutation = useAdminInviteUser();
+  const impersonateMutation = useAdminImpersonate();
   const [editNaam, setEditNaam] = useState("");
   const [editTrial, setEditTrial] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<string>("medewerker");
 
   if (!org) return null;
 
@@ -463,13 +469,46 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
           </TabsContent>
 
           <TabsContent value="gebruikers" className="mt-4 space-y-2">
+            <Card>
+              <CardContent className="p-3 space-y-2">
+                <Label className="text-xs">Nieuwe gebruiker uitnodigen</Label>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Input
+                    placeholder="email@bedrijf.nl"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Select value={inviteRole} onValueChange={setInviteRole}>
+                    <SelectTrigger className="w-full sm:w-44"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {ORG_ROLES.map(r => <SelectItem key={r} value={r} className="capitalize">{r}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    size="sm"
+                    disabled={!inviteEmail || inviteMutation.isPending}
+                    onClick={async () => {
+                      try {
+                        await inviteMutation.mutateAsync({ org_id: org.id, email: inviteEmail, role: inviteRole });
+                        toast.success("Uitnodiging aangemaakt");
+                        setInviteEmail("");
+                      } catch (e: any) { toast.error(e.message || "Mislukt"); }
+                    }}
+                  >
+                    <UserPlus className="w-3.5 h-3.5 mr-1.5" /> Uitnodigen
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             {gebruikers.length === 0 ? (
               <Card><CardContent className="p-6 text-center text-sm text-muted-foreground">Geen gebruikers</CardContent></Card>
             ) : (
               gebruikers.map((g: any, idx: number) => (
-                <div key={`${g.user_id}-${g.role}-${idx}`} className="flex items-center justify-between rounded-lg border border-border p-3">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{g.email || g.user_id}</p>
+                <div key={`${g.user_id}-${g.role}-${idx}`} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-lg border border-border p-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{g.email || g.user_id}</p>
                     <p className="text-xs text-muted-foreground">
                       Toegevoegd {format(new Date(g.created_at), "d MMM yyyy", { locale: nl })}
                       {" · "}
@@ -479,7 +518,52 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
                         : "nooit"}
                     </p>
                   </div>
-                  <Badge variant="outline">{g.role}</Badge>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <Select
+                      value={g.role}
+                      onValueChange={async (newRole) => {
+                        if (newRole === g.role) return;
+                        try {
+                          await setRoleMutation.mutateAsync({ org_id: org.id, user_id: g.user_id, new_role: newRole });
+                          toast.success(`Rol gewijzigd naar ${newRole}`);
+                        } catch (e: any) { toast.error(e.message || "Mislukt"); }
+                      }}
+                    >
+                      <SelectTrigger className="w-36 h-8 text-xs capitalize"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {ORG_ROLES.map(r => <SelectItem key={r} value={r} className="capitalize text-xs">{r}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      title="Inloggen als deze gebruiker"
+                      onClick={async () => {
+                        if (!confirm(`Inloggen als ${g.email}? Je huidige sessie wordt vervangen.`)) return;
+                        try {
+                          const res = await impersonateMutation.mutateAsync({ target_user_id: g.user_id });
+                          toast.success("Magic link aangemaakt, je wordt omgeleid...");
+                          window.location.href = res.action_link;
+                        } catch (e: any) { toast.error(e.message || "Impersonate mislukt"); }
+                      }}
+                    >
+                      <LogIn className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      title="Verwijderen uit organisatie"
+                      onClick={async () => {
+                        if (!confirm(`Verwijder ${g.email} uit deze organisatie?`)) return;
+                        try {
+                          await removeUserMutation.mutateAsync({ org_id: org.id, user_id: g.user_id });
+                          toast.success("Gebruiker verwijderd");
+                        } catch (e: any) { toast.error(e.message || "Mislukt"); }
+                      }}
+                    >
+                      <UserMinus className="w-3.5 h-3.5 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               ))
             )}
@@ -565,5 +649,109 @@ function StatCard({ icon: Icon, label, value }: { icon: any; label: string; valu
         <p className="text-2xl font-bold text-foreground">{value}</p>
       </CardContent>
     </Card>
+  );
+}
+
+function PlatformAdminsTab({ currentUserId }: { currentUserId: string }) {
+  const { data: admins = [], isLoading } = useAdminListPlatformAdmins();
+  const grantMutation = useGrantPlatformAdmin();
+  const revokeMutation = useAdminRevokePlatformAdmin();
+  const [email, setEmail] = useState("");
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div>
+            <p className="text-sm font-medium text-foreground">Nieuwe platform admin toevoegen</p>
+            <p className="text-xs text-muted-foreground">De gebruiker moet al een account hebben.</p>
+          </div>
+          <div className="flex gap-2">
+            <Input
+              placeholder="email@fleeflo.nl"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="flex-1"
+            />
+            <Button
+              disabled={!email || grantMutation.isPending}
+              onClick={async () => {
+                try {
+                  await grantMutation.mutateAsync(email);
+                  toast.success("Platform admin toegevoegd");
+                  setEmail("");
+                } catch (e: any) { toast.error(e.message || "Mislukt"); }
+              }}
+            >
+              <Shield className="w-3.5 h-3.5 mr-1.5" /> Toevoegen
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto" /></div>
+          ) : admins.length === 0 ? (
+            <div className="p-6 text-center text-sm text-muted-foreground">Geen platform admins gevonden</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>E-mail</TableHead>
+                  <TableHead>Toegevoegd</TableHead>
+                  <TableHead>Laatste inlog</TableHead>
+                  <TableHead className="text-right">Acties</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {admins.map((a) => (
+                  <TableRow key={a.user_id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-foreground">{a.email || a.user_id}</span>
+                        {a.user_id === currentUserId && <Badge variant="outline" className="text-xs">jij</Badge>}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {format(new Date(a.created_at), "d MMM yyyy", { locale: nl })}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {a.last_sign_in_at
+                        ? formatDistanceToNow(new Date(a.last_sign_in_at), { addSuffix: true, locale: nl })
+                        : "Nooit"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={revokeMutation.isPending}
+                        onClick={async () => {
+                          const msg = a.user_id === currentUserId
+                            ? "Weet je zeker dat je je eigen platform-admin rechten wilt intrekken? Je verliest direct toegang."
+                            : `Platform-admin rechten van ${a.email} intrekken?`;
+                          if (!confirm(msg)) return;
+                          try {
+                            await revokeMutation.mutateAsync(a.user_id);
+                            toast.success("Rechten ingetrokken");
+                            if (a.user_id === currentUserId) {
+                              setTimeout(() => window.location.reload(), 800);
+                            }
+                          } catch (e: any) { toast.error(e.message || "Mislukt"); }
+                        }}
+                      >
+                        <ShieldOff className="w-3.5 h-3.5 mr-1.5" /> Intrekken
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
