@@ -8,6 +8,12 @@ import {
   useUpdateOrganisatie,
   useGrantPlatformAdmin,
   useDeleteOrganisatie,
+  useAdminSetUserRole,
+  useAdminRemoveUser,
+  useAdminInviteUser,
+  useAdminListPlatformAdmins,
+  useAdminRevokePlatformAdmin,
+  useAdminImpersonate,
   type AdminOrgRow,
 } from "@/hooks/usePlatformAdmin";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,13 +27,16 @@ import {
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format, formatDistanceToNow, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import {
   Search, Building2, Users, Car, FileText, Activity, Calendar, Shield,
-  AlertTriangle, CheckCircle2, XCircle, RefreshCw, Trash2,
+  AlertTriangle, CheckCircle2, XCircle, RefreshCw, Trash2, UserPlus, LogIn, UserMinus, ShieldOff,
 } from "lucide-react";
 import { toast } from "sonner";
+
+const ORG_ROLES = ["beheerder", "leidinggevende", "medewerker", "chauffeur", "klant"] as const;
 
 export default function AdminPlatform() {
   const { user, loading: authLoading } = useAuth();
@@ -121,6 +130,13 @@ export default function AdminPlatform() {
       </div>
 
       <div className="max-w-[1400px] mx-auto p-6 space-y-6">
+        <Tabs defaultValue="organisaties">
+          <TabsList>
+            <TabsTrigger value="organisaties">Organisaties</TabsTrigger>
+            <TabsTrigger value="admins">Platform admins</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="organisaties" className="space-y-6 mt-4">
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card><CardContent className="p-4 text-center">
@@ -234,6 +250,12 @@ export default function AdminPlatform() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="admins" className="mt-4">
+            <PlatformAdminsTab currentUserId={user.id} />
+          </TabsContent>
+        </Tabs>
       </div>
 
       <OrgDetailDialog org={selectedOrg} onClose={() => setSelectedOrg(null)} />
