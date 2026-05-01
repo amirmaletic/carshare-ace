@@ -1,11 +1,9 @@
-import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import {
-  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw, Clock, Plus, CalendarCheck,
+  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw, Clock, CalendarCheck,
 } from "lucide-react";
 import {
   Vehicle, getStatusColor, getReservationStatusColor,
@@ -13,7 +11,6 @@ import {
 import { VehicleReportTabs } from "@/components/VehicleReportTabs";
 import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
 import { VehicleTimeline } from "@/components/VehicleTimeline";
-import { ContractForm } from "@/components/ContractForm";
 import { VehicleImage } from "@/components/VehicleImage";
 import { VehicleAvailability } from "@/components/VehicleAvailability";
 import { useServiceHistorie } from "@/hooks/useVehicleReports";
@@ -42,8 +39,6 @@ const statusLabels: Record<string, string> = {
 };
 
 export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProps) {
-  const [contractFormOpen, setContractFormOpen] = useState(false);
-
   const { data: serviceRecords = [] } = useServiceHistorie(vehicle?.id ?? null);
 
   const { data: reserveringen = [] } = useQuery({
@@ -63,7 +58,6 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
   if (!vehicle) return null;
 
   return (
-    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0">
         {/* Hero image */}
@@ -90,10 +84,6 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
         </div>
 
         <div className="p-5 space-y-5">
-          <Button size="sm" className="gap-1.5" onClick={() => setContractFormOpen(true)}>
-            <Plus className="w-3.5 h-3.5" /> Contract aanmaken
-          </Button>
-
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <QuickInfo icon={Calendar} label="Bouwjaar" value={String(vehicle.bouwjaar)} />
             <QuickInfo icon={Fuel} label="Brandstof" value={vehicle.brandstof} />
@@ -202,13 +192,6 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
         </div>
       </DialogContent>
     </Dialog>
-
-    <ContractForm
-      open={contractFormOpen}
-      onOpenChange={setContractFormOpen}
-      prefilledVehicleId={vehicle.id}
-    />
-  </>
   );
 }
 
