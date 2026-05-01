@@ -1669,8 +1669,34 @@ export type Database = {
           slug: string
         }[]
       }
+      get_portaal_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          id: string
+          naam: string
+          portaal_kleur: string
+          portaal_logo_url: string
+          portaal_naam: string
+          portaal_welkomtekst: string
+          slug: string
+        }[]
+      }
       get_portaal_voertuigen: {
         Args: { _host: string }
+        Returns: {
+          bouwjaar: number
+          brandstof: string
+          categorie: string
+          dagprijs: number
+          id: string
+          image_url: string
+          kleur: string
+          merk: string
+          model: string
+        }[]
+      }
+      get_publiek_aanbod: {
+        Args: { _organisatie_id: string }
         Returns: {
           bouwjaar: number
           brandstof: string

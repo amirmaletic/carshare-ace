@@ -19,12 +19,7 @@ export default function TenantAanbod() {
     queryKey: ["tenant-voertuigen", tenant?.id],
     enabled: !!tenant?.id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("voertuigen")
-        .select("id, merk, model, bouwjaar, brandstof, categorie, kleur, dagprijs, image_url")
-        .eq("organisatie_id", tenant!.id)
-        .eq("status", "beschikbaar")
-        .order("dagprijs", { ascending: true });
+      const { data, error } = await supabase.rpc("get_publiek_aanbod", { _organisatie_id: tenant!.id });
       if (error) throw error;
       return data ?? [];
     },
