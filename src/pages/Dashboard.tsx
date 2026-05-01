@@ -5,8 +5,7 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { ActionableTasks } from "@/components/dashboard/ActionableTasks";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { UpcomingAgenda } from "@/components/dashboard/UpcomingAgenda";
-import { TodayPickups } from "@/components/dashboard/TodayPickups";
-import { OverdrachtenOverzicht } from "@/components/dashboard/OverdrachtenOverzicht";
+import { OverdrachtenCenter } from "@/components/dashboard/OverdrachtenCenter";
 import { VervaldatumWaarschuwingen } from "@/components/dashboard/VervaldatumWaarschuwingen";
 import { OnderhoudsAdviseur } from "@/components/dashboard/OnderhoudsAdviseur";
 import { ContractRadar } from "@/components/dashboard/ContractRadar";
@@ -107,17 +106,14 @@ export default function Dashboard() {
         <StatCard icon={Wrench} title="Bezettingsgraad" value={stats ? `${Math.round(((stats.totalVehicles - stats.available) / Math.max(stats.totalVehicles, 1)) * 100)}%` : "-"} subtitle="Van de vloot" />
       </div>
 
-      {/* Today's pickups */}
-      <TodayPickups />
+      {/* Overdrachten (vandaag, morgen, recent) */}
+      <OverdrachtenCenter />
 
       {/* Tasks + Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ActionableTasks />
         <RecentActivity />
       </div>
-
-      {/* Overdrachten overzicht */}
-      <OverdrachtenOverzicht />
 
       {/* Vervaldatum waarschuwingen + Agenda */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
