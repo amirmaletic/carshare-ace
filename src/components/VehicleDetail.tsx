@@ -14,6 +14,7 @@ import { VehicleReportTabs } from "@/components/VehicleReportTabs";
 import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
 import { VehicleTimeline } from "@/components/VehicleTimeline";
 import { ContractForm } from "@/components/ContractForm";
+import { VehicleImage } from "@/components/VehicleImage";
 import { useServiceHistorie } from "@/hooks/useVehicleReports";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
