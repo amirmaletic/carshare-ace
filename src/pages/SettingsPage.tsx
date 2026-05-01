@@ -125,11 +125,11 @@ export default function SettingsPage() {
         <div className="grid grid-cols-[260px_1fr] gap-8 items-start">
           {/* Side navigation */}
           <aside className="sticky top-6 space-y-6">
-            {Array.from(new Set(tabs.map((t) => t.group))).map((group) => (
+            {Array.from(new Set(visibleTabs.map((t) => t.group))).map((group) => (
               <div key={group} className="space-y-1">
                 <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{group}</p>
                 <nav className="space-y-0.5">
-                  {tabs.filter((t) => t.group === group).map((t) => {
+                  {visibleTabs.filter((t) => t.group === group).map((t) => {
                     const isActive = activeTab === t.value;
                     return (
                       <button
@@ -155,7 +155,7 @@ export default function SettingsPage() {
           {/* Content panel */}
           <div className="min-w-0 space-y-5 max-w-3xl">
             {(() => {
-              const current = tabs.find((t) => t.value === activeTab);
+              const current = visibleTabs.find((t) => t.value === activeTab);
               if (!current) return null;
               const Icon = current.icon;
               return (
