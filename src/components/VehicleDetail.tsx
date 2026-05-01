@@ -110,7 +110,7 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
           <Separator />
 
           <Tabs defaultValue="beschikbaarheid" className="w-full">
-            <TabsList className="w-full grid grid-cols-6 h-auto p-1.5 bg-muted/60 rounded-xl gap-1">
+            <TabsList className="w-full grid grid-cols-6 h-auto p-1.5 bg-gradient-to-b from-muted/80 to-muted/40 rounded-2xl gap-1 border border-border/50 shadow-inner">
               {[
                 { value: "beschikbaarheid", icon: CalendarCheck, label: "Beschikbaar" },
                 { value: "tijdlijn", icon: Clock, label: "Tijdlijn" },
@@ -122,10 +122,13 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
                 <TabsTrigger
                   key={value}
                   value={value}
-                  className="flex flex-col items-center justify-center gap-1 py-2 px-1 h-auto rounded-lg text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-background/60 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md data-[state=active]:ring-1 data-[state=active]:ring-primary/20 transition-all"
+                  className="group relative flex flex-col items-center justify-center gap-1.5 py-2.5 px-1 h-auto rounded-xl text-[10px] font-medium text-muted-foreground hover:text-foreground hover:bg-background/70 data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-[0_4px_12px_-4px_hsl(var(--primary)/0.25)] data-[state=active]:ring-1 data-[state=active]:ring-primary/15 transition-all duration-200"
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{label}</span>
+                  <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-muted/60 group-data-[state=active]:bg-primary/10 group-hover:bg-background transition-colors">
+                    <Icon className="w-3.5 h-3.5" />
+                  </span>
+                  <span className="leading-none">{label}</span>
+                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 h-0.5 w-0 rounded-full bg-primary transition-all duration-300 group-data-[state=active]:w-5" />
                 </TabsTrigger>
               ))}
             </TabsList>
