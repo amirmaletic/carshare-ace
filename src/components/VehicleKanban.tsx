@@ -150,7 +150,9 @@ function VehicleKanbanCard({ vehicle, onClick }: { vehicle: Vehicle; onClick?: (
       <div className="flex items-center gap-3 mt-2 pt-2 border-t border-border">
         <div className="flex items-center gap-1 text-xs text-muted-foreground"><Fuel className="w-3 h-3" />{vehicle.brandstof}</div>
         <div className="flex items-center gap-1 text-xs text-muted-foreground"><Gauge className="w-3 h-3" />{(vehicle.kilometerstand / 1000).toFixed(0)}k</div>
-        <span className="text-xs font-medium text-primary ml-auto">€{vehicle.dagprijs}/dag</span>
+        <span className="text-xs font-medium text-primary ml-auto">
+          {vehicle.dagprijs > 0 ? `€${vehicle.dagprijs}/dag` : "Geen prijs"}
+        </span>
       </div>
     </div>
   );
