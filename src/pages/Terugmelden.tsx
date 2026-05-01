@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useOrganisatie } from "@/hooks/useOrganisatie";
 
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ function formatKentekenInput(input: string): string {
 
 export default function Terugmelden() {
   const { user } = useAuth();
+  const { organisatieId } = useOrganisatie();
   const queryClient = useQueryClient();
   const { voertuigen: dbVoertuigen } = useVoertuigen();
 
@@ -126,6 +128,10 @@ export default function Terugmelden() {
       toast.error("Vul alle verplichte velden in");
       return;
     }
+    if (!organisatieId) {
+      toast.error("Geen organisatie gevonden voor je account");
+      return;
+    }
 
     const kmNum = parseInt(kilometerstand);
     if (kmNum < matchedVehicle.laatsteKm) {
@@ -159,6 +165,7 @@ export default function Terugmelden() {
 
       const { error } = await supabase.from("terugmeldingen").insert({
         user_id: user.id,
+        organisatie_id: organisatieId!,
         voertuig_id: matchedVehicle.id,
         voertuig_kenteken: matchedVehicle.kenteken,
         voertuig_naam: matchedVehicle.label,
