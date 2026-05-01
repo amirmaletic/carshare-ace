@@ -132,7 +132,7 @@ interface UserRole {
 }
 
 export function usePermissions() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
 
   const { data: userRoles = [], isLoading: rolesLoading } = useQuery({
@@ -145,7 +145,7 @@ export function usePermissions() {
       if (error) throw error;
       return data as UserRole[];
     },
-    enabled: !!user,
+    enabled: !authLoading && !!user,
   });
 
   const { data: permissions = [], isLoading: permsLoading } = useQuery({
@@ -159,10 +159,10 @@ export function usePermissions() {
       if (error) throw error;
       return data as RolePermission[];
     },
-    enabled: !!user,
+    enabled: !authLoading && !!user,
   });
 
-  const isLoading = rolesLoading || permsLoading;
+  const isLoading = authLoading || (!!user && (rolesLoading || permsLoading));
   const effectiveRoles: AppRole[] = userRoles.length > 0
     ? (userRoles.map(r => r.role).filter(r =>
         r === "beheerder" || r === "leidinggevende" || r === "medewerker" || r === "chauffeur" || r === "klant"
