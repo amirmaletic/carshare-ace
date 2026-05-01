@@ -483,6 +483,51 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
           </TabsContent>
         </Tabs>
       </DialogContent>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="w-5 h-5" />
+              Omgeving definitief verwijderen
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-foreground">
+              Je staat op het punt <strong>{org.naam}</strong> en alle bijbehorende data permanent te verwijderen.
+            </p>
+            <ul className="text-xs text-muted-foreground list-disc pl-5 space-y-0.5">
+              <li>{org.voertuig_count} voertuigen</li>
+              <li>{org.contract_count} contracten</li>
+              <li>{org.klant_count} klanten</li>
+              <li>{org.user_count} gebruikersrollen</li>
+              <li>Alle ritten, schade, onderhoud en historie</li>
+            </ul>
+            <div className="space-y-1.5 pt-2">
+              <Label className="text-xs">
+                Typ <code className="text-foreground">{org.naam}</code> om te bevestigen
+              </Label>
+              <Input
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder={org.naam}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDeleteOpen(false); setDeleteConfirm(""); }}>
+              Annuleren
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteConfirm !== org.naam || deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Verwijderen..." : "Definitief verwijderen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
