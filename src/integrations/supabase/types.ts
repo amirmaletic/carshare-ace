@@ -1361,15 +1361,20 @@ export type Database = {
           apk_vervaldatum: string | null
           bouwjaar: number
           brandstof: string
+          catalogusprijs: number | null
           categorie: string
+          cilinderinhoud: number | null
+          co2_uitstoot: number | null
           created_at: string
           dagprijs: number
+          eerste_toelating: string | null
           id: string
           image_url: string | null
           kenteken: string
           kilometerstand: number
           kleur: string
           locatie: string | null
+          massa_ledig: number | null
           merk: string
           model: string
           organisatie_id: string | null
@@ -1377,20 +1382,26 @@ export type Database = {
           updated_at: string
           user_id: string
           verzekering_vervaldatum: string | null
+          voertuigsoort: string | null
         }
         Insert: {
           apk_vervaldatum?: string | null
           bouwjaar: number
           brandstof?: string
+          catalogusprijs?: number | null
           categorie?: string
+          cilinderinhoud?: number | null
+          co2_uitstoot?: number | null
           created_at?: string
           dagprijs?: number
+          eerste_toelating?: string | null
           id?: string
           image_url?: string | null
           kenteken: string
           kilometerstand?: number
           kleur?: string
           locatie?: string | null
+          massa_ledig?: number | null
           merk: string
           model: string
           organisatie_id?: string | null
@@ -1398,20 +1409,26 @@ export type Database = {
           updated_at?: string
           user_id: string
           verzekering_vervaldatum?: string | null
+          voertuigsoort?: string | null
         }
         Update: {
           apk_vervaldatum?: string | null
           bouwjaar?: number
           brandstof?: string
+          catalogusprijs?: number | null
           categorie?: string
+          cilinderinhoud?: number | null
+          co2_uitstoot?: number | null
           created_at?: string
           dagprijs?: number
+          eerste_toelating?: string | null
           id?: string
           image_url?: string | null
           kenteken?: string
           kilometerstand?: number
           kleur?: string
           locatie?: string | null
+          massa_ledig?: number | null
           merk?: string
           model?: string
           organisatie_id?: string | null
@@ -1419,6 +1436,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           verzekering_vervaldatum?: string | null
+          voertuigsoort?: string | null
         }
         Relationships: [
           {
