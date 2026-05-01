@@ -124,12 +124,11 @@ export function getVehicleImageUrl(
   const modelFamily = encodeURIComponent(model.split(' ')[0].toLowerCase());
 
   const params = new URLSearchParams({
-    customer: "hrjavascript-masede",
+    customer: "img",
     make,
     modelFamily,
     angle: "01",
     zoomType: "fullscreen",
-    fileType: "png",
   });
 
   // Voeg modelYear toe wanneer bekend (Imagin kiest dichtstbijzijnde generatie)
