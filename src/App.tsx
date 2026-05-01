@@ -37,6 +37,7 @@ const Pricing = lazy(() => import("./pages/Pricing"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const AdminPlatform = lazy(() => import("./pages/AdminPlatform"));
 const TenantAanbod = lazy(() => import("./pages/tenant/TenantAanbod"));
 const TenantInloggen = lazy(() => import("./pages/tenant/TenantInloggen"));
@@ -141,6 +142,7 @@ const App = () => (
           {/* Auth routes */}
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/unsubscribe" element={<Unsubscribe />} />
           {/* Admin/staff routes */}
           <Route path="/dashboard" element={<ProtectedRoute><AppLayout><Dashboard /></AppLayout></ProtectedRoute>} />
           <Route path="/voertuigen" element={<ProtectedRoute><AppLayout><Vehicles /></AppLayout></ProtectedRoute>} />
