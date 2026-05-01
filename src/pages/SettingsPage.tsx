@@ -323,6 +323,9 @@ export default function SettingsPage() {
       case "integraties":
         return <IntegratiesTab />;
 
+      case "api":
+        return <ApiWebhooksTab />;
+
       case "algemeen":
         return (
           <Card>
