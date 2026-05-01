@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Shield, Bell, Building2, Save, LogOut, KeyRound, MapPin, Users, ShieldCheck } from "lucide-react";
+import { Settings, Shield, Bell, Building2, Save, LogOut, KeyRound, MapPin, Users, ShieldCheck, Globe } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,7 @@ import AutorisatieTab from "@/components/settings/AutorisatieTab";
 import LocatiesTab from "@/components/settings/LocatiesTab";
 import TeamTab from "@/components/settings/TeamTab";
 import GoedkeuringenTab from "@/components/settings/GoedkeuringenTab";
+import PortaalTab from "@/components/settings/PortaalTab";
 
 interface BedrijfsInstellingen {
   bedrijfsnaam: string;
@@ -75,6 +76,7 @@ function saveSetting(key: string, value: unknown) {
 const tabs = [
   { value: "bedrijf", label: "Bedrijf", icon: Building2 },
   { value: "team", label: "Team", icon: Users },
+  { value: "portaal", label: "Klantportaal", icon: Globe },
   { value: "notificaties", label: "Meldingen", icon: Bell },
   { value: "locaties", label: "Locaties", icon: MapPin },
   { value: "autorisatie", label: "Autorisatie", icon: KeyRound },
@@ -139,7 +141,7 @@ export default function SettingsPage() {
       ) : (
         /* Desktop: normal tabs */
         <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-3xl">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             {tabs.map((t) => (
               <TabsTrigger key={t.value} value={t.value} className="gap-1.5 text-xs sm:text-sm">
                 <t.icon className="w-4 h-4 hidden sm:block" /> {t.label}
@@ -268,6 +270,9 @@ export default function SettingsPage() {
 
       case "team":
         return <TeamTab />;
+
+      case "portaal":
+        return <PortaalTab />;
 
       case "locaties":
         return <LocatiesTab />;
