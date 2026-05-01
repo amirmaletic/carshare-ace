@@ -36,22 +36,35 @@ interface Props {
 
 export default function OnboardingWizard({ onComplete }: Props) {
   const { user } = useAuth();
-  const { organisatieId } = useOrganisatie();
+  const { organisatieId, isLoading: organisatieLoading } = useOrganisatie();
   const [step, setStep] = useState(0);
   const [bedrijf, setBedrijf] = useState<BedrijfsData>(defaultBedrijfsData);
   const [voertuig, setVoertuig] = useState({ kenteken: "", merk: "", model: "", bouwjaar: "" });
   const [saving, setSaving] = useState(false);
 
-  const handleSaveBedrijf = () => {
+  const handleSaveBedrijf = async () => {
     if (!bedrijf.bedrijfsnaam.trim()) {
       toast.error("Vul een bedrijfsnaam in");
       return;
     }
-    // Save to localStorage (same keys as SettingsPage)
-    localStorage.setItem("fleetflow_bedrijf", JSON.stringify(bedrijf));
-    // Update organisatie naam
-    if (organisatieId) {
-      supabase.from("organisaties").update({ naam: bedrijf.bedrijfsnaam }).eq("id", organisatieId);
+    if (!organisatieId) {
+      toast.error("Organisatie wordt nog geladen");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from("organisaties").update({
+      naam: bedrijf.bedrijfsnaam.trim(),
+      kvk_nummer: bedrijf.kvkNummer.trim() || null,
+      telefoon: bedrijf.telefoon.trim() || null,
+      email: bedrijf.email.trim() || null,
+      adres: bedrijf.adres.trim() || null,
+      postcode: bedrijf.postcode.trim() || null,
+      plaats: bedrijf.plaats.trim() || null,
+    }).eq("id", organisatieId);
+    setSaving(false);
+    if (error) {
+      toast.error("Fout bij opslaan: " + error.message);
+      return;
     }
     setStep(2);
   };
@@ -173,8 +186,8 @@ export default function OnboardingWizard({ onComplete }: Props) {
                 <Button variant="outline" onClick={() => setStep(0)} className="gap-2">
                   <ArrowLeft className="w-4 h-4" /> Terug
                 </Button>
-                <Button onClick={handleSaveBedrijf} className="flex-1 gap-2">
-                  Volgende <ArrowRight className="w-4 h-4" />
+                <Button onClick={handleSaveBedrijf} disabled={saving || organisatieLoading} className="flex-1 gap-2">
+                  {saving ? "Opslaan..." : "Volgende"} <ArrowRight className="w-4 h-4" />
                 </Button>
               </div>
             </CardContent>

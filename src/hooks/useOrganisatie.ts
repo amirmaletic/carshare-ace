@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 export function useOrganisatie() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const { data: organisatieId, isLoading } = useQuery({
     queryKey: ["organisatie_id", user?.id],
@@ -14,9 +14,9 @@ export function useOrganisatie() {
       if (error) throw error;
       return data as string | null;
     },
-    enabled: !!user,
+    enabled: !authLoading && !!user,
     staleTime: 5 * 60 * 1000,
   });
 
-  return { organisatieId: organisatieId ?? null, isLoading };
+  return { organisatieId: organisatieId ?? null, isLoading: authLoading || (!!user && isLoading) };
 }

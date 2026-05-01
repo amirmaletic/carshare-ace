@@ -16,39 +16,41 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import OnboardingWizard from "@/components/OnboardingWizard";
 import { useModuleModus } from "@/hooks/useModuleModus";
+import { useOrganisatie } from "@/hooks/useOrganisatie";
 
 export default function Dashboard() {
   const { user } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   const { data: modus } = useModuleModus();
+  const { organisatieId, isLoading: organisatieLoading } = useOrganisatie();
   const isWagenpark = modus === "wagenpark";
 
   // Check if onboarding is needed — purely database-driven per organisation
   const { data: needsOnboarding } = useQuery({
-    queryKey: ["onboarding-check", user?.id],
+    queryKey: ["onboarding-check", organisatieId],
     queryFn: async () => {
-      // Has any vehicles in this org? RLS scopes automatically
-      const { count } = await supabase.from("voertuigen").select("id", { count: "exact", head: true });
+      const [{ count }, { count: contractCount }, { count: chauffeurCount }, { data: org }] = await Promise.all([
+        supabase.from("voertuigen").select("id", { count: "exact", head: true }).eq("organisatie_id", organisatieId!),
+        supabase.from("contracts").select("id", { count: "exact", head: true }).eq("organisatie_id", organisatieId!),
+        supabase.from("chauffeurs").select("id", { count: "exact", head: true }).eq("organisatie_id", organisatieId!),
+        supabase.from("organisaties").select("naam, kvk_nummer, btw_nummer, adres, postcode, plaats, telefoon, email").eq("id", organisatieId!).maybeSingle(),
+      ]);
       if (count && count > 0) return false;
-      // Has any contracts?
-      const { count: contractCount } = await supabase.from("contracts").select("id", { count: "exact", head: true });
       if (contractCount && contractCount > 0) return false;
-      // Has any chauffeurs?
-      const { count: chauffeurCount } = await supabase.from("chauffeurs").select("id", { count: "exact", head: true });
       if (chauffeurCount && chauffeurCount > 0) return false;
-      // Completely empty org → show onboarding
-      return true;
+      return !org || ![org.naam, org.kvk_nummer, org.btw_nummer, org.adres, org.postcode, org.plaats, org.telefoon, org.email]
+        .some((value) => typeof value === "string" && value.trim().length > 0 && value !== "Mijn Bedrijf");
     },
-    enabled: !!user,
+    enabled: !!user && !organisatieLoading && !!organisatieId,
     staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {
-    if (needsOnboarding !== undefined) setShowOnboarding(needsOnboarding);
+    if (!organisatieLoading && needsOnboarding !== undefined) setShowOnboarding(needsOnboarding);
   }, [needsOnboarding]);
 
   const { data: stats } = useQuery({
-    queryKey: ["dashboard-stats"],
+    queryKey: ["dashboard-stats", organisatieId],
     queryFn: async () => {
       const [vehRes, conRes, invRes] = await Promise.all([
         supabase.from("voertuigen").select("id, status"),
@@ -66,7 +68,7 @@ export default function Dashboard() {
         openInvoices: invoices.length,
       };
     },
-    enabled: !!user && showOnboarding === false,
+    enabled: !!user && !!organisatieId && showOnboarding === false,
   });
 
   if (showOnboarding === null) {

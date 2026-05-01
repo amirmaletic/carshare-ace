@@ -28,7 +28,7 @@ const defaults: Voorkeuren = {
 };
 
 export function useOrganisatieVoorkeuren() {
-  const { organisatieId } = useOrganisatie();
+  const { organisatieId, isLoading: organisatieLoading } = useOrganisatie();
   const qc = useQueryClient();
 
   const query = useQuery({
@@ -71,5 +71,5 @@ export function useOrganisatieVoorkeuren() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["org_voorkeuren"] }),
   });
 
-  return { data: query.data ?? defaults, isLoading: query.isLoading, save };
+  return { data: query.data ?? defaults, isLoading: organisatieLoading || query.isLoading, save };
 }
