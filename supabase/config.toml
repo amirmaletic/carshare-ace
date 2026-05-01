@@ -21,3 +21,7 @@ project_id = "wqqebuxglxphivghekyz"
     verify_jwt = true
   [functions.analyze-rijbewijs]
     verify_jwt = true
+  [functions.create-betaal-verificatie]
+    verify_jwt = true
+  [functions.verify-betaal-verificatie]
+    verify_jwt = false
