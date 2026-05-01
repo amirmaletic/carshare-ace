@@ -919,6 +919,7 @@ export type Database = {
           eigenaar_id: string
           id: string
           is_active: boolean
+          module_modus: string
           naam: string
           portaal_actief: boolean
           portaal_kleur: string | null
@@ -933,6 +934,7 @@ export type Database = {
           eigenaar_id: string
           id?: string
           is_active?: boolean
+          module_modus?: string
           naam?: string
           portaal_actief?: boolean
           portaal_kleur?: string | null
@@ -947,6 +949,7 @@ export type Database = {
           eigenaar_id?: string
           id?: string
           is_active?: boolean
+          module_modus?: string
           naam?: string
           portaal_actief?: boolean
           portaal_kleur?: string | null
@@ -1872,6 +1875,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: undefined
       }
+      admin_set_module_modus: {
+        Args: { _modus: string; _org_id: string }
+        Returns: undefined
+      }
       admin_set_user_role: {
         Args: {
           _new_role: Database["public"]["Enums"]["app_role"]
@@ -1931,6 +1938,7 @@ export type Database = {
           valuta: string
         }[]
       }
+      get_module_modus: { Args: never; Returns: string }
       get_portaal_by_host: {
         Args: { _host: string }
         Returns: {
