@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,67 +7,325 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `Je bent FleetFlow AI, een slimme assistent voor wagenparkbeheer. Je helpt gebruikers met:
+const SYSTEM_PROMPT = `Je bent **Fleeflo Copilot**: een data-bewuste assistent voor het wagenparkbeheer van de gebruiker.
 
-- **Voertuigadvies**: Aanbevelingen voor het beste voertuig op basis van budget, km-behoefte en type gebruik (particulier/zakelijk)
-- **Onderhoudsplanning**: Suggesties voor onderhoudsmomenten op basis van kilometerstand en servicehistorie
-- **Lease-opties**: Vergelijking en advies over lease vs. koop, en optimale leaseconstructies
-- **Kostenbesparing**: Tips om wagenparkkosten te verlagen (brandstof, onderhoud, verzekering)
-- **Contractbeheer**: Uitleg over contracttypen (lease, verhuur, fietslease, ev-lease)
+Je hebt toegang tot live data via tools. Gebruik ALTIJD een tool wanneer de gebruiker iets vraagt over zijn eigen voertuigen, contracten, klanten, reserveringen, ritten, schade of facturen. Verzin nooit cijfers of namen.
 
-Antwoord altijd in het Nederlands. Wees bondig maar informatief. Gebruik opsommingstekens voor overzichtelijkheid.
-Als je iets niet zeker weet, zeg dat eerlijk. Geef geen financieel advies dat als definitief beschouwd kan worden.`;
+Stappen:
+1. Bepaal welke tool nodig is (eventueel meerdere achter elkaar).
+2. Roep de tool aan, wacht op het resultaat.
+3. Vat het resultaat bondig samen in het Nederlands met markdown (bullets, tabellen of vetgedrukte kerngetallen).
+
+Stijlregels:
+- Antwoord in het Nederlands, kort en concreet.
+- Gebruik markdown: **bold** voor cijfers, lijsten voor opsommingen, tabellen voor vergelijkingen.
+- Gebruik nooit em-dashes; gebruik | of · of woorden.
+- Vermeld altijd het tijdvenster en aantal records waarop je antwoord is gebaseerd.
+- Als data ontbreekt, zeg dat eerlijk en stel voor wat te doen.
+
+Als de vraag puur algemeen is (geen org-data nodig), antwoord direct zonder tool.`;
+
+// ----------------- Tool definitions -----------------
+const tools = [
+  {
+    type: "function",
+    function: {
+      name: "lijst_voertuigen",
+      description: "Lijst van voertuigen in de vloot, met optionele filters op status of brandstof. Default limiet 50.",
+      parameters: {
+        type: "object",
+        properties: {
+          status: { type: "string", enum: ["beschikbaar", "verhuurd", "onderhoud", "gereserveerd"], description: "Optioneel statusfilter" },
+          brandstof: { type: "string", description: "Optioneel brandstoffilter (Benzine, Diesel, Elektrisch, Hybride)" },
+          limit: { type: "number", description: "Max aantal records (1-200)" },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "voertuig_beschikbaarheid",
+      description: "Welke voertuigen zijn beschikbaar tussen twee datums (geen actief contract of reservering).",
+      parameters: {
+        type: "object",
+        properties: {
+          start_datum: { type: "string", description: "ISO datum YYYY-MM-DD" },
+          eind_datum: { type: "string", description: "ISO datum YYYY-MM-DD" },
+        },
+        required: ["start_datum", "eind_datum"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "actieve_contracten",
+      description: "Contracten die op een datum (of vandaag) actief lopen. Optioneel filter op klant of binnen N dagen aflopend.",
+      parameters: {
+        type: "object",
+        properties: {
+          aflopend_binnen_dagen: { type: "number", description: "Toon contracten die binnen X dagen aflopen" },
+          klant_zoek: { type: "string", description: "Vrije tekst zoekopdracht in klant_naam of bedrijf" },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "aflopende_apk",
+      description: "Voertuigen waarvan de APK binnen X dagen verloopt (of al verlopen is).",
+      parameters: {
+        type: "object",
+        properties: {
+          binnen_dagen: { type: "number", description: "Standaard 60" },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "omzet_periode",
+      description: "Som van facturen (alle statussen + uitsplitsing) tussen twee datums.",
+      parameters: {
+        type: "object",
+        properties: {
+          start_datum: { type: "string", description: "YYYY-MM-DD" },
+          eind_datum: { type: "string", description: "YYYY-MM-DD" },
+        },
+        required: ["start_datum", "eind_datum"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "openstaande_facturen",
+      description: "Facturen met status 'openstaand' of 'verlopen', gesorteerd op oudste.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "schade_overzicht",
+      description: "Overzicht schades, optioneel alleen niet-herstelde of binnen periode.",
+      parameters: {
+        type: "object",
+        properties: {
+          alleen_open: { type: "boolean" },
+          sinds: { type: "string", description: "YYYY-MM-DD" },
+        },
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "vloot_statistieken",
+      description: "Snelle KPI: aantal voertuigen per status, totale fiscale waarde, gemiddelde dagprijs, bezettingsgraad laatste 30 dagen.",
+      parameters: { type: "object", properties: {} },
+    },
+  },
+];
+
+// ----------------- Tool executor -----------------
+async function runTool(name: string, args: any, sb: any): Promise<any> {
+  try {
+    switch (name) {
+      case "lijst_voertuigen": {
+        let q = sb.from("voertuigen").select("kenteken,merk,model,bouwjaar,brandstof,status,kilometerstand,dagprijs,apk_vervaldatum,catalogusprijs,kleur").limit(Math.min(args.limit ?? 50, 200));
+        if (args.status) q = q.eq("status", args.status);
+        if (args.brandstof) q = q.eq("brandstof", args.brandstof);
+        const { data, error } = await q;
+        if (error) throw error;
+        return { count: data?.length ?? 0, voertuigen: data };
+      }
+      case "voertuig_beschikbaarheid": {
+        const { start_datum, eind_datum } = args;
+        const { data: voertuigen } = await sb.from("voertuigen").select("id,kenteken,merk,model,dagprijs,status").neq("status", "onderhoud");
+        const { data: contracten } = await sb.from("contracts").select("voertuig_id,start_datum,eind_datum").or(`and(start_datum.lte.${eind_datum},eind_datum.gte.${start_datum})`);
+        const { data: reserveringen } = await sb.from("reserveringen").select("voertuig_id,start_datum,eind_datum,status").in("status", ["aangevraagd", "bevestigd"]).or(`and(start_datum.lte.${eind_datum},eind_datum.gte.${start_datum})`);
+        const bezet = new Set([
+          ...(contracten ?? []).map((c: any) => String(c.voertuig_id)),
+          ...(reserveringen ?? []).map((r: any) => String(r.voertuig_id)),
+        ]);
+        const beschikbaar = (voertuigen ?? []).filter((v: any) => !bezet.has(String(v.id)) && !bezet.has(v.kenteken));
+        return { periode: `${start_datum} t/m ${eind_datum}`, totaal: voertuigen?.length ?? 0, beschikbaar_aantal: beschikbaar.length, beschikbaar };
+      }
+      case "actieve_contracten": {
+        const today = new Date().toISOString().slice(0, 10);
+        let q = sb.from("contracts").select("contract_nummer,klant_naam,bedrijf,voertuig_id,type,start_datum,eind_datum,maandprijs,status").lte("start_datum", today).gte("eind_datum", today);
+        if (args.klant_zoek) q = q.or(`klant_naam.ilike.%${args.klant_zoek}%,bedrijf.ilike.%${args.klant_zoek}%`);
+        if (args.aflopend_binnen_dagen) {
+          const limit = new Date(Date.now() + args.aflopend_binnen_dagen * 86400000).toISOString().slice(0, 10);
+          q = q.lte("eind_datum", limit);
+        }
+        const { data, error } = await q.order("eind_datum");
+        if (error) throw error;
+        return { count: data?.length ?? 0, contracten: data };
+      }
+      case "aflopende_apk": {
+        const dagen = args.binnen_dagen ?? 60;
+        const limit = new Date(Date.now() + dagen * 86400000).toISOString().slice(0, 10);
+        const { data, error } = await sb.from("voertuigen").select("kenteken,merk,model,apk_vervaldatum").lte("apk_vervaldatum", limit).order("apk_vervaldatum");
+        if (error) throw error;
+        return { binnen_dagen: dagen, count: data?.length ?? 0, voertuigen: data };
+      }
+      case "omzet_periode": {
+        const { data, error } = await sb.from("invoices").select("bedrag,status,datum").gte("datum", args.start_datum).lte("datum", args.eind_datum);
+        if (error) throw error;
+        const totaal = (data ?? []).reduce((s: number, i: any) => s + Number(i.bedrag || 0), 0);
+        const perStatus: Record<string, number> = {};
+        for (const inv of data ?? []) perStatus[inv.status] = (perStatus[inv.status] || 0) + Number(inv.bedrag || 0);
+        return { periode: `${args.start_datum} t/m ${args.eind_datum}`, aantal_facturen: data?.length ?? 0, totaal_euro: totaal, per_status: perStatus };
+      }
+      case "openstaande_facturen": {
+        const { data, error } = await sb.from("invoices").select("bedrag,status,datum,contract_id").in("status", ["openstaand", "verlopen"]).order("datum");
+        if (error) throw error;
+        const totaal = (data ?? []).reduce((s: number, i: any) => s + Number(i.bedrag || 0), 0);
+        return { count: data?.length ?? 0, totaal_open_euro: totaal, facturen: data?.slice(0, 30) };
+      }
+      case "schade_overzicht": {
+        let q = sb.from("schade_rapporten").select("voertuig_id,datum,omschrijving,ernst,kosten,hersteld,verzekerd").order("datum", { ascending: false });
+        if (args.alleen_open) q = q.eq("hersteld", false);
+        if (args.sinds) q = q.gte("datum", args.sinds);
+        const { data, error } = await q.limit(50);
+        if (error) throw error;
+        const totaal_kosten = (data ?? []).reduce((s: number, r: any) => s + Number(r.kosten || 0), 0);
+        return { count: data?.length ?? 0, totaal_kosten_euro: totaal_kosten, schades: data };
+      }
+      case "vloot_statistieken": {
+        const { data: vts } = await sb.from("voertuigen").select("status,dagprijs,catalogusprijs");
+        const today = new Date().toISOString().slice(0, 10);
+        const dertigDag = new Date(Date.now() - 30 * 86400000).toISOString().slice(0, 10);
+        const { data: actieveContracten } = await sb.from("contracts").select("voertuig_id").lte("start_datum", today).gte("eind_datum", today);
+        const perStatus: Record<string, number> = {};
+        let fiscaal = 0;
+        let dagprijsSom = 0;
+        let dagprijsAantal = 0;
+        for (const v of vts ?? []) {
+          perStatus[v.status] = (perStatus[v.status] || 0) + 1;
+          fiscaal += Number(v.catalogusprijs || 0);
+          if (v.dagprijs) { dagprijsSom += Number(v.dagprijs); dagprijsAantal++; }
+        }
+        const totaal = vts?.length ?? 0;
+        const bezet = new Set((actieveContracten ?? []).map((c: any) => String(c.voertuig_id))).size;
+        const bezetting = totaal > 0 ? Math.round((bezet / totaal) * 100) : 0;
+        return {
+          totaal_voertuigen: totaal,
+          per_status: perStatus,
+          fiscale_waarde_totaal_euro: fiscaal,
+          gem_dagprijs_euro: dagprijsAantal ? Math.round(dagprijsSom / dagprijsAantal) : 0,
+          actieve_contracten: actieveContracten?.length ?? 0,
+          bezettingsgraad_procent: bezetting,
+          peildatum: today,
+        };
+      }
+      default:
+        return { error: `Onbekende tool: ${name}` };
+    }
+  } catch (e: any) {
+    return { error: e?.message || String(e) };
+  }
+}
+
+// ----------------- SSE helpers -----------------
+function sseEncode(deltaContent: string): Uint8Array {
+  const payload = { choices: [{ delta: { content: deltaContent } }] };
+  return new TextEncoder().encode(`data: ${JSON.stringify(payload)}\n\n`);
+}
+function sseDone(): Uint8Array {
+  return new TextEncoder().encode(`data: [DONE]\n\n`);
+}
+
+async function callGateway(messages: any[], apiKey: string, withTools: boolean) {
+  return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages,
+      ...(withTools ? { tools, tool_choice: "auto" } : {}),
+    }),
+  });
+}
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY niet geconfigureerd");
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...messages,
-        ],
-        stream: true,
-      }),
+    const authHeader = req.headers.get("Authorization") || "";
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON, {
+      global: { headers: { Authorization: authHeader } },
     });
 
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Te veel verzoeken. Probeer het later opnieuw." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+    // Agentic loop: tot N tool-rondes, dan stream final answer
+    const convo: any[] = [{ role: "system", content: SYSTEM_PROMPT }, ...messages];
+    const MAX_ROUNDS = 4;
+
+    for (let round = 0; round < MAX_ROUNDS; round++) {
+      const resp = await callGateway(convo, LOVABLE_API_KEY, true);
+      if (!resp.ok) {
+        if (resp.status === 429) return new Response(JSON.stringify({ error: "Te veel verzoeken. Probeer later opnieuw." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (resp.status === 402) return new Response(JSON.stringify({ error: "AI tegoed op. Voeg credits toe aan je workspace." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        const t = await resp.text();
+        console.error("Gateway error:", resp.status, t);
+        return new Response(JSON.stringify({ error: "AI gateway fout" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Tegoed op. Voeg credits toe aan je workspace." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      const data = await resp.json();
+      const choice = data.choices?.[0];
+      const msg = choice?.message;
+      const toolCalls = msg?.tool_calls;
+
+      if (toolCalls && toolCalls.length > 0) {
+        convo.push({ role: "assistant", content: msg.content ?? "", tool_calls: toolCalls });
+        for (const call of toolCalls) {
+          let parsedArgs: any = {};
+          try { parsedArgs = JSON.parse(call.function.arguments || "{}"); } catch {}
+          console.log("[copilot] tool", call.function.name, parsedArgs);
+          const result = await runTool(call.function.name, parsedArgs, sb);
+          convo.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(result).slice(0, 12000) });
+        }
+        continue; // volgende ronde
       }
-      const t = await response.text();
-      console.error("AI gateway error:", response.status, t);
-      return new Response(JSON.stringify({ error: "AI gateway fout" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+
+      // Geen tool calls: stream final content terug naar client
+      const finalText: string = msg?.content || "Geen antwoord ontvangen.";
+      const stream = new ReadableStream({
+        start(controller) {
+          // chunked om streaming-gevoel te geven
+          const chunks = finalText.match(/.{1,40}/gs) || [finalText];
+          (async () => {
+            for (const c of chunks) {
+              controller.enqueue(sseEncode(c));
+              await new Promise(r => setTimeout(r, 15));
+            }
+            controller.enqueue(sseDone());
+            controller.close();
+          })();
+        },
       });
+      return new Response(stream, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
     }
 
-    return new Response(response.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    // Fallback als max rounds bereikt
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(sseEncode("Het lukt me niet om dit binnen redelijke stappen te beantwoorden. Stel je vraag iets specifieker?"));
+        controller.enqueue(sseDone());
+        controller.close();
+      },
     });
+    return new Response(stream, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
   } catch (e) {
     console.error("ai-assistant error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Onbekende fout" }), {
