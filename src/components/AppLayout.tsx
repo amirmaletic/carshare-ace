@@ -1,6 +1,6 @@
 import { useState } from "react";
 import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
-import { Menu } from "lucide-react";
+import { Menu, Building2, Briefcase } from "lucide-react";
 import { AppSidebar } from "./AppSidebar";
 import { AiAssistant } from "./AiAssistant";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -9,11 +9,17 @@ import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
 import TrialExpiredScreen from "./TrialExpiredScreen";
 import { Badge } from "@/components/ui/badge";
+import { useModuleModus } from "@/hooks/useModuleModus";
+import { cn } from "@/lib/utils";
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const isMobile = useIsMobile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { data: trialStatus, isLoading: trialLoading } = useTrialStatus();
+  const { data: modus } = useModuleModus();
+  const isWagenpark = modus === "wagenpark";
+  const ModusIcon = isWagenpark ? Briefcase : Building2;
+  const modusLabel = isWagenpark ? "Wagenparkbeheer" : "Autoverhuur";
 
   if (trialLoading) {
     return (
@@ -44,6 +50,20 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             </button>
             <img src={fleefloLogo} alt="FleeFlo" className="w-8 h-8 object-contain flex-shrink-0" />
             <span className="font-semibold text-base text-foreground tracking-tight">FleeFlo</span>
+            {modus && (
+              <span
+                title={`Modus: ${modusLabel}`}
+                className={cn(
+                  "ml-auto flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[11px] font-medium",
+                  isWagenpark
+                    ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                    : "border-primary/30 bg-primary/10 text-primary"
+                )}
+              >
+                <ModusIcon className="w-3 h-3" />
+                {modusLabel}
+              </span>
+            )}
           </div>
 
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
