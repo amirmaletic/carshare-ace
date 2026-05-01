@@ -16,6 +16,8 @@ import {
   Route,
   UserPlus,
   IdCard,
+  Building2,
+  Briefcase,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -55,6 +57,11 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     modus === "wagenpark" ? !WAGENPARK_HIDDEN_PATHS.has(item.path) : true
   );
 
+  const isWagenpark = modus === "wagenpark";
+  const ModusIcon = isWagenpark ? Briefcase : Building2;
+  const modusLabel = isWagenpark ? "Wagenparkbeheer" : "Autoverhuur";
+  const modusKort = isWagenpark ? "WPB" : "AV";
+
   // On mobile inside Sheet, always show expanded
   const isCollapsed = isMobile ? false : collapsed;
 
@@ -75,6 +82,28 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
           </span>
         )}
       </div>
+
+      {/* Module-modus badge */}
+      {modus && (
+        <div className={cn("px-3 pt-3", isCollapsed && "px-2")}>
+          <div
+            title={`Modus: ${modusLabel}`}
+            className={cn(
+              "flex items-center gap-2 rounded-lg border text-xs font-medium",
+              isWagenpark
+                ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                : "border-primary/30 bg-primary/10 text-primary",
+              isCollapsed ? "justify-center p-2" : "px-2.5 py-1.5"
+            )}
+          >
+            <ModusIcon className="w-3.5 h-3.5 flex-shrink-0" />
+            {!isCollapsed && (
+              <span className="truncate">{modusLabel}</span>
+            )}
+            {isCollapsed && <span className="sr-only">{modusLabel}</span>}
+          </div>
+        </div>
+      )}
 
       {/* Navigation */}
       <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
