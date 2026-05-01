@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Settings, Shield, Bell, Building2, Save, LogOut, KeyRound, MapPin, Users, ShieldCheck, Globe } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings, Shield, Bell, Building2, Save, LogOut, KeyRound, MapPin, Users, ShieldCheck, Globe, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,16 +72,17 @@ function saveSetting(key: string, value: unknown) {
   localStorage.setItem(`fleetflow_${key}`, JSON.stringify(value));
 }
 
-const tabs = [
-  { value: "bedrijf", label: "Bedrijf", icon: Building2 },
-  { value: "team", label: "Team", icon: Users },
-  { value: "portaal", label: "Klantportaal", icon: Globe },
-  { value: "notificaties", label: "Meldingen", icon: Bell },
-  { value: "locaties", label: "Locaties", icon: MapPin },
-  { value: "autorisatie", label: "Autorisatie", icon: KeyRound },
-  { value: "goedkeuringen", label: "Goedkeuringen", icon: ShieldCheck },
-  { value: "algemeen", label: "Algemeen", icon: Settings },
-  { value: "account", label: "Account", icon: Shield },
+type TabDef = { value: string; label: string; icon: any; description: string; group: string };
+const tabs: TabDef[] = [
+  { value: "bedrijf", label: "Bedrijf", icon: Building2, description: "Naam, adres en facturatiegegevens", group: "Organisatie" },
+  { value: "portaal", label: "Klantportaal", icon: Globe, description: "White-label boekomgeving en domeinen", group: "Organisatie" },
+  { value: "team", label: "Team", icon: Users, description: "Medewerkers en uitnodigingen", group: "Organisatie" },
+  { value: "locaties", label: "Locaties", icon: MapPin, description: "Vestigingen en pickup-punten", group: "Organisatie" },
+  { value: "autorisatie", label: "Autorisatie", icon: KeyRound, description: "Rollen en rechten per module", group: "Toegang" },
+  { value: "goedkeuringen", label: "Goedkeuringen", icon: ShieldCheck, description: "Workflow voor acties met drempelwaarde", group: "Toegang" },
+  { value: "notificaties", label: "Meldingen", icon: Bell, description: "Herinneringen voor APK, contracten en facturen", group: "Voorkeuren" },
+  { value: "algemeen", label: "Algemeen", icon: Settings, description: "BTW, valuta, datumformaat", group: "Voorkeuren" },
+  { value: "account", label: "Account", icon: Shield, description: "Wachtwoord, sessies en uitloggen", group: "Voorkeuren" },
 ];
 
 export default function SettingsPage() {
@@ -112,16 +112,15 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Instellingen</h1>
-        <p className="text-muted-foreground mt-1">Beheer je account en applicatie-instellingen</p>
-      </div>
+      <header className="space-y-1">
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-foreground">Instellingen</h1>
+        <p className="text-sm text-muted-foreground">Beheer je organisatie, team en voorkeuren.</p>
+      </header>
 
       {isMobile ? (
-        /* Mobile: dropdown selector + content */
         <div className="space-y-4">
           <Select value={activeTab} onValueChange={setActiveTab}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full h-11">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -135,26 +134,60 @@ export default function SettingsPage() {
               ))}
             </SelectContent>
           </Select>
-
           <div>{renderTabContent(activeTab)}</div>
         </div>
       ) : (
-        /* Desktop: normal tabs */
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="max-w-3xl">
-          <TabsList className="grid w-full grid-cols-9">
-            {tabs.map((t) => (
-              <TabsTrigger key={t.value} value={t.value} className="gap-1.5 text-xs sm:text-sm">
-                <t.icon className="w-4 h-4 hidden sm:block" /> {t.label}
-              </TabsTrigger>
+        <div className="grid grid-cols-[260px_1fr] gap-8 items-start">
+          {/* Side navigation */}
+          <aside className="sticky top-6 space-y-6">
+            {Array.from(new Set(tabs.map((t) => t.group))).map((group) => (
+              <div key={group} className="space-y-1">
+                <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{group}</p>
+                <nav className="space-y-0.5">
+                  {tabs.filter((t) => t.group === group).map((t) => {
+                    const isActive = activeTab === t.value;
+                    return (
+                      <button
+                        key={t.value}
+                        onClick={() => setActiveTab(t.value)}
+                        className={`group w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all ${
+                          isActive
+                            ? "bg-primary/10 text-primary font-medium"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                        }`}
+                      >
+                        <t.icon className={`w-4 h-4 shrink-0 ${isActive ? "text-primary" : ""}`} />
+                        <span className="flex-1 text-left">{t.label}</span>
+                        <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isActive ? "translate-x-0 opacity-100" : "-translate-x-1 opacity-0 group-hover:opacity-50 group-hover:translate-x-0"}`} />
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
             ))}
-          </TabsList>
+          </aside>
 
-          {tabs.map((t) => (
-            <TabsContent key={t.value} value={t.value} className="space-y-4 mt-4">
-              {renderTabContent(t.value)}
-            </TabsContent>
-          ))}
-        </Tabs>
+          {/* Content panel */}
+          <div className="min-w-0 space-y-5 max-w-3xl">
+            {(() => {
+              const current = tabs.find((t) => t.value === activeTab);
+              if (!current) return null;
+              const Icon = current.icon;
+              return (
+                <div className="flex items-start gap-3 pb-4 border-b border-border">
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">{current.label}</h2>
+                    <p className="text-sm text-muted-foreground">{current.description}</p>
+                  </div>
+                </div>
+              );
+            })()}
+            {renderTabContent(activeTab)}
+          </div>
+        </div>
       )}
     </div>
   );
