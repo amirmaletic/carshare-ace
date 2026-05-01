@@ -7,6 +7,8 @@ import { getContractTypeLabel } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { useOrganisatie } from "@/hooks/useOrganisatie";
 import logoUrl from "@/assets/fleeflo-logo-blue.png";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ContractDocumentProps {
   contract: ContractWithInvoices | null;
@@ -17,7 +19,19 @@ interface ContractDocumentProps {
 export function ContractDocument({ contract, open, onOpenChange }: ContractDocumentProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const { voertuigen } = useVoertuigen();
-  const { organisatie } = useOrganisatie();
+  const { organisatieId } = useOrganisatie();
+  const { data: organisatie } = useQuery({
+    queryKey: ["organisatie-naam", organisatieId],
+    enabled: !!organisatieId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("organisaties")
+        .select("naam")
+        .eq("id", organisatieId!)
+        .maybeSingle();
+      return data;
+    },
+  });
 
   if (!contract) return null;
 
