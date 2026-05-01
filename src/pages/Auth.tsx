@@ -167,6 +167,7 @@ export default function Auth() {
   const [showVerification, setShowVerification] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [bedrijfsnaam, setBedrijfsnaam] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   if (loading) {
@@ -212,7 +213,7 @@ export default function Auth() {
         toast({ title: "Fout", description: error.message, variant: "destructive" });
       }
     } else {
-      const { error } = await signUp(email, password);
+      const { error } = await signUp(email, password, bedrijfsnaam.trim());
       setSubmitting(false);
       if (error) {
         toast({ title: "Fout", description: error.message, variant: "destructive" });
@@ -267,6 +268,19 @@ export default function Auth() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <div className="space-y-2">
+                <Label htmlFor="bedrijfsnaam">Bedrijfsnaam</Label>
+                <Input
+                  id="bedrijfsnaam"
+                  type="text"
+                  placeholder="Bijv. De Waal Autoverhuur"
+                  value={bedrijfsnaam}
+                  onChange={(e) => setBedrijfsnaam(e.target.value)}
+                  required
+                />
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">E-mailadres</Label>
               <Input

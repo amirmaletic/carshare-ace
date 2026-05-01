@@ -3,22 +3,46 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Car, Calendar, Check, ArrowRight, LogIn } from "lucide-react";
-import { differenceInDays, format, isAfter, isBefore, parseISO } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Car, CalendarIcon, Check, ArrowRight, LogIn } from "lucide-react";
+import { differenceInDays, format, isAfter, isBefore, parseISO, addDays, nextSaturday } from "date-fns";
+import { nl } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 export default function PubliekBoeken() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const [startDatum, setStartDatum] = useState("");
-  const [eindDatum, setEindDatum] = useState("");
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [eindDate, setEindDate] = useState<Date | undefined>();
   const [selectedVoertuig, setSelectedVoertuig] = useState<string | null>(null);
 
-  const dagen = startDatum && eindDatum ? Math.max(differenceInDays(new Date(eindDatum), new Date(startDatum)), 1) : 0;
+  const startDatum = startDate ? format(startDate, "yyyy-MM-dd") : "";
+  const eindDatum = eindDate ? format(eindDate, "yyyy-MM-dd") : "";
+  const dagen = startDate && eindDate ? Math.max(differenceInDays(eindDate, startDate), 1) : 0;
+
+  const presets = [
+    { label: "Vandaag", days: 1 },
+    { label: "Weekend", weekend: true },
+    { label: "3 dagen", days: 3 },
+    { label: "Een week", days: 7 },
+  ];
+
+  const applyPreset = (p: { days?: number; weekend?: boolean }) => {
+    const today = new Date();
+    if (p.weekend) {
+      const sat = nextSaturday(today);
+      setStartDate(sat);
+      setEindDate(addDays(sat, 2));
+    } else if (p.days) {
+      setStartDate(today);
+      setEindDate(addDays(today, p.days));
+    }
+  };
 
   const { data: voertuigen = [], isLoading } = useQuery({
     queryKey: ["publiek-voertuigen", startDatum, eindDatum],
@@ -110,29 +134,86 @@ export default function PubliekBoeken() {
         <Card className="max-w-xl mx-auto">
           <CardHeader>
             <CardTitle className="text-base flex items-center gap-2">
-              <Calendar className="w-4 h-4" />
+              <CalendarIcon className="w-4 h-4" />
               Wanneer wil je huren?
             </CardTitle>
           </CardHeader>
           <CardContent>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {presets.map((p) => (
+                <Button
+                  key={p.label}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => applyPreset(p)}
+                  className="text-xs"
+                >
+                  {p.label}
+                </Button>
+              ))}
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Ophaaldatum</Label>
-                <Input
-                  type="date"
-                  value={startDatum}
-                  onChange={(e) => setStartDatum(e.target.value)}
-                  min={format(new Date(), "yyyy-MM-dd")}
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {startDate ? format(startDate, "d MMMM yyyy", { locale: nl }) : <span>Kies datum</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={(d) => {
+                        setStartDate(d);
+                        if (d && eindDate && eindDate < d) setEindDate(undefined);
+                      }}
+                      disabled={(d) => d < new Date(new Date().setHours(0, 0, 0, 0))}
+                      initialFocus
+                      locale={nl}
+                      weekStartsOn={1}
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               <div className="space-y-2">
                 <Label>Retourdatum</Label>
-                <Input
-                  type="date"
-                  value={eindDatum}
-                  onChange={(e) => setEindDatum(e.target.value)}
-                  min={startDatum || format(new Date(), "yyyy-MM-dd")}
-                />
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !eindDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {eindDate ? format(eindDate, "d MMMM yyyy", { locale: nl }) : <span>Kies datum</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={eindDate}
+                      onSelect={setEindDate}
+                      disabled={(d) => d < (startDate ?? new Date(new Date().setHours(0, 0, 0, 0)))}
+                      initialFocus
+                      locale={nl}
+                      weekStartsOn={1}
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             {dagen > 0 && (

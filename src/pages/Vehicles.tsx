@@ -223,7 +223,9 @@ export default function Vehicles() {
                         <p className="text-xs text-muted-foreground">{(vehicle.kilometerstand / 1000).toFixed(0)}k km</p>
                       </div>
                       <div className="text-center">
-                        <span className="text-xs font-medium text-primary">€{vehicle.dagprijs}/dag</span>
+                        <span className="text-xs font-medium text-primary">
+                          {vehicle.dagprijs > 0 ? `€${vehicle.dagprijs}/dag` : "Geen prijs"}
+                        </span>
                       </div>
                     </div>
                   </div>
