@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Settings, Shield, Bell, Building2, Save, LogOut, KeyRound, MapPin, Users, ShieldCheck, Globe, ChevronRight, Plug, Webhook } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,9 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useBedrijfsgegevens, type Bedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
+import { useOrganisatieVoorkeuren, type Voorkeuren } from "@/hooks/useOrganisatieVoorkeuren";
+import { usePermissions } from "@/hooks/usePermissions";
 import AutorisatieTab from "@/components/settings/AutorisatieTab";
 import LocatiesTab from "@/components/settings/LocatiesTab";
 import TeamTab from "@/components/settings/TeamTab";
@@ -17,62 +20,6 @@ import GoedkeuringenTab from "@/components/settings/GoedkeuringenTab";
 import PortaalTab from "@/components/settings/PortaalTab";
 import IntegratiesTab from "@/components/settings/IntegratiesTab";
 import ApiWebhooksTab from "@/components/settings/ApiWebhooksTab";
-
-interface BedrijfsInstellingen {
-  bedrijfsnaam: string;
-  kvkNummer: string;
-  btwNummer: string;
-  adres: string;
-  postcode: string;
-  plaats: string;
-  telefoon: string;
-  email: string;
-}
-
-interface NotificatieInstellingen {
-  apkHerinnering: boolean;
-  apkDagenVooraf: string;
-  verzekeringHerinnering: boolean;
-  onderhoudHerinnering: boolean;
-  contractVerloop: boolean;
-  contractDagenVooraf: string;
-  factuurHerinnering: boolean;
-  kmOverschrijding: boolean;
-}
-
-interface AlgemeneInstellingen {
-  standaardBtw: string;
-  valuta: string;
-  datumFormaat: string;
-  kmRegistratieInterval: string;
-  standaardContractDuur: string;
-}
-
-const defaultBedrijf: BedrijfsInstellingen = {
-  bedrijfsnaam: "", kvkNummer: "", btwNummer: "", adres: "", postcode: "", plaats: "", telefoon: "", email: "",
-};
-
-const defaultNotificaties: NotificatieInstellingen = {
-  apkHerinnering: true, apkDagenVooraf: "30", verzekeringHerinnering: true, onderhoudHerinnering: true,
-  contractVerloop: true, contractDagenVooraf: "60", factuurHerinnering: true, kmOverschrijding: true,
-};
-
-const defaultAlgemeen: AlgemeneInstellingen = {
-  standaardBtw: "21", valuta: "EUR", datumFormaat: "dd-mm-yyyy", kmRegistratieInterval: "maandelijks", standaardContractDuur: "12",
-};
-
-function loadSetting<T>(key: string, fallback: T): T {
-  try {
-    const stored = localStorage.getItem(`fleetflow_${key}`);
-    return stored ? JSON.parse(stored) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function saveSetting(key: string, value: unknown) {
-  localStorage.setItem(`fleetflow_${key}`, JSON.stringify(value));
-}
 
 type TabDef = { value: string; label: string; icon: any; description: string; group: string };
 const tabs: TabDef[] = [
@@ -93,25 +40,41 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const { user, signOut } = useAuth();
   const isMobile = useIsMobile();
+  const { userRoles } = usePermissions();
+  const isBeheerder = userRoles.includes("beheerder");
 
   const [activeTab, setActiveTab] = useState("bedrijf");
-  const [bedrijf, setBedrijf] = useState<BedrijfsInstellingen>(() => loadSetting("bedrijf", defaultBedrijf));
-  const [notificaties, setNotificaties] = useState<NotificatieInstellingen>(() => loadSetting("notificaties", defaultNotificaties));
-  const [algemeen, setAlgemeen] = useState<AlgemeneInstellingen>(() => loadSetting("algemeen", defaultAlgemeen));
+
+  const { data: bedrijfsData, save: saveBedrijf } = useBedrijfsgegevens();
+  const { data: voorkeurenData, save: saveVoorkeuren } = useOrganisatieVoorkeuren();
+
+  const [bedrijf, setBedrijf] = useState<Bedrijfsgegevens>(bedrijfsData);
+  const [voorkeuren, setVoorkeuren] = useState<Voorkeuren>(voorkeurenData);
+
+  // Sync server data into local form state
+  useEffect(() => { setBedrijf(bedrijfsData); }, [bedrijfsData]);
+  useEffect(() => { setVoorkeuren(voorkeurenData); }, [voorkeurenData]);
 
   const handleSaveBedrijf = () => {
-    saveSetting("bedrijf", bedrijf);
-    toast({ title: "Opgeslagen", description: "Bedrijfsgegevens zijn bijgewerkt." });
+    if (!isBeheerder) {
+      toast({ title: "Geen rechten", description: "Alleen beheerders kunnen bedrijfsgegevens wijzigen.", variant: "destructive" });
+      return;
+    }
+    saveBedrijf.mutate(bedrijf, {
+      onSuccess: () => toast({ title: "Opgeslagen", description: "Bedrijfsgegevens zijn bijgewerkt." }),
+      onError: (e: Error) => toast({ title: "Fout bij opslaan", description: e.message, variant: "destructive" }),
+    });
   };
 
-  const handleSaveNotificaties = () => {
-    saveSetting("notificaties", notificaties);
-    toast({ title: "Opgeslagen", description: "Notificatie-instellingen zijn bijgewerkt." });
-  };
-
-  const handleSaveAlgemeen = () => {
-    saveSetting("algemeen", algemeen);
-    toast({ title: "Opgeslagen", description: "Algemene instellingen zijn bijgewerkt." });
+  const handleSaveVoorkeuren = (label: string) => {
+    if (!isBeheerder) {
+      toast({ title: "Geen rechten", description: "Alleen beheerders kunnen voorkeuren wijzigen.", variant: "destructive" });
+      return;
+    }
+    saveVoorkeuren.mutate(voorkeuren, {
+      onSuccess: () => toast({ title: "Opgeslagen", description: `${label} zijn bijgewerkt.` }),
+      onError: (e: Error) => toast({ title: "Fout bij opslaan", description: e.message, variant: "destructive" }),
+    });
   };
 
   return (
