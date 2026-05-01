@@ -32,6 +32,12 @@ export const WAGENPARK_HIDDEN_PATHS = new Set<string>([
   "/terugmelden",
 ]);
 
+/** Instellingen-tabs die verborgen worden in 'wagenpark' modus. */
+export const WAGENPARK_HIDDEN_SETTINGS_TABS = new Set<string>([
+  "portaal",       // Klantportaal is alleen voor verhuur
+  "goedkeuringen", // workflow voor verhuur-acties
+]);
+
 export function isPathToegestaan(path: string, modus: ModuleModus | undefined): boolean {
   if (!modus || modus === "autoverhuur") return true;
   // wagenpark: blokkeer hidden paths (en sub-routes daarvan)
