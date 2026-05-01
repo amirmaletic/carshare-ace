@@ -432,6 +432,21 @@ export default function Klanten() {
                       Geen passend voertuig gevonden. Controleer de vloot of pas de aanvraag aan.
                     </div>
                   )}
+
+                  {aanvraag.status !== "omgezet" && (
+                    <div className="flex justify-end">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleConvertNaarKlant(aanvraag.id)}
+                        disabled={convertingId === aanvraag.id}
+                        className="gap-1.5"
+                      >
+                        <UserPlus className="w-3.5 h-3.5" />
+                        {convertingId === aanvraag.id ? "Bezig..." : "Maak klant aan"}
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             );
