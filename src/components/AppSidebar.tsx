@@ -24,6 +24,8 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGoedkeuringen } from "@/hooks/useGoedkeuringen";
 import { useModuleModus, WAGENPARK_HIDDEN_PATHS } from "@/hooks/useModuleModus";
+import { usePermissions } from "@/hooks/usePermissions";
+import { PATH_TO_MODULE } from "@/hooks/useRouteAccess";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
@@ -52,10 +54,17 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const { inBehandeling } = useGoedkeuringen();
   const openCount = inBehandeling.length;
   const { data: modus } = useModuleModus();
+  const { hasAccess, isLoading: permsLoading } = usePermissions();
 
-  const visibleNavItems = navItems.filter((item) =>
-    modus === "wagenpark" ? !WAGENPARK_HIDDEN_PATHS.has(item.path) : true
-  );
+  const visibleNavItems = navItems.filter((item) => {
+    // Modus filter
+    if (modus === "wagenpark" && WAGENPARK_HIDDEN_PATHS.has(item.path)) return false;
+    // Permissies filter (toon tijdens loading om flicker te voorkomen)
+    if (permsLoading) return true;
+    const moduleKey = PATH_TO_MODULE[item.path];
+    if (!moduleKey) return true;
+    return hasAccess(moduleKey);
+  });
 
   const isWagenpark = modus === "wagenpark";
   const ModusIcon = isWagenpark ? Briefcase : Building2;
