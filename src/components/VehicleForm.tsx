@@ -95,7 +95,10 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
       status: values.status,
       apk_vervaldatum: values.apk_vervaldatum || null,
       verzekering_vervaldatum: values.verzekering_vervaldatum || null,
-      image_url: getVehicleImageUrl(values.merk, values.model),
+      image_url: getVehicleImageUrl(values.merk, values.model, {
+        kleur: values.kleur,
+        bouwjaar: values.bouwjaar,
+      }),
       catalogusprijs: values.catalogusprijs ?? null,
       cilinderinhoud: values.cilinderinhoud ?? null,
       co2_uitstoot: values.co2_uitstoot ?? null,
@@ -161,7 +164,10 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
   };
 
   const imageUrl = preview.merk && preview.model
-    ? getVehicleImageUrl(preview.merk, preview.model)
+    ? getVehicleImageUrl(preview.merk, preview.model, {
+        kleur: form.watch("kleur"),
+        bouwjaar: form.watch("bouwjaar"),
+      })
     : "";
 
   return (
