@@ -7,10 +7,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Car, Fuel, Calendar, Search, MapPin, ShieldCheck, Sparkles, Settings2 } from "lucide-react";
+import { Car, Fuel, Calendar, Search, MapPin, ShieldCheck, Sparkles, Settings2, Gift } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function TenantAanbod() {
   const { tenant, slug } = useTenantPortaal();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [zoek, setZoek] = useState("");
   const [categorie, setCategorie] = useState<string>("alle");
@@ -73,6 +75,29 @@ export default function TenantAanbod() {
           </div>
         </div>
       </section>
+
+      {!user && (
+        <section
+          className="rounded-xl border border-primary/20 bg-primary/5 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4"
+        >
+          <div className="w-10 h-10 rounded-lg bg-primary/15 flex items-center justify-center shrink-0">
+            <Gift className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-sm text-foreground">Spaar mee met onze voordelenkaart</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Gratis account, spaar punten bij elke verhuur en verzilver ze als korting. Reserveren kan ook gewoon zonder.
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate(`${base}/inloggen?mode=signup`)}
+          >
+            Activeer kaart
+          </Button>
+        </section>
+      )}
 
       {/* FILTERS */}
       <section className="flex flex-col md:flex-row md:items-center gap-3">

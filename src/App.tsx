@@ -40,6 +40,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminPlatform = lazy(() => import("./pages/AdminPlatform"));
 const TenantAanbod = lazy(() => import("./pages/tenant/TenantAanbod"));
 const TenantInloggen = lazy(() => import("./pages/tenant/TenantInloggen"));
+const TenantReserveren = lazy(() => import("./pages/tenant/TenantReserveren"));
 
 function PageLoader() {
   return (
@@ -158,7 +159,7 @@ const App = () => (
           <Route path="/t/:slug" element={<TenantPortaalLayout><TenantAanbod /></TenantPortaalLayout>} />
           <Route path="/t/:slug/inloggen" element={<TenantInloggen />} />
           <Route path="/t/:slug/reserveringen" element={<KlantProtectedRoute><TenantPortaalLayout><MijnReserveringen /></TenantPortaalLayout></KlantProtectedRoute>} />
-          <Route path="/t/:slug/reserveren" element={<KlantProtectedRoute><TenantPortaalLayout><ReserveerVoertuig /></TenantPortaalLayout></KlantProtectedRoute>} />
+          <Route path="/t/:slug/reserveren" element={<TenantPortaalLayout><TenantReserveren /></TenantPortaalLayout>} />
           <Route path="/t/:slug/facturen" element={<KlantProtectedRoute><TenantPortaalLayout><MijnFacturen /></TenantPortaalLayout></KlantProtectedRoute>} />
           <Route path="/t/:slug/profiel" element={<KlantProtectedRoute><TenantPortaalLayout><MijnProfiel /></TenantPortaalLayout></KlantProtectedRoute>} />
 
