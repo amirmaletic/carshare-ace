@@ -94,12 +94,60 @@ const vehicleImageMap: Record<string, string> = {
   'porsche-taycan': porscheTaycan,
 };
 
-export function getVehicleImageUrl(merk: string, model: string): string {
+// Map veelvoorkomende NL kleurnamen naar Imagin paintDescription / paintId
+// paintDescription wordt door Imagin gebruikt om dichtstbijzijnde kleurmatch te vinden
+const kleurNaarPaintDescription: Record<string, string> = {
+  zwart: "black",
+  wit: "white",
+  grijs: "grey",
+  zilver: "silver",
+  rood: "red",
+  blauw: "blue",
+  groen: "green",
+  geel: "yellow",
+  oranje: "orange",
+  bruin: "brown",
+  beige: "beige",
+  paars: "purple",
+  goud: "gold",
+};
+
+export function getVehicleImageUrl(
+  merk: string,
+  model: string,
+  opts?: { kleur?: string | null; bouwjaar?: number | null }
+): string {
   const key = `${merk.toLowerCase()}-${model.split(' ')[0].toLowerCase()}`;
   if (vehicleImageMap[key]) return vehicleImageMap[key];
+
   const make = encodeURIComponent(merk.toLowerCase());
   const modelFamily = encodeURIComponent(model.split(' ')[0].toLowerCase());
-  return `https://cdn.imagin.studio/getimage?customer=hrjavascript-masede&make=${make}&modelFamily=${modelFamily}&paintId=pspc0040&angle=01`;
+
+  const params = new URLSearchParams({
+    customer: "hrjavascript-masede",
+    make,
+    modelFamily,
+    angle: "01",
+    zoomType: "fullscreen",
+    fileType: "png",
+  });
+
+  // Voeg modelYear toe wanneer bekend (Imagin kiest dichtstbijzijnde generatie)
+  if (opts?.bouwjaar && opts.bouwjaar > 1990) {
+    params.set("modelYear", String(opts.bouwjaar));
+  }
+
+  // Vertaal NL kleur naar engels paintDescription
+  const kleurKey = (opts?.kleur || "").toLowerCase().trim();
+  const paintDesc = kleurNaarPaintDescription[kleurKey];
+  if (paintDesc) {
+    params.set("paintDescription", paintDesc);
+  } else {
+    // fallback default neutrale grijs
+    params.set("paintId", "pspc0040");
+  }
+
+  return `https://cdn.imagin.studio/getimage?${params.toString()}`;
 }
 
 // ─── Utility / helper functions ──────────────────────────
