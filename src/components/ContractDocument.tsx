@@ -325,6 +325,19 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
           <Button size="sm" className="gap-1.5" onClick={handlePrint}>
             <Download className="w-3.5 h-3.5" /> Downloaden / Printen
           </Button>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={stuurRijbewijs} disabled={sendingRijbewijs}>
+            {sendingRijbewijs ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <IdCard className="w-3.5 h-3.5" />}
+            Stuur rijbewijsverzoek
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={stuurBorg} disabled={sendingBorg}>
+            {sendingBorg ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+            Stuur borg-verificatie
+          </Button>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {statusBadge(verificaties?.rijbewijs ?? null, "Rijbewijs")}
+          {statusBadge(verificaties?.borg ?? null, "Borg (iDEAL €0,01)")}
         </div>
 
         {/* Printable document */}
