@@ -15,7 +15,8 @@ import { VehicleKanban } from "@/components/VehicleKanban";
 import { VehicleGantt } from "@/components/VehicleGantt";
 import { ContractForm } from "@/components/ContractForm";
 import { VehicleImport } from "@/components/VehicleImport";
-import { getStatusColor, getVehicleImageUrl, type Vehicle } from "@/data/mockData";
+import { getStatusColor, type Vehicle } from "@/data/mockData";
+import { VehicleImage } from "@/components/VehicleImage";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
 
@@ -190,20 +191,13 @@ export default function Vehicles() {
                   style={{ animationDelay: `${i * 60}ms` }}
                 >
                   <div className="h-36 bg-muted relative overflow-hidden">
-                    <img
-                      src={vehicle.image || getVehicleImageUrl(vehicle.merk, vehicle.model)}
-                      alt={`${vehicle.merk} ${vehicle.model}`}
+                    <VehicleImage
+                      merk={vehicle.merk}
+                      model={vehicle.model}
+                      src={vehicle.image}
                       className="absolute inset-0 w-full h-full object-contain object-center p-3"
-                      loading="lazy"
-                      onError={(e) => {
-                        e.currentTarget.style.display = 'none';
-                        const fallback = e.currentTarget.nextElementSibling as HTMLElement;
-                        if (fallback) fallback.style.display = 'flex';
-                      }}
+                      containerClassName="absolute inset-0"
                     />
-                    <div className="absolute inset-0 items-center justify-center hidden">
-                      <Car className="w-12 h-12 text-muted-foreground/40" />
-                    </div>
                   </div>
                   <div className="p-5 space-y-3">
                     <div className="flex items-start justify-between">
