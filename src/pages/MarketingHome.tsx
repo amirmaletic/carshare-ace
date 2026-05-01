@@ -31,6 +31,8 @@ import { Link } from "react-router-dom";
 import productDashboard from "@/assets/product-dashboard.png";
 import productVoertuigen from "@/assets/product-voertuigen.png";
 import productContracten from "@/assets/product-contracten.png";
+import productCopilot from "@/assets/screenshot-copilot.png";
+import productTerugmelden from "@/assets/screenshot-terugmelden.png";
 import FaqSection from "@/components/marketing/FaqSection";
 import BlogPreviewSection from "@/components/marketing/BlogPreviewSection";
 
@@ -438,25 +440,15 @@ export default function MarketingHome() {
             </ul>
           </div>
           <div className="lg:col-span-2">
-            <div className="rounded-2xl border border-primary/20 bg-background p-5 shadow-xl">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="w-4 h-4 text-primary" />
-                </div>
-                <span className="text-sm font-semibold">Vloot Copilot</span>
-              </div>
-              <div className="space-y-3 text-sm">
-                <div className="rounded-xl bg-muted/50 p-3">
-                  Welke 9 persoons bus is vrij van vrijdag tot maandag?
-                </div>
-                <div className="rounded-xl bg-primary/10 p-3 text-foreground">
-                  Ford Tourneo (12 ABC 3) is vrij. Wil je direct een offerte met betaallink sturen naar de klant?
-                </div>
-                <div className="rounded-xl bg-muted/50 p-3 text-muted-foreground">
-                  Ja graag, naar info@klant.nl
-                </div>
-              </div>
-            </div>
+            <img
+              src={productCopilot}
+              alt="AI Vloot Copilot in FleeFlo met live data uit voertuigen, contracten en facturen"
+              className="w-full rounded-2xl border border-primary/20 shadow-xl"
+              loading="lazy"
+              decoding="async"
+              width={1536}
+              height={864}
+            />
           </div>
         </div>
       </section>
@@ -583,6 +575,17 @@ export default function MarketingHome() {
                 <p className="text-muted-foreground text-sm leading-relaxed">{b.desc}</p>
               </article>
             ))}
+          </div>
+          <div className="mt-12 max-w-5xl mx-auto">
+            <img
+              src={productTerugmelden}
+              alt="Terugmelden scherm in FleeFlo met kentekenzoek, statistieken en recent teruggekomen voertuigen"
+              className="w-full rounded-xl border border-border shadow-xl"
+              loading="lazy"
+              decoding="async"
+              width={1536}
+              height={864}
+            />
           </div>
         </div>
       </section>
