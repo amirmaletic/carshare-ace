@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useBedrijfsgegevens, type Bedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import { useOrganisatieVoorkeuren, type Voorkeuren } from "@/hooks/useOrganisatieVoorkeuren";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useModuleModus, WAGENPARK_HIDDEN_SETTINGS_TABS } from "@/hooks/useModuleModus";
 import AutorisatieTab from "@/components/settings/AutorisatieTab";
 import LocatiesTab from "@/components/settings/LocatiesTab";
 import TeamTab from "@/components/settings/TeamTab";
@@ -42,8 +43,25 @@ export default function SettingsPage() {
   const isMobile = useIsMobile();
   const { userRoles } = usePermissions();
   const isBeheerder = userRoles.includes("beheerder");
+  const { data: modus } = useModuleModus();
+  const isWagenpark = modus === "wagenpark";
+
+  // Tabs filteren op modus + rol (alleen beheerders zien autorisatie/api/team)
+  const visibleTabs = tabs.filter((t) => {
+    if (isWagenpark && WAGENPARK_HIDDEN_SETTINGS_TABS.has(t.value)) return false;
+    if (!isBeheerder && (t.value === "autorisatie" || t.value === "api" || t.value === "team")) return false;
+    return true;
+  });
 
   const [activeTab, setActiveTab] = useState("bedrijf");
+
+  // Als de actieve tab niet meer in de zichtbare lijst zit (bv. door modus-wissel),
+  // val terug op de eerste beschikbare tab.
+  useEffect(() => {
+    if (!visibleTabs.find((t) => t.value === activeTab)) {
+      setActiveTab(visibleTabs[0]?.value ?? "bedrijf");
+    }
+  }, [visibleTabs, activeTab]);
 
   const { data: bedrijfsData, save: saveBedrijf } = useBedrijfsgegevens();
   const { data: voorkeurenData, save: saveVoorkeuren } = useOrganisatieVoorkeuren();
@@ -91,7 +109,7 @@ export default function SettingsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {tabs.map((t) => (
+              {visibleTabs.map((t) => (
                 <SelectItem key={t.value} value={t.value}>
                   <div className="flex items-center gap-2">
                     <t.icon className="w-4 h-4" />
