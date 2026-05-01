@@ -128,6 +128,10 @@ export default function Terugmelden() {
       toast.error("Vul alle verplichte velden in");
       return;
     }
+    if (!organisatieId) {
+      toast.error("Geen organisatie gevonden voor je account");
+      return;
+    }
 
     const kmNum = parseInt(kilometerstand);
     if (kmNum < matchedVehicle.laatsteKm) {
