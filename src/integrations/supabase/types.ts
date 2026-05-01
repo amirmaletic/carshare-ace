@@ -150,6 +150,85 @@ export type Database = {
           },
         ]
       }
+      betaal_verificaties: {
+        Row: {
+          bedrag: number
+          betaald_op: string | null
+          contract_id: string | null
+          created_at: string
+          iban: string | null
+          id: string
+          klant_id: string | null
+          naam_rekeninghouder: string | null
+          organisatie_id: string
+          status: Database["public"]["Enums"]["betaal_verificatie_status"]
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          token_expires_at: string
+          updated_at: string
+          upload_token: string
+          valuta: string
+        }
+        Insert: {
+          bedrag?: number
+          betaald_op?: string | null
+          contract_id?: string | null
+          created_at?: string
+          iban?: string | null
+          id?: string
+          klant_id?: string | null
+          naam_rekeninghouder?: string | null
+          organisatie_id: string
+          status?: Database["public"]["Enums"]["betaal_verificatie_status"]
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          token_expires_at?: string
+          updated_at?: string
+          upload_token?: string
+          valuta?: string
+        }
+        Update: {
+          bedrag?: number
+          betaald_op?: string | null
+          contract_id?: string | null
+          created_at?: string
+          iban?: string | null
+          id?: string
+          klant_id?: string | null
+          naam_rekeninghouder?: string | null
+          organisatie_id?: string
+          status?: Database["public"]["Enums"]["betaal_verificatie_status"]
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          token_expires_at?: string
+          updated_at?: string
+          upload_token?: string
+          valuta?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "betaal_verificaties_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "betaal_verificaties_klant_id_fkey"
+            columns: ["klant_id"]
+            isOneToOne: false
+            referencedRelation: "klanten"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "betaal_verificaties_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chauffeur_beschikbaarheid: {
         Row: {
           chauffeur_id: string
@@ -1837,6 +1916,21 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_betaal_verzoek: {
+        Args: { _token: string }
+        Returns: {
+          bedrag: number
+          expired: boolean
+          id: string
+          klant_achternaam: string
+          klant_voornaam: string
+          organisatie_kleur: string
+          organisatie_logo: string
+          organisatie_naam: string
+          status: Database["public"]["Enums"]["betaal_verificatie_status"]
+          valuta: string
+        }[]
+      }
       get_portaal_by_host: {
         Args: { _host: string }
         Returns: {
@@ -1911,6 +2005,15 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: never; Returns: boolean }
+      markeer_betaal_verificatie_betaald: {
+        Args: {
+          _iban: string
+          _naam: string
+          _payment_intent_id: string
+          _session_id: string
+        }
+        Returns: string
+      }
       markeer_rijbewijs_ingediend: {
         Args: { _achterkant_pad: string; _token: string; _voorkant_pad: string }
         Returns: string
@@ -1957,6 +2060,11 @@ export type Database = {
         | "klant"
         | "leidinggevende"
         | "platform_admin"
+      betaal_verificatie_status:
+        | "in_afwachting"
+        | "betaald"
+        | "mislukt"
+        | "verlopen"
       contract_status: "actief" | "verlopen" | "opgezegd" | "concept"
       contract_type: "lease" | "verhuur" | "fietslease" | "ev-lease"
       invoice_status:
@@ -2104,6 +2212,12 @@ export const Constants = {
         "klant",
         "leidinggevende",
         "platform_admin",
+      ],
+      betaal_verificatie_status: [
+        "in_afwachting",
+        "betaald",
+        "mislukt",
+        "verlopen",
       ],
       contract_status: ["actief", "verlopen", "opgezegd", "concept"],
       contract_type: ["lease", "verhuur", "fietslease", "ev-lease"],

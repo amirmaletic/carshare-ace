@@ -1,13 +1,16 @@
 import { useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Printer, Download } from "lucide-react";
+import { Printer, Download, IdCard, ShieldCheck, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
 import { type ContractWithInvoices } from "@/hooks/useContracts";
 import { getContractTypeLabel } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { useOrganisatie } from "@/hooks/useOrganisatie";
 import logoUrl from "@/assets/fleeflo-logo-blue.png";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 interface ContractDocumentProps {
@@ -20,6 +23,63 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
   const printRef = useRef<HTMLDivElement>(null);
   const { voertuigen } = useVoertuigen();
   const { organisatieId } = useOrganisatie();
+  const queryClient = useQueryClient();
+  const [sendingRijbewijs, setSendingRijbewijs] = useState(false);
+  const [sendingBorg, setSendingBorg] = useState(false);
+
+  const { data: verificaties } = useQuery({
+    queryKey: ["contract-verificaties", contract?.id],
+    enabled: !!contract?.id && open,
+    queryFn: async () => {
+      const [rij, bet] = await Promise.all([
+        supabase.from("rijbewijs_verificaties").select("status").eq("contract_id", contract!.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("betaal_verificaties").select("status").eq("contract_id", contract!.id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+      ]);
+      return { rijbewijs: rij.data?.status ?? null, borg: bet.data?.status ?? null };
+    },
+  });
+
+  const stuurRijbewijs = async () => {
+    if (!contract) return;
+    setSendingRijbewijs(true);
+    try {
+      const { error } = await supabase.functions.invoke("send-rijbewijs-verzoek", { body: { contract_id: contract.id } });
+      if (error) throw error;
+      toast({ title: "Rijbewijsverzoek verstuurd", description: `Verstuurd naar ${contract.klant_email}` });
+      queryClient.invalidateQueries({ queryKey: ["contract-verificaties", contract.id] });
+    } catch (e: any) {
+      toast({ title: "Versturen mislukt", description: e.message, variant: "destructive" });
+    } finally { setSendingRijbewijs(false); }
+  };
+
+  const stuurBorg = async () => {
+    if (!contract) return;
+    setSendingBorg(true);
+    try {
+      const { error } = await supabase.functions.invoke("create-betaal-verificatie", { body: { contract_id: contract.id } });
+      if (error) throw error;
+      toast({ title: "Borg-verificatie verstuurd", description: `iDEAL link verstuurd naar ${contract.klant_email}` });
+      queryClient.invalidateQueries({ queryKey: ["contract-verificaties", contract.id] });
+    } catch (e: any) {
+      toast({ title: "Versturen mislukt", description: e.message, variant: "destructive" });
+    } finally { setSendingBorg(false); }
+  };
+
+  const statusBadge = (s: string | null, label: string) => {
+    if (!s) return <Badge variant="outline" className="text-xs">{label}: nog niet verstuurd</Badge>;
+    const map: Record<string, { v: any; l: string }> = {
+      goedgekeurd: { v: "default", l: "geverifieerd" },
+      betaald: { v: "default", l: "geverifieerd" },
+      ingediend: { v: "secondary", l: "in beoordeling" },
+      in_afwachting: { v: "secondary", l: "wacht op klant" },
+      afgewezen: { v: "destructive", l: "afgewezen" },
+      mislukt: { v: "destructive", l: "mislukt" },
+      verlopen: { v: "destructive", l: "verlopen" },
+    };
+    const m = map[s] ?? { v: "outline", l: s };
+    return <Badge variant={m.v} className="text-xs">{label}: {m.l}</Badge>;
+  };
+
   const { data: organisatie } = useQuery({
     queryKey: ["organisatie-naam", organisatieId],
     enabled: !!organisatieId,
@@ -265,6 +325,19 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
           <Button size="sm" className="gap-1.5" onClick={handlePrint}>
             <Download className="w-3.5 h-3.5" /> Downloaden / Printen
           </Button>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={stuurRijbewijs} disabled={sendingRijbewijs}>
+            {sendingRijbewijs ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <IdCard className="w-3.5 h-3.5" />}
+            Stuur rijbewijsverzoek
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={stuurBorg} disabled={sendingBorg}>
+            {sendingBorg ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
+            Stuur borg-verificatie
+          </Button>
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4">
+          {statusBadge(verificaties?.rijbewijs ?? null, "Rijbewijs")}
+          {statusBadge(verificaties?.borg ?? null, "Borg (iDEAL €0,01)")}
         </div>
 
         {/* Printable document */}

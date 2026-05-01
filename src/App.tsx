@@ -44,6 +44,7 @@ const TenantInloggen = lazy(() => import("./pages/tenant/TenantInloggen"));
 const TenantReserveren = lazy(() => import("./pages/tenant/TenantReserveren"));
 const Rijbewijzen = lazy(() => import("./pages/Rijbewijzen"));
 const RijbewijsUpload = lazy(() => import("./pages/RijbewijsUpload"));
+const BetaalVerificatie = lazy(() => import("./pages/BetaalVerificatie"));
 
 function PageLoader() {
   return (
@@ -162,6 +163,7 @@ const App = () => (
 
           {/* Publieke rijbewijs-upload via token */}
           <Route path="/rijbewijs/:token" element={<RijbewijsUpload />} />
+          <Route path="/betaal-verificatie/:token" element={<BetaalVerificatie />} />
 
           {/* White-label tenant portal (per organisatie) */}
           <Route path="/t/:slug" element={<TenantPortaalLayout><TenantAanbod /></TenantPortaalLayout>} />
