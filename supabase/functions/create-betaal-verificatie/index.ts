@@ -24,6 +24,17 @@ Deno.serve(async (req) => {
     const { contract_id } = await req.json();
     if (!contract_id) return new Response(JSON.stringify({ error: "contract_id verplicht" }), { status: 400, headers: corsHeaders });
 
+    const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeSecretKey) {
+      return new Response(JSON.stringify({ error: "Stripe secret key ontbreekt" }), { status: 500, headers: corsHeaders });
+    }
+    if (stripeSecretKey.startsWith("pk_")) {
+      return new Response(JSON.stringify({ error: "STRIPE_SECRET_KEY is een publishable key. Gebruik een secret key die begint met sk_test_ of sk_live_." }), { status: 500, headers: corsHeaders });
+    }
+    if (!stripeSecretKey.startsWith("sk_test_") && !stripeSecretKey.startsWith("sk_live_")) {
+      return new Response(JSON.stringify({ error: "Ongeldige Stripe secret key. Verwacht sk_test_ of sk_live_." }), { status: 500, headers: corsHeaders });
+    }
+
     // Contract ophalen
     const { data: contract, error: cErr } = await supabase
       .from("contracts")
@@ -53,7 +64,7 @@ Deno.serve(async (req) => {
       .single();
     if (vErr) return new Response(JSON.stringify({ error: vErr.message }), { status: 500, headers: corsHeaders });
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2024-06-20" });
+    const stripe = new Stripe(stripeSecretKey, { apiVersion: "2024-06-20" });
     const origin = req.headers.get("origin") || "https://fleeflo.nl";
 
     const session = await stripe.checkout.sessions.create({
