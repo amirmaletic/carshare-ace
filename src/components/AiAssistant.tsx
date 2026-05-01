@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { MessageSquare, X, Send, Trash2, Bot, User } from "lucide-react";
+import { MessageSquare, X, Send, Trash2, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAiChat } from "@/hooks/useAiChat";
@@ -24,27 +24,37 @@ export function AiAssistant() {
     setInput("");
   };
 
+  const suggesties = [
+    "Welke voertuigen zijn morgen vrij?",
+    "Toon contracten die binnen 30 dagen aflopen",
+    "Wat was mijn omzet vorige maand?",
+    "Welke APK's verlopen binnenkort?",
+    "Geef me de vlootstatistieken",
+  ];
+
   return (
     <>
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center hover:scale-105"
+          className="fixed bottom-6 right-6 z-50 h-12 px-4 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 flex items-center gap-2 hover:scale-105"
+          aria-label="Open Vloot-Copilot"
         >
-          <MessageSquare className="w-5 h-5" />
+          <Sparkles className="w-5 h-5" />
+          <span className="text-sm font-medium">Copilot</span>
         </button>
       )}
 
       {open && (
-        <div className="fixed bottom-6 right-6 z-50 w-[380px] h-[520px] rounded-2xl border border-border bg-background shadow-2xl flex flex-col overflow-hidden animate-fade-in">
+        <div className="fixed bottom-6 right-6 z-50 w-[420px] h-[600px] max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)] rounded-2xl border border-border bg-background shadow-2xl flex flex-col overflow-hidden animate-fade-in">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-primary" />
+                <Sparkles className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-foreground">FleetFlow AI</h3>
-                <p className="text-xs text-muted-foreground">Wagenparkassistent</p>
+                <h3 className="font-semibold text-sm text-foreground">Vloot-Copilot</h3>
+                <p className="text-xs text-muted-foreground">Live data uit jouw vloot</p>
               </div>
             </div>
             <div className="flex items-center gap-1">
@@ -59,18 +69,34 @@ export function AiAssistant() {
 
           <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 && (
-              <div className="text-center py-8">
-                <Bot className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
-                <p className="text-sm text-muted-foreground">
-                  Stel een vraag over je wagenpark, kosten of onderhoudsplanning.
-                </p>
+              <div className="py-2">
+                <div className="text-center mb-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 mx-auto mb-3 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-primary" />
+                  </div>
+                  <h4 className="text-sm font-semibold text-foreground">Hoi, ik ben jouw Copilot</h4>
+                  <p className="text-xs text-muted-foreground mt-1">Ik kijk live in je voertuigen, contracten, ritten en facturen.</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground px-1">Probeer eens:</p>
+                  {suggesties.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => send(s)}
+                      disabled={isLoading}
+                      className="w-full text-left text-xs px-3 py-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors text-foreground"
+                    >
+                      {s}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             {messages.map((msg, i) => (
               <div key={i} className={cn("flex gap-2", msg.role === "user" ? "justify-end" : "justify-start")}>
                 {msg.role === "assistant" && (
                   <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
-                    <Bot className="w-3 h-3 text-primary" />
+                    <Sparkles className="w-3 h-3 text-primary" />
                   </div>
                 )}
                 <div className={cn(
@@ -97,7 +123,7 @@ export function AiAssistant() {
             {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
               <div className="flex gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Bot className="w-3 h-3 text-primary" />
+                  <Sparkles className="w-3 h-3 text-primary" />
                 </div>
                 <div className="bg-muted rounded-xl px-3 py-2">
                   <div className="flex gap-1">
@@ -118,7 +144,7 @@ export function AiAssistant() {
               <Input
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="Stel een vraag..."
+                placeholder="Vraag iets over je vloot..."
                 className="flex-1 h-9 text-sm"
                 disabled={isLoading}
               />
