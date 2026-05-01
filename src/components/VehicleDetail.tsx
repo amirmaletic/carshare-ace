@@ -8,7 +8,7 @@ import {
   Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw, Clock, Plus,
 } from "lucide-react";
 import {
-  Vehicle, getStatusColor, getVehicleImageUrl, getReservationStatusColor,
+  Vehicle, getStatusColor, getReservationStatusColor,
 } from "@/data/mockData";
 import { VehicleReportTabs } from "@/components/VehicleReportTabs";
 import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
@@ -60,21 +60,19 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
   if (!vehicle) return null;
 
-  const imageUrl = vehicle.image || getVehicleImageUrl(vehicle.merk, vehicle.model);
-
   return (
     <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0">
         {/* Hero image */}
         <div className="relative h-48 bg-gradient-to-br from-sidebar to-sidebar-accent overflow-hidden">
-          <img
-            src={imageUrl}
-            alt={`${vehicle.merk} ${vehicle.model}`}
+          <VehicleImage
+            merk={vehicle.merk}
+            model={vehicle.model}
+            src={vehicle.image}
             className="absolute inset-0 w-full h-full object-contain object-center p-4 drop-shadow-lg"
-            onError={(e) => {
-              e.currentTarget.style.display = 'none';
-            }}
+            containerClassName="absolute inset-0 bg-transparent"
+            iconClassName="w-16 h-16"
           />
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-sidebar/90 to-transparent p-5">
             <div className="flex items-end justify-between">
