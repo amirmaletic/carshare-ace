@@ -91,3 +91,16 @@ export function useGrantPlatformAdmin() {
     },
   });
 }
+
+export function useDeleteOrganisatie() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (orgId: string) => {
+      const { error } = await supabase.rpc("admin_delete_organisatie" as any, { _org_id: orgId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-organisaties"] });
+    },
+  });
+}
