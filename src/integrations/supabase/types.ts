@@ -150,6 +150,109 @@ export type Database = {
           },
         ]
       }
+      api_keys: {
+        Row: {
+          aangemaakt_door: string | null
+          created_at: string
+          expires_at: string | null
+          id: string
+          key_hash: string
+          key_prefix: string
+          laatst_gebruikt_ip: string | null
+          laatst_gebruikt_op: string | null
+          naam: string
+          organisatie_id: string
+          revoked_at: string | null
+          scopes: string[]
+          updated_at: string
+        }
+        Insert: {
+          aangemaakt_door?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          key_hash: string
+          key_prefix: string
+          laatst_gebruikt_ip?: string | null
+          laatst_gebruikt_op?: string | null
+          naam: string
+          organisatie_id: string
+          revoked_at?: string | null
+          scopes?: string[]
+          updated_at?: string
+        }
+        Update: {
+          aangemaakt_door?: string | null
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          laatst_gebruikt_ip?: string | null
+          laatst_gebruikt_op?: string | null
+          naam?: string
+          organisatie_id?: string
+          revoked_at?: string | null
+          scopes?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      api_request_log: {
+        Row: {
+          api_key_id: string | null
+          created_at: string
+          duration_ms: number | null
+          id: string
+          ip: string | null
+          method: string
+          organisatie_id: string | null
+          path: string
+          status_code: number | null
+          user_agent: string | null
+        }
+        Insert: {
+          api_key_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          ip?: string | null
+          method: string
+          organisatie_id?: string | null
+          path: string
+          status_code?: number | null
+          user_agent?: string | null
+        }
+        Update: {
+          api_key_id?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          id?: string
+          ip?: string | null
+          method?: string
+          organisatie_id?: string | null
+          path?: string
+          status_code?: number | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_request_log_api_key_id_fkey"
+            columns: ["api_key_id"]
+            isOneToOne: false
+            referencedRelation: "api_keys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       betaal_verificaties: {
         Row: {
           bedrag: number
@@ -1731,6 +1834,106 @@ export type Database = {
           },
         ]
       }
+      webhook_deliveries: {
+        Row: {
+          attempts: number
+          created_at: string
+          delivered_at: string | null
+          endpoint_id: string
+          event: string
+          http_status: number | null
+          id: string
+          next_attempt_at: string | null
+          organisatie_id: string
+          payload: Json
+          response_body: string | null
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          endpoint_id: string
+          event: string
+          http_status?: number | null
+          id?: string
+          next_attempt_at?: string | null
+          organisatie_id: string
+          payload: Json
+          response_body?: string | null
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          delivered_at?: string | null
+          endpoint_id?: string
+          event?: string
+          http_status?: number | null
+          id?: string
+          next_attempt_at?: string | null
+          organisatie_id?: string
+          payload?: Json
+          response_body?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_endpoints: {
+        Row: {
+          aangemaakt_door: string | null
+          actief: boolean
+          beschrijving: string | null
+          created_at: string
+          events: string[]
+          id: string
+          organisatie_id: string
+          secret: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          aangemaakt_door?: string | null
+          actief?: boolean
+          beschrijving?: string | null
+          created_at?: string
+          events?: string[]
+          id?: string
+          organisatie_id: string
+          secret: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          aangemaakt_door?: string | null
+          actief?: boolean
+          beschrijving?: string | null
+          created_at?: string
+          events?: string[]
+          id?: string
+          organisatie_id?: string
+          secret?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_endpoints_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       portaal_voertuigen: {
@@ -1900,6 +2103,14 @@ export type Database = {
         Args: { _aanvraag_id: string }
         Returns: string
       }
+      create_api_key: {
+        Args: { _expires_at?: string; _naam: string; _scopes?: string[] }
+        Returns: {
+          id: string
+          plain_key: string
+          prefix: string
+        }[]
+      }
       create_gast_aanvraag: {
         Args: {
           _eind_datum?: string
@@ -1921,6 +2132,10 @@ export type Database = {
       }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
+        Returns: number
+      }
+      enqueue_webhook_event: {
+        Args: { _event: string; _org_id: string; _payload: Json }
         Returns: number
       }
       get_betaal_verzoek: {
@@ -2043,6 +2258,8 @@ export type Database = {
           read_ct: number
         }[]
       }
+      revoke_api_key: { Args: { _id: string }; Returns: undefined }
+      touch_api_key: { Args: { _id: string; _ip: string }; Returns: undefined }
       update_rijbewijs_ai_resultaat: {
         Args: {
           _ai_afgiftedatum: string
@@ -2058,6 +2275,14 @@ export type Database = {
           _validatie_notities: string
         }
         Returns: undefined
+      }
+      verify_api_key: {
+        Args: { _key: string }
+        Returns: {
+          api_key_id: string
+          organisatie_id: string
+          scopes: string[]
+        }[]
       }
     }
     Enums: {
