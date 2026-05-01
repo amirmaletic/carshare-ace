@@ -196,11 +196,24 @@ export default function PortaalTab() {
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Jouw portaal-URL</CardTitle>
-            <CardDescription>Deel deze link met je klanten.</CardDescription>
+            <CardDescription>
+              {form.portaal_actief
+                ? "Je portaal is live. Deel de link met je klanten - ze kunnen het aanbod openbaar bekijken en boeken zonder eerst in te loggen."
+                : "Schakel 'Portaal actief' bovenaan in om je portaal openbaar te maken."}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <UrlRow label="Direct beschikbaar" url={previewUrl!} />
             <UrlRow label="Via subdomein (zodra DNS actief is)" url={subdomeinUrl!} hint="Vereist wildcard DNS *.fleeflo.nl" />
+            {form.portaal_actief && (
+              <div className="pt-2">
+                <Button asChild className="w-full sm:w-auto gap-2">
+                  <a href={previewUrl!} target="_blank" rel="noreferrer">
+                    <ExternalLink className="w-4 h-4" /> Open mijn portaal
+                  </a>
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       ) : (
