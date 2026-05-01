@@ -19,7 +19,7 @@ const empty: Bedrijfsgegevens = {
 };
 
 export function useBedrijfsgegevens() {
-  const { organisatieId } = useOrganisatie();
+  const { organisatieId, isLoading: organisatieLoading } = useOrganisatie();
   const qc = useQueryClient();
 
   const query = useQuery({
@@ -66,5 +66,5 @@ export function useBedrijfsgegevens() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["bedrijfsgegevens"] }),
   });
 
-  return { data: query.data ?? empty, isLoading: query.isLoading, save };
+  return { data: query.data ?? empty, isLoading: organisatieLoading || query.isLoading, save };
 }
