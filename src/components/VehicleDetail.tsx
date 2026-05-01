@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import {
-  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw, Clock, Plus,
+  Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw, Clock, Plus, CalendarCheck,
 } from "lucide-react";
 import {
   Vehicle, getStatusColor, getReservationStatusColor,
@@ -15,6 +15,7 @@ import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
 import { VehicleTimeline } from "@/components/VehicleTimeline";
 import { ContractForm } from "@/components/ContractForm";
 import { VehicleImage } from "@/components/VehicleImage";
+import { VehicleAvailability } from "@/components/VehicleAvailability";
 import { useServiceHistorie } from "@/hooks/useVehicleReports";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -108,14 +109,19 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
           <Separator />
 
-          <Tabs defaultValue="tijdlijn" className="w-full">
-            <TabsList className="w-full grid grid-cols-5">
-              <TabsTrigger value="tijdlijn" className="gap-1.5 text-xs"><Clock className="w-3.5 h-3.5" />Tijdlijn</TabsTrigger>
-              <TabsTrigger value="onderhoud" className="gap-1.5 text-xs"><Wrench className="w-3.5 h-3.5" />Onderhoud</TabsTrigger>
-              <TabsTrigger value="terugmeldingen" className="gap-1.5 text-xs"><RotateCcw className="w-3.5 h-3.5" />Retouren</TabsTrigger>
-              <TabsTrigger value="reserveringen" className="gap-1.5 text-xs"><CalendarRange className="w-3.5 h-3.5" />Reserveringen</TabsTrigger>
-              <TabsTrigger value="rapporten" className="gap-1.5 text-xs"><FileText className="w-3.5 h-3.5" />Rapporten</TabsTrigger>
+          <Tabs defaultValue="beschikbaarheid" className="w-full">
+            <TabsList className="w-full grid grid-cols-6">
+              <TabsTrigger value="beschikbaarheid" className="gap-1 text-[11px]"><CalendarCheck className="w-3.5 h-3.5" />Beschikbaar</TabsTrigger>
+              <TabsTrigger value="tijdlijn" className="gap-1 text-[11px]"><Clock className="w-3.5 h-3.5" />Tijdlijn</TabsTrigger>
+              <TabsTrigger value="onderhoud" className="gap-1 text-[11px]"><Wrench className="w-3.5 h-3.5" />Onderhoud</TabsTrigger>
+              <TabsTrigger value="terugmeldingen" className="gap-1 text-[11px]"><RotateCcw className="w-3.5 h-3.5" />Retouren</TabsTrigger>
+              <TabsTrigger value="reserveringen" className="gap-1 text-[11px]"><CalendarRange className="w-3.5 h-3.5" />Reserv.</TabsTrigger>
+              <TabsTrigger value="rapporten" className="gap-1 text-[11px]"><FileText className="w-3.5 h-3.5" />Rapport</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="beschikbaarheid" className="mt-4">
+              <VehicleAvailability voertuigId={vehicle.id} />
+            </TabsContent>
 
             <TabsContent value="tijdlijn" className="mt-4">
               <VehicleTimeline voertuigId={vehicle.id} />
