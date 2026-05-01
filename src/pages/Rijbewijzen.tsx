@@ -23,7 +23,7 @@ const filters: { value: RijbewijsStatus | "Alle"; label: string }[] = [
 
 export default function Rijbewijzen() {
   const { data: verificaties = [], isLoading } = useRijbewijsVerificaties();
-  const { klanten = [] } = useKlanten();
+  const { data: klanten = [] } = useKlanten();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<RijbewijsStatus | "Alle">("Alle");
   const [selected, setSelected] = useState<RijbewijsVerificatie | null>(null);
