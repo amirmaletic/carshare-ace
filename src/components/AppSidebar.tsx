@@ -15,6 +15,7 @@ import {
   Users,
   Route,
   UserPlus,
+  IdCard,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ const navItems = [
   { icon: RotateCcw, label: "Terugmelden", path: "/terugmelden" },
   { icon: FileText, label: "Contracten", path: "/contracten" },
   { icon: UserPlus, label: "Klanten", path: "/klanten" },
+  { icon: IdCard, label: "Rijbewijzen", path: "/rijbewijzen" },
   { icon: CalendarRange, label: "Reserveringen", path: "/reserveringen" },
   { icon: Wrench, label: "Onderhoud", path: "/onderhoud" },
   { icon: BarChart3, label: "Rapportages", path: "/rapportages" },
