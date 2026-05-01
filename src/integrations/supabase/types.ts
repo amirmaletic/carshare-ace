@@ -1016,50 +1016,131 @@ export type Database = {
           },
         ]
       }
+      organisatie_voorkeuren: {
+        Row: {
+          apk_dagen_vooraf: number
+          apk_herinnering: boolean
+          contract_dagen_vooraf: number
+          contract_verloop: boolean
+          created_at: string
+          datum_formaat: string
+          factuur_herinnering: boolean
+          id: string
+          km_overschrijding: boolean
+          km_registratie_interval: string
+          onderhoud_herinnering: boolean
+          organisatie_id: string
+          standaard_btw: string
+          standaard_contract_duur: string
+          updated_at: string
+          valuta: string
+          verzekering_herinnering: boolean
+        }
+        Insert: {
+          apk_dagen_vooraf?: number
+          apk_herinnering?: boolean
+          contract_dagen_vooraf?: number
+          contract_verloop?: boolean
+          created_at?: string
+          datum_formaat?: string
+          factuur_herinnering?: boolean
+          id?: string
+          km_overschrijding?: boolean
+          km_registratie_interval?: string
+          onderhoud_herinnering?: boolean
+          organisatie_id: string
+          standaard_btw?: string
+          standaard_contract_duur?: string
+          updated_at?: string
+          valuta?: string
+          verzekering_herinnering?: boolean
+        }
+        Update: {
+          apk_dagen_vooraf?: number
+          apk_herinnering?: boolean
+          contract_dagen_vooraf?: number
+          contract_verloop?: boolean
+          created_at?: string
+          datum_formaat?: string
+          factuur_herinnering?: boolean
+          id?: string
+          km_overschrijding?: boolean
+          km_registratie_interval?: string
+          onderhoud_herinnering?: boolean
+          organisatie_id?: string
+          standaard_btw?: string
+          standaard_contract_duur?: string
+          updated_at?: string
+          valuta?: string
+          verzekering_herinnering?: boolean
+        }
+        Relationships: []
+      }
       organisaties: {
         Row: {
+          adres: string | null
+          btw_nummer: string | null
           created_at: string
           eigenaar_id: string
+          email: string | null
           id: string
           is_active: boolean
+          kvk_nummer: string | null
           module_modus: string
           naam: string
+          plaats: string | null
           portaal_actief: boolean
           portaal_kleur: string | null
           portaal_logo_url: string | null
           portaal_naam: string | null
           portaal_welkomtekst: string | null
+          postcode: string | null
           slug: string | null
+          telefoon: string | null
           trial_ends_at: string | null
         }
         Insert: {
+          adres?: string | null
+          btw_nummer?: string | null
           created_at?: string
           eigenaar_id: string
+          email?: string | null
           id?: string
           is_active?: boolean
+          kvk_nummer?: string | null
           module_modus?: string
           naam?: string
+          plaats?: string | null
           portaal_actief?: boolean
           portaal_kleur?: string | null
           portaal_logo_url?: string | null
           portaal_naam?: string | null
           portaal_welkomtekst?: string | null
+          postcode?: string | null
           slug?: string | null
+          telefoon?: string | null
           trial_ends_at?: string | null
         }
         Update: {
+          adres?: string | null
+          btw_nummer?: string | null
           created_at?: string
           eigenaar_id?: string
+          email?: string | null
           id?: string
           is_active?: boolean
+          kvk_nummer?: string | null
           module_modus?: string
           naam?: string
+          plaats?: string | null
           portaal_actief?: boolean
           portaal_kleur?: string | null
           portaal_logo_url?: string | null
           portaal_naam?: string | null
           portaal_welkomtekst?: string | null
+          postcode?: string | null
           slug?: string | null
+          telefoon?: string | null
           trial_ends_at?: string | null
         }
         Relationships: []
