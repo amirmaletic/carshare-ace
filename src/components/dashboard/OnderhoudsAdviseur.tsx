@@ -66,7 +66,7 @@ export function OnderhoudsAdviseur() {
             score += 100;
           } else if (kmDelta > KM_THRESHOLD) {
             redenen.push(`${kmDelta.toLocaleString("nl-NL")} km sinds laatste beurt`);
-            prioriteit = prioriteit === "hoog" ? "hoog" : "gemiddeld";
+            prioriteit = "gemiddeld";
             score += 60;
           }
         } else if (!laatste && v.kilometerstand && v.kilometerstand > KM_THRESHOLD) {
@@ -84,7 +84,7 @@ export function OnderhoudsAdviseur() {
             score += 80;
           } else if (dagen > DAYS_THRESHOLD) {
             redenen.push(`${Math.round(dagen / 30)} maanden sinds laatste beurt`);
-            prioriteit = prioriteit === "hoog" ? "hoog" : "gemiddeld";
+            if (prioriteit !== "hoog") prioriteit = "gemiddeld";
             score += 40;
           }
         }
