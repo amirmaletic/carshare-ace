@@ -318,6 +318,9 @@ export default function SettingsPage() {
       case "goedkeuringen":
         return <GoedkeuringenTab />;
 
+      case "integraties":
+        return <IntegratiesTab />;
+
       case "algemeen":
         return (
           <Card>
