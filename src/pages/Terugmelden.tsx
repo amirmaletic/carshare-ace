@@ -161,6 +161,7 @@ export default function Terugmelden() {
 
       const { error } = await supabase.from("terugmeldingen").insert({
         user_id: user.id,
+        organisatie_id: organisatieId!,
         voertuig_id: matchedVehicle.id,
         voertuig_kenteken: matchedVehicle.kenteken,
         voertuig_naam: matchedVehicle.label,
