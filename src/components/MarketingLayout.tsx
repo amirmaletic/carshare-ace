@@ -68,11 +68,8 @@ function MarketingHeader() {
 
         {/* Desktop buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <Button variant="ghost" asChild>
-            <Link to="/klant-login">Klant inloggen</Link>
-          </Button>
           <Button asChild>
-            <Link to="/auth">Medewerker login</Link>
+            <Link to="/auth">Inloggen</Link>
           </Button>
         </div>
 
@@ -109,11 +106,8 @@ function MarketingHeader() {
             </a>
           ))}
           <div className="pt-2 border-t border-border space-y-2">
-            <Button variant="outline" className="w-full" asChild>
-              <Link to="/klant-login" onClick={() => setMobileMenuOpen(false)}>Klant inloggen</Link>
-            </Button>
             <Button className="w-full" asChild>
-              <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Medewerker login</Link>
+              <Link to="/auth" onClick={() => setMobileMenuOpen(false)}>Inloggen</Link>
             </Button>
           </div>
         </div>
@@ -151,7 +145,6 @@ function MarketingFooter() {
             <ul className="space-y-2 text-sm">
               <li><Link to="/prijzen" className="text-muted-foreground hover:text-foreground transition-colors">Prijzen</Link></li>
               <li><Link to="/auth" className="text-muted-foreground hover:text-foreground transition-colors">Account aanmaken</Link></li>
-              <li><Link to="/klant-login" className="text-muted-foreground hover:text-foreground transition-colors">Klantportaal</Link></li>
             </ul>
           </div>
           <div>
