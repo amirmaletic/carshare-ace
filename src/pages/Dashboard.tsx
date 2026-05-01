@@ -19,7 +19,7 @@ import { useModuleModus } from "@/hooks/useModuleModus";
 import { useOrganisatie } from "@/hooks/useOrganisatie";
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
   const { data: modus } = useModuleModus();
   const { organisatieId, isLoading: organisatieLoading } = useOrganisatie();
@@ -46,8 +46,14 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    if (!organisatieLoading && needsOnboarding !== undefined) setShowOnboarding(needsOnboarding);
-  }, [needsOnboarding]);
+    if (authLoading || organisatieLoading) return;
+    // Geen organisatie gekoppeld → geen onboarding-check, gewoon dashboard tonen
+    if (!organisatieId) {
+      setShowOnboarding(false);
+      return;
+    }
+    if (needsOnboarding !== undefined) setShowOnboarding(needsOnboarding);
+  }, [authLoading, organisatieLoading, organisatieId, needsOnboarding]);
 
   const { data: stats } = useQuery({
     queryKey: ["dashboard-stats", organisatieId],
