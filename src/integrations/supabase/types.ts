@@ -80,6 +80,13 @@ export type Database = {
             foreignKeyName: "aanvragen_gekoppeld_voertuig_id_fkey"
             columns: ["gekoppeld_voertuig_id"]
             isOneToOne: false
+            referencedRelation: "portaal_voertuigen"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "aanvragen_gekoppeld_voertuig_id_fkey"
+            columns: ["gekoppeld_voertuig_id"]
+            isOneToOne: false
             referencedRelation: "voertuigen"
             referencedColumns: ["id"]
           },
@@ -815,6 +822,12 @@ export type Database = {
           id: string
           is_active: boolean
           naam: string
+          portaal_actief: boolean
+          portaal_kleur: string | null
+          portaal_logo_url: string | null
+          portaal_naam: string | null
+          portaal_welkomtekst: string | null
+          slug: string | null
           trial_ends_at: string | null
         }
         Insert: {
@@ -823,6 +836,12 @@ export type Database = {
           id?: string
           is_active?: boolean
           naam?: string
+          portaal_actief?: boolean
+          portaal_kleur?: string | null
+          portaal_logo_url?: string | null
+          portaal_naam?: string | null
+          portaal_welkomtekst?: string | null
+          slug?: string | null
           trial_ends_at?: string | null
         }
         Update: {
@@ -831,6 +850,12 @@ export type Database = {
           id?: string
           is_active?: boolean
           naam?: string
+          portaal_actief?: boolean
+          portaal_kleur?: string | null
+          portaal_logo_url?: string | null
+          portaal_naam?: string | null
+          portaal_welkomtekst?: string | null
+          slug?: string | null
           trial_ends_at?: string | null
         }
         Relationships: []
@@ -903,6 +928,47 @@ export type Database = {
           },
           {
             foreignKeyName: "overdrachten_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portaal_domeinen: {
+        Row: {
+          created_at: string
+          hostname: string
+          id: string
+          organisatie_id: string
+          status: string
+          updated_at: string
+          verification_token: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          hostname: string
+          id?: string
+          organisatie_id: string
+          status?: string
+          updated_at?: string
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          hostname?: string
+          id?: string
+          organisatie_id?: string
+          status?: string
+          updated_at?: string
+          verification_token?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portaal_domeinen_organisatie_id_fkey"
             columns: ["organisatie_id"]
             isOneToOne: false
             referencedRelation: "organisaties"
@@ -1037,6 +1103,13 @@ export type Database = {
             columns: ["organisatie_id"]
             isOneToOne: false
             referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ritten_voertuig_id_fkey"
+            columns: ["voertuig_id"]
+            isOneToOne: false
+            referencedRelation: "portaal_voertuigen"
             referencedColumns: ["id"]
           },
           {
@@ -1450,6 +1523,30 @@ export type Database = {
       }
     }
     Views: {
+      portaal_voertuigen: {
+        Row: {
+          bouwjaar: number | null
+          brandstof: string | null
+          categorie: string | null
+          dagprijs: number | null
+          id: string | null
+          image_url: string | null
+          kenteken: string | null
+          kleur: string | null
+          merk: string | null
+          model: string | null
+          organisatie_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voertuigen_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reserveringen_beschikbaarheid: {
         Row: {
           eind_datum: string | null
@@ -1559,6 +1656,32 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_portaal_by_host: {
+        Args: { _host: string }
+        Returns: {
+          id: string
+          naam: string
+          portaal_kleur: string
+          portaal_logo_url: string
+          portaal_naam: string
+          portaal_welkomtekst: string
+          slug: string
+        }[]
+      }
+      get_portaal_voertuigen: {
+        Args: { _host: string }
+        Returns: {
+          bouwjaar: number
+          brandstof: string
+          categorie: string
+          dagprijs: number
+          id: string
+          image_url: string
+          kleur: string
+          merk: string
+          model: string
+        }[]
       }
       get_user_organisatie_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
