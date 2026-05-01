@@ -70,6 +70,16 @@ export const APP_MODULES: AppModule[] = [
     ],
   },
   {
+    key: "klantportaal",
+    label: "Klantportaal",
+    icon: "Globe",
+    functions: [
+      { key: "klantportaal.bekijken", label: "Klantportaal-instellingen bekijken" },
+      { key: "klantportaal.bewerken", label: "Klantportaal-instellingen bewerken" },
+      { key: "klantportaal.domeinen", label: "Eigen domeinen beheren" },
+    ],
+  },
+  {
     key: "onderhoud",
     label: "Onderhoud",
     icon: "Wrench",
