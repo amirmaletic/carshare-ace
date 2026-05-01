@@ -41,7 +41,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const { user, signOut } = useAuth();
   const isMobile = useIsMobile();
-  const { userRoles } = usePermissions();
+  const { userRoles, hasAccess } = usePermissions();
   const isBeheerder = userRoles.includes("beheerder");
   const { data: modus } = useModuleModus();
   const isWagenpark = modus === "wagenpark";
@@ -50,6 +50,8 @@ export default function SettingsPage() {
   const visibleTabs = tabs.filter((t) => {
     if (isWagenpark && WAGENPARK_HIDDEN_SETTINGS_TABS.has(t.value)) return false;
     if (!isBeheerder && (t.value === "autorisatie" || t.value === "api" || t.value === "team")) return false;
+    // Klantportaal-tab: zichtbaar voor beheerders en rollen met expliciete klantportaal-rechten
+    if (t.value === "portaal" && !isBeheerder && !hasAccess("klantportaal")) return false;
     return true;
   });
 
