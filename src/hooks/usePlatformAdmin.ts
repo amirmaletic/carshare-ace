@@ -104,3 +104,98 @@ export function useDeleteOrganisatie() {
     },
   });
 }
+
+export function useAdminSetUserRole() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { org_id: string; user_id: string; new_role: string }) => {
+      const { error } = await supabase.rpc("admin_set_user_role" as any, {
+        _org_id: input.org_id,
+        _user_id: input.user_id,
+        _new_role: input.new_role,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["admin-organisatie", vars.org_id] });
+      qc.invalidateQueries({ queryKey: ["admin-organisaties"] });
+    },
+  });
+}
+
+export function useAdminRemoveUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { org_id: string; user_id: string }) => {
+      const { error } = await supabase.rpc("admin_remove_user_from_org" as any, {
+        _org_id: input.org_id,
+        _user_id: input.user_id,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["admin-organisatie", vars.org_id] });
+      qc.invalidateQueries({ queryKey: ["admin-organisaties"] });
+    },
+  });
+}
+
+export function useAdminInviteUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { org_id: string; email: string; role: string }) => {
+      const { error } = await supabase.rpc("admin_invite_user_to_org" as any, {
+        _org_id: input.org_id,
+        _email: input.email,
+        _role: input.role,
+      });
+      if (error) throw error;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ["admin-organisatie", vars.org_id] });
+    },
+  });
+}
+
+export interface PlatformAdminRow {
+  user_id: string;
+  email: string | null;
+  created_at: string;
+  last_sign_in_at: string | null;
+}
+
+export function useAdminListPlatformAdmins() {
+  return useQuery({
+    queryKey: ["admin-platform-admins"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_platform_admins" as any);
+      if (error) throw error;
+      return (data ?? []) as PlatformAdminRow[];
+    },
+  });
+}
+
+export function useAdminRevokePlatformAdmin() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { error } = await supabase.rpc("admin_revoke_platform_admin" as any, { _user_id: userId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-platform-admins"] });
+    },
+  });
+}
+
+export function useAdminImpersonate() {
+  return useMutation({
+    mutationFn: async (input: { target_user_id: string; redirect_to?: string }) => {
+      const { data, error } = await supabase.functions.invoke("admin-impersonate", {
+        body: input,
+      });
+      if (error) throw error;
+      return data as { action_link: string; email: string };
+    },
+  });
+}

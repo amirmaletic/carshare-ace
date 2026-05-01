@@ -1640,6 +1640,14 @@ export type Database = {
         Args: { _user_email: string }
         Returns: undefined
       }
+      admin_invite_user_to_org: {
+        Args: {
+          _email: string
+          _org_id: string
+          _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: string
+      }
       admin_list_organisaties: {
         Args: never
         Returns: {
@@ -1658,6 +1666,31 @@ export type Database = {
           user_count: number
           voertuig_count: number
         }[]
+      }
+      admin_list_platform_admins: {
+        Args: never
+        Returns: {
+          created_at: string
+          email: string
+          last_sign_in_at: string
+          user_id: string
+        }[]
+      }
+      admin_remove_user_from_org: {
+        Args: { _org_id: string; _user_id: string }
+        Returns: undefined
+      }
+      admin_revoke_platform_admin: {
+        Args: { _user_id: string }
+        Returns: undefined
+      }
+      admin_set_user_role: {
+        Args: {
+          _new_role: Database["public"]["Enums"]["app_role"]
+          _org_id: string
+          _user_id: string
+        }
+        Returns: undefined
       }
       admin_update_organisatie: {
         Args: {
