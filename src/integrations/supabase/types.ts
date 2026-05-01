@@ -1649,6 +1649,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      convert_aanvraag_naar_klant: {
+        Args: { _aanvraag_id: string }
+        Returns: string
+      }
       create_gast_aanvraag: {
         Args: {
           _eind_datum?: string
