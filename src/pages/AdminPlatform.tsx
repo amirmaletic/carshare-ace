@@ -7,6 +7,7 @@ import {
   useAdminOrganisatieDetail,
   useUpdateOrganisatie,
   useGrantPlatformAdmin,
+  useDeleteOrganisatie,
   type AdminOrgRow,
 } from "@/hooks/usePlatformAdmin";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,7 +25,7 @@ import { format, formatDistanceToNow, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import {
   Search, Building2, Users, Car, FileText, Activity, Calendar, Shield,
-  AlertTriangle, CheckCircle2, XCircle, RefreshCw,
+  AlertTriangle, CheckCircle2, XCircle, RefreshCw, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -276,8 +277,11 @@ export default function AdminPlatform() {
 function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: () => void }) {
   const { data: detail, isLoading } = useAdminOrganisatieDetail(org?.id ?? null);
   const updateMutation = useUpdateOrganisatie();
+  const deleteMutation = useDeleteOrganisatie();
   const [editNaam, setEditNaam] = useState("");
   const [editTrial, setEditTrial] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
 
   if (!org) return null;
 
@@ -320,6 +324,19 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
       toast.success(`Trial verlengd met ${days} dagen`);
     } catch (e: any) {
       toast.error(e.message || "Mislukt");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!org) return;
+    try {
+      await deleteMutation.mutateAsync(org.id);
+      toast.success("Omgeving verwijderd");
+      setDeleteOpen(false);
+      setDeleteConfirm("");
+      onClose();
+    } catch (e: any) {
+      toast.error(e.message || "Verwijderen mislukt");
     }
   };
 
@@ -383,6 +400,29 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
                 <p>Organisatie-ID: <code className="text-foreground">{org.id}</code></p>
               </CardContent>
             </Card>
+
+            <Card className="border-destructive/40">
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-destructive mt-0.5" />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Gevarenzone</p>
+                    <p className="text-xs text-muted-foreground">
+                      Verwijder deze omgeving permanent, inclusief alle voertuigen, contracten, klanten en historie. Dit kan niet ongedaan worden gemaakt.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                  Omgeving verwijderen
+                </Button>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="stats" className="mt-4">
@@ -443,6 +483,51 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
           </TabsContent>
         </Tabs>
       </DialogContent>
+
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="w-5 h-5" />
+              Omgeving definitief verwijderen
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <p className="text-sm text-foreground">
+              Je staat op het punt <strong>{org.naam}</strong> en alle bijbehorende data permanent te verwijderen.
+            </p>
+            <ul className="text-xs text-muted-foreground list-disc pl-5 space-y-0.5">
+              <li>{org.voertuig_count} voertuigen</li>
+              <li>{org.contract_count} contracten</li>
+              <li>{org.klant_count} klanten</li>
+              <li>{org.user_count} gebruikersrollen</li>
+              <li>Alle ritten, schade, onderhoud en historie</li>
+            </ul>
+            <div className="space-y-1.5 pt-2">
+              <Label className="text-xs">
+                Typ <code className="text-foreground">{org.naam}</code> om te bevestigen
+              </Label>
+              <Input
+                value={deleteConfirm}
+                onChange={(e) => setDeleteConfirm(e.target.value)}
+                placeholder={org.naam}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setDeleteOpen(false); setDeleteConfirm(""); }}>
+              Annuleren
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleteConfirm !== org.naam || deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Verwijderen..." : "Definitief verwijderen"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
