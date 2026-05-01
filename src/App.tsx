@@ -44,6 +44,7 @@ const TenantInloggen = lazy(() => import("./pages/tenant/TenantInloggen"));
 const TenantReserveren = lazy(() => import("./pages/tenant/TenantReserveren"));
 const Rijbewijzen = lazy(() => import("./pages/Rijbewijzen"));
 const RijbewijsUpload = lazy(() => import("./pages/RijbewijsUpload"));
+const BetaalVerificatie = lazy(() => import("./pages/BetaalVerificatie"));
 
 function PageLoader() {
   return (
