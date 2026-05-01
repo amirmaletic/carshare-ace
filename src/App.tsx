@@ -33,7 +33,6 @@ const MijnReserveringen = lazy(() => import("./pages/portaal/MijnReserveringen")
 const ReserveerVoertuig = lazy(() => import("./pages/portaal/ReserveerVoertuig"));
 const MijnFacturen = lazy(() => import("./pages/portaal/MijnFacturen"));
 const MijnProfiel = lazy(() => import("./pages/portaal/MijnProfiel"));
-const PubliekBoeken = lazy(() => import("./pages/PubliekBoeken"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
@@ -136,7 +135,7 @@ const App = () => (
           <Route path="/prijzen" element={<MarketingLayout><Pricing /></MarketingLayout>} />
           <Route path="/blog" element={<MarketingLayout><Blog /></MarketingLayout>} />
           <Route path="/blog/:slug" element={<MarketingLayout><BlogPost /></MarketingLayout>} />
-          <Route path="/boeken" element={<PubliekBoeken />} />
+          <Route path="/boeken" element={<Navigate to="/" replace />} />
 
           {/* Auth routes */}
           <Route path="/auth" element={<Auth />} />
