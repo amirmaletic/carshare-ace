@@ -7,6 +7,7 @@ import { getReservationStatusColor } from "@/data/mockData";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { ReservationForm } from "@/components/ReservationForm";
 
 const statusFilters = ['Alle', 'aangevraagd', 'bevestigd', 'actief', 'voltooid', 'geannuleerd'] as const;
 
@@ -14,6 +15,7 @@ export default function Reservations() {
   const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Alle");
+  const [formOpen, setFormOpen] = useState(false);
 
   const { data: reserveringen = [], isLoading } = useQuery({
     queryKey: ["reserveringen-page"],
@@ -45,7 +47,9 @@ export default function Reservations() {
           <h1 className="text-2xl font-bold text-foreground">Reserveringen</h1>
           <p className="text-muted-foreground mt-1">{reserveringen.length} totale reserveringen</p>
         </div>
-        <Button className="gap-2"><Plus className="w-4 h-4" />Nieuwe reservering</Button>
+        <Button className="gap-2" onClick={() => setFormOpen(true)}>
+          <Plus className="w-4 h-4" />Nieuwe reservering
+        </Button>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
@@ -105,6 +109,7 @@ export default function Reservations() {
           )}
         </div>
       )}
+      <ReservationForm open={formOpen} onOpenChange={setFormOpen} />
     </div>
   );
 }
