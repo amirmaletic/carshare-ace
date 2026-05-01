@@ -335,13 +335,6 @@ export default function Auth() {
             </button>
           </div>
 
-          <Separator />
-
-          <div className="text-center">
-            <a href="/klant-login" className="text-xs text-muted-foreground hover:text-primary transition-colors">
-              Klant? Ga naar het klantportaal →
-            </a>
-          </div>
         </CardContent>
       </Card>
     </div>
