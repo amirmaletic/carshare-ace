@@ -43,7 +43,43 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
     if (!contract) return;
     setSendingRijbewijs(true);
     try {
-      const { error } = await supabase.functions.invoke("send-rijbewijs-verzoek", { body: { contract_id: contract.id } });
+      // Zoek (of wacht op) bestaande verificatie record voor dit contract
+      let { data: ver } = await supabase
+        .from("rijbewijs_verificaties")
+        .select("id")
+        .eq("contract_id", contract.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Geen record? Maak er handmatig een aan via RPC/direct insert
+      if (!ver) {
+        // Zoek klant
+        const { data: klant } = await supabase
+          .from("klanten")
+          .select("id, organisatie_id")
+          .ilike("email", contract.klant_email)
+          .maybeSingle();
+        if (!klant) throw new Error("Klant niet gevonden voor dit contract");
+        const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+        const { data: nieuw, error: insErr } = await supabase
+          .from("rijbewijs_verificaties")
+          .insert({
+            organisatie_id: klant.organisatie_id,
+            klant_id: klant.id,
+            contract_id: contract.id,
+            upload_token: token,
+            status: "in_afwachting",
+          })
+          .select("id")
+          .single();
+        if (insErr) throw insErr;
+        ver = nieuw;
+      }
+
+      const { error } = await supabase.functions.invoke("send-rijbewijs-verzoek", {
+        body: { verificatie_id: ver.id },
+      });
       if (error) throw error;
       toast({ title: "Rijbewijsverzoek verstuurd", description: `Verstuurd naar ${contract.klant_email}` });
       queryClient.invalidateQueries({ queryKey: ["contract-verificaties", contract.id] });
