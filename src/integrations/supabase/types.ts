@@ -619,32 +619,44 @@ export type Database = {
       invoices: {
         Row: {
           bedrag: number
+          borg_verrekend: number
           contract_id: string
           created_at: string
           datum: string
           id: string
+          omschrijving: string | null
           organisatie_id: string | null
+          schade_rapport_id: string | null
           status: Database["public"]["Enums"]["invoice_status"]
+          type: string
           user_id: string
         }
         Insert: {
           bedrag?: number
+          borg_verrekend?: number
           contract_id: string
           created_at?: string
           datum: string
           id?: string
+          omschrijving?: string | null
           organisatie_id?: string | null
+          schade_rapport_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
+          type?: string
           user_id: string
         }
         Update: {
           bedrag?: number
+          borg_verrekend?: number
           contract_id?: string
           created_at?: string
           datum?: string
           id?: string
+          omschrijving?: string | null
           organisatie_id?: string | null
+          schade_rapport_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
+          type?: string
           user_id?: string
         }
         Relationships: [
@@ -660,6 +672,13 @@ export type Database = {
             columns: ["organisatie_id"]
             isOneToOne: false
             referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_schade_rapport_id_fkey"
+            columns: ["schade_rapport_id"]
+            isOneToOne: false
+            referencedRelation: "schade_rapporten"
             referencedColumns: ["id"]
           },
         ]
