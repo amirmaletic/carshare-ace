@@ -42,6 +42,8 @@ const AdminPlatform = lazy(() => import("./pages/AdminPlatform"));
 const TenantAanbod = lazy(() => import("./pages/tenant/TenantAanbod"));
 const TenantInloggen = lazy(() => import("./pages/tenant/TenantInloggen"));
 const TenantReserveren = lazy(() => import("./pages/tenant/TenantReserveren"));
+const Rijbewijzen = lazy(() => import("./pages/Rijbewijzen"));
+const RijbewijsUpload = lazy(() => import("./pages/RijbewijsUpload"));
 
 function PageLoader() {
   return (
@@ -155,7 +157,11 @@ const App = () => (
           <Route path="/chauffeurs" element={<ProtectedRoute><AppLayout><Chauffeurs /></AppLayout></ProtectedRoute>} />
           <Route path="/ritten" element={<ProtectedRoute><AppLayout><Ritten /></AppLayout></ProtectedRoute>} />
           <Route path="/klanten" element={<ProtectedRoute><AppLayout><Klanten /></AppLayout></ProtectedRoute>} />
+          <Route path="/rijbewijzen" element={<ProtectedRoute><AppLayout><Rijbewijzen /></AppLayout></ProtectedRoute>} />
           <Route path="/instellingen" element={<ProtectedRoute><AppLayout><SettingsPage /></AppLayout></ProtectedRoute>} />
+
+          {/* Publieke rijbewijs-upload via token */}
+          <Route path="/rijbewijs/:token" element={<RijbewijsUpload />} />
 
           {/* White-label tenant portal (per organisatie) */}
           <Route path="/t/:slug" element={<TenantPortaalLayout><TenantAanbod /></TenantPortaalLayout>} />
