@@ -32,6 +32,8 @@ export interface AdminOrgRow {
   contract_count: number;
   klant_count: number;
   laatste_activiteit: string | null;
+  eigenaar_last_sign_in_at: string | null;
+  laatste_inlog_org: string | null;
 }
 
 export function useAdminOrganisaties() {
