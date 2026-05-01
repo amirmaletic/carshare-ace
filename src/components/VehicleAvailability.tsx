@@ -164,7 +164,8 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
     if (!el) return null;
     const rect = el.getBoundingClientRect();
     const x = e.clientX - rect.left;
-    const idx = Math.floor(x / CELL_WIDTH);
+    const cellW = rect.width / DAYS_VISIBLE;
+    const idx = Math.floor(x / cellW);
     return Math.max(0, Math.min(DAYS_VISIBLE - 1, idx));
   };
 
@@ -229,9 +230,9 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <div className="min-w-fit">
-            <div className="flex border-b border-border h-8">
+        <div>
+          <div className="w-full">
+            <div className="flex border-b border-border h-8 w-full">
               {days.map((d, i) => {
                 const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
                 const isWeekend = d.getDay() === 0 || d.getDay() === 6;
@@ -239,11 +240,10 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
                   <div
                     key={i}
                     className={cn(
-                      "shrink-0 flex flex-col items-center justify-center border-r border-border text-[9px]",
+                      "flex-1 min-w-0 flex flex-col items-center justify-center border-r border-border text-[9px] last:border-r-0",
                       isToday && "bg-primary/10 font-bold text-primary",
                       isWeekend && !isToday && "bg-muted/40 text-muted-foreground"
                     )}
-                    style={{ width: CELL_WIDTH }}
                   >
                     <span>{format(d, "d")}</span>
                   </div>
@@ -255,7 +255,7 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
               <ContextMenuTrigger asChild>
                 <div
                   ref={rowRef}
-                  className="relative select-none cursor-crosshair"
+                  className="relative select-none cursor-crosshair w-full"
                   style={{ height: ROW_HEIGHT }}
                   onPointerDown={(e) => {
                     if (e.button !== 0) return;
@@ -283,7 +283,7 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
                     }
                   }}
                 >
-              <div className="absolute inset-0 flex">
+              <div className="absolute inset-0 flex w-full">
                 {days.map((d, i) => {
                   const isWeekend = d.getDay() === 0 || d.getDay() === 6;
                   const isToday = format(d, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
@@ -291,11 +291,10 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
                     <div
                       key={i}
                       className={cn(
-                        "shrink-0 border-r border-border",
+                        "flex-1 min-w-0 border-r border-border last:border-r-0",
                         isWeekend && "bg-muted/20",
                         isToday && "bg-primary/5"
                       )}
-                      style={{ width: CELL_WIDTH }}
                     />
                   );
                 })}
@@ -304,8 +303,8 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
                 <div
                   className="absolute top-0 bottom-0 bg-primary/15 border-x-2 border-primary pointer-events-none z-[1]"
                   style={{
-                    left: selStart! * CELL_WIDTH,
-                    width: (selEnd! - selStart! + 1) * CELL_WIDTH,
+                    left: `${(selStart! / DAYS_VISIBLE) * 100}%`,
+                    width: `${((selEnd! - selStart! + 1) / DAYS_VISIBLE) * 100}%`,
                   }}
                 />
               )}
@@ -315,8 +314,8 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
                 const clampedStart = Math.max(0, blockStart);
                 const clampedEnd = Math.min(DAYS_VISIBLE - 1, blockEnd);
                 if (clampedStart > DAYS_VISIBLE - 1 || clampedEnd < 0) return null;
-                const left = clampedStart * CELL_WIDTH;
-                const width = (clampedEnd - clampedStart + 1) * CELL_WIDTH - 4;
+                const leftPct = (clampedStart / DAYS_VISIBLE) * 100;
+                const widthPct = ((clampedEnd - clampedStart + 1) / DAYS_VISIBLE) * 100;
                 const color =
                   block.type === "reservation"
                     ? "bg-info/70 border-info text-info-foreground"
@@ -330,7 +329,7 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
                       "absolute top-1.5 rounded-md border text-[10px] font-medium px-1.5 flex items-center truncate shadow-sm",
                       color
                     )}
-                    style={{ left: left + 2, width: Math.max(width, 18), height: ROW_HEIGHT - 12 }}
+                    style={{ left: `calc(${leftPct}% + 2px)`, width: `calc(${widthPct}% - 4px)`, height: ROW_HEIGHT - 12 }}
                     title={`${block.label}\n${format(block.start, "d MMM yyyy", { locale: nl })} tot ${format(block.end, "d MMM yyyy", { locale: nl })}`}
                   >
                     <span className="truncate">{block.label}</span>
@@ -340,10 +339,11 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
               {(() => {
                 const todayOffset = differenceInDays(today, startDate);
                 if (todayOffset < 0 || todayOffset >= DAYS_VISIBLE) return null;
+                const pct = ((todayOffset + 0.5) / DAYS_VISIBLE) * 100;
                 return (
                   <div
                     className="absolute top-0 bottom-0 w-0.5 bg-primary z-[2]"
-                    style={{ left: todayOffset * CELL_WIDTH + CELL_WIDTH / 2 }}
+                    style={{ left: `${pct}%` }}
                   />
                 );
               })()}
