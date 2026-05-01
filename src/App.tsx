@@ -40,6 +40,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminPlatform = lazy(() => import("./pages/AdminPlatform"));
 const TenantAanbod = lazy(() => import("./pages/tenant/TenantAanbod"));
 const TenantInloggen = lazy(() => import("./pages/tenant/TenantInloggen"));
+const TenantReserveren = lazy(() => import("./pages/tenant/TenantReserveren"));
 
 function PageLoader() {
   return (
