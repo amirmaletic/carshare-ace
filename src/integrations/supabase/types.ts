@@ -1048,6 +1048,115 @@ export type Database = {
           },
         ]
       }
+      rijbewijs_verificaties: {
+        Row: {
+          achterkant_pad: string | null
+          ai_afgiftedatum: string | null
+          ai_categorieen: string[] | null
+          ai_confidence: number | null
+          ai_geboortedatum: string | null
+          ai_naam: string | null
+          ai_rijbewijsnummer: string | null
+          ai_ruwe_data: Json | null
+          ai_vervaldatum: string | null
+          beoordeeld_door: string | null
+          beoordeeld_op: string | null
+          contract_id: string | null
+          created_at: string
+          email_verzonden_op: string | null
+          herinnering_verzonden_op: string | null
+          id: string
+          ingediend_op: string | null
+          klant_id: string
+          organisatie_id: string
+          reden_afwijzing: string | null
+          status: Database["public"]["Enums"]["rijbewijs_status"]
+          token_expires_at: string
+          updated_at: string
+          upload_token: string
+          validatie_notities: string | null
+          voorkant_pad: string | null
+        }
+        Insert: {
+          achterkant_pad?: string | null
+          ai_afgiftedatum?: string | null
+          ai_categorieen?: string[] | null
+          ai_confidence?: number | null
+          ai_geboortedatum?: string | null
+          ai_naam?: string | null
+          ai_rijbewijsnummer?: string | null
+          ai_ruwe_data?: Json | null
+          ai_vervaldatum?: string | null
+          beoordeeld_door?: string | null
+          beoordeeld_op?: string | null
+          contract_id?: string | null
+          created_at?: string
+          email_verzonden_op?: string | null
+          herinnering_verzonden_op?: string | null
+          id?: string
+          ingediend_op?: string | null
+          klant_id: string
+          organisatie_id: string
+          reden_afwijzing?: string | null
+          status?: Database["public"]["Enums"]["rijbewijs_status"]
+          token_expires_at?: string
+          updated_at?: string
+          upload_token: string
+          validatie_notities?: string | null
+          voorkant_pad?: string | null
+        }
+        Update: {
+          achterkant_pad?: string | null
+          ai_afgiftedatum?: string | null
+          ai_categorieen?: string[] | null
+          ai_confidence?: number | null
+          ai_geboortedatum?: string | null
+          ai_naam?: string | null
+          ai_rijbewijsnummer?: string | null
+          ai_ruwe_data?: Json | null
+          ai_vervaldatum?: string | null
+          beoordeeld_door?: string | null
+          beoordeeld_op?: string | null
+          contract_id?: string | null
+          created_at?: string
+          email_verzonden_op?: string | null
+          herinnering_verzonden_op?: string | null
+          id?: string
+          ingediend_op?: string | null
+          klant_id?: string
+          organisatie_id?: string
+          reden_afwijzing?: string | null
+          status?: Database["public"]["Enums"]["rijbewijs_status"]
+          token_expires_at?: string
+          updated_at?: string
+          upload_token?: string
+          validatie_notities?: string | null
+          voorkant_pad?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rijbewijs_verificaties_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rijbewijs_verificaties_klant_id_fkey"
+            columns: ["klant_id"]
+            isOneToOne: false
+            referencedRelation: "klanten"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rijbewijs_verificaties_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ritten: {
         Row: {
           aankomst_tijd: string | null
@@ -1780,6 +1889,19 @@ export type Database = {
           model: string
         }[]
       }
+      get_rijbewijs_verzoek: {
+        Args: { _token: string }
+        Returns: {
+          expired: boolean
+          id: string
+          klant_achternaam: string
+          klant_voornaam: string
+          organisatie_kleur: string
+          organisatie_logo: string
+          organisatie_naam: string
+          status: Database["public"]["Enums"]["rijbewijs_status"]
+        }[]
+      }
       get_user_organisatie_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -1789,6 +1911,10 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: never; Returns: boolean }
+      markeer_rijbewijs_ingediend: {
+        Args: { _achterkant_pad: string; _token: string; _voorkant_pad: string }
+        Returns: string
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string
@@ -1806,6 +1932,22 @@ export type Database = {
           read_ct: number
         }[]
       }
+      update_rijbewijs_ai_resultaat: {
+        Args: {
+          _ai_afgiftedatum: string
+          _ai_categorieen: string[]
+          _ai_confidence: number
+          _ai_geboortedatum: string
+          _ai_naam: string
+          _ai_rijbewijsnummer: string
+          _ai_ruwe_data: Json
+          _ai_vervaldatum: string
+          _auto_status: Database["public"]["Enums"]["rijbewijs_status"]
+          _id: string
+          _validatie_notities: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:
@@ -1822,6 +1964,12 @@ export type Database = {
         | "openstaand"
         | "te_laat"
         | "herinnering_verstuurd"
+      rijbewijs_status:
+        | "in_afwachting"
+        | "ingediend"
+        | "goedgekeurd"
+        | "afgewezen"
+        | "verlopen"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1964,6 +2112,13 @@ export const Constants = {
         "openstaand",
         "te_laat",
         "herinnering_verstuurd",
+      ],
+      rijbewijs_status: [
+        "in_afwachting",
+        "ingediend",
+        "goedgekeurd",
+        "afgewezen",
+        "verlopen",
       ],
     },
   },
