@@ -71,16 +71,8 @@ export default function BetaalVerificatie() {
                   <p className="text-muted-foreground mt-1">Hiermee verifiëren we je bankrekening en identiteit. Het bedrag wordt verrekend met je eerstvolgende factuur.</p>
                 </div>
               </div>
-              <Button className="w-full" onClick={async () => {
-                const { data, error } = await supabase.functions.invoke("create-betaal-verificatie-resume", { body: { token } });
-                // Hergebruik bestaande session_url uit info? We laten gebruiker via mail-link betalen.
-                if (error) alert(error.message);
-                else if ((data as any)?.checkout_url) window.location.href = (data as any).checkout_url;
-              }}>
-                Betaal € {Number(info.bedrag).toFixed(2).replace(".", ",")} met iDEAL
-              </Button>
-              <p className="text-xs text-muted-foreground text-center">
-                Je hebt waarschijnlijk al een betaallink per e-mail ontvangen. Controleer je inbox.
+              <p className="text-sm text-center text-muted-foreground">
+                Open de iDEAL betaallink uit de e-mail die je hebt ontvangen om de verificatie af te ronden.
               </p>
             </>
           )}
