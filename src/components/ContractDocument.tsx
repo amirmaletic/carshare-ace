@@ -5,6 +5,8 @@ import { Printer, Download } from "lucide-react";
 import { type ContractWithInvoices } from "@/hooks/useContracts";
 import { getContractTypeLabel } from "@/data/mockData";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
+import { useOrganisatie } from "@/hooks/useOrganisatie";
+import logoUrl from "@/assets/fleeflo-logo-blue.png";
 
 interface ContractDocumentProps {
   contract: ContractWithInvoices | null;
@@ -15,18 +17,60 @@ interface ContractDocumentProps {
 export function ContractDocument({ contract, open, onOpenChange }: ContractDocumentProps) {
   const printRef = useRef<HTMLDivElement>(null);
   const { voertuigen } = useVoertuigen();
+  const { organisatie } = useOrganisatie();
 
   if (!contract) return null;
 
   const vehicle = contract.voertuig_id ? voertuigen.find(v => v.id === contract.voertuig_id) : null;
   const today = new Date().toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
+  const formatDate = (d?: string | null) =>
+    d ? new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" }) : "-";
+  const money = (n: number | string | null | undefined) =>
+    `€ ${Number(n ?? 0).toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const orgNaam = organisatie?.naam ?? "FleeFlo";
+  const logoSrc = `${window.location.origin}${logoUrl}`;
 
   const handlePrint = () => {
-    const content = printRef.current;
-    if (!content) return;
-
     const printWindow = window.open("", "_blank");
     if (!printWindow) return;
+
+    const services = (contract.inclusief ?? []).map(
+      (item) => `<span class="tag">✓ ${escapeHtml(item)}</span>`
+    ).join("");
+
+    const vehicleBlock = vehicle ? `
+      <section class="block">
+        <h3>Voertuig</h3>
+        <div class="grid">
+          ${field("Merk & model", `${vehicle.merk} ${vehicle.model}`)}
+          ${field("Kenteken", vehicle.kenteken)}
+          ${field("Bouwjaar", String(vehicle.bouwjaar))}
+          ${field("Brandstof", vehicle.brandstof)}
+          ${field("Categorie", vehicle.categorie)}
+        </div>
+      </section>` : "";
+
+    const klantRows = [
+      field("Naam", contract.klant_naam),
+      field("E-mail", contract.klant_email),
+      contract.klant_telefoon ? field("Telefoon", contract.klant_telefoon) : "",
+      contract.klant_adres ? field("Adres", contract.klant_adres) : "",
+      contract.bedrijf ? field("Bedrijf", contract.bedrijf) : "",
+      contract.kvk_nummer ? field("KVK-nummer", contract.kvk_nummer) : "",
+      contract.bedrijf_adres ? field("Bedrijfsadres", contract.bedrijf_adres) : "",
+    ].join("");
+
+    const contractRows = [
+      field("Type", getContractTypeLabel(contract.type)),
+      field("Status", contract.status),
+      field("Startdatum", formatDate(contract.start_datum)),
+      field("Einddatum", formatDate(contract.eind_datum)),
+      field("Maandprijs", money(contract.maandprijs)),
+      Number(contract.borg) > 0 ? field("Borg", money(contract.borg)) : "",
+      contract.km_per_jaar ? field("Km per jaar", `${contract.km_per_jaar.toLocaleString("nl-NL")} km`) : "",
+      contract.verlengbaar ? field("Verlengbaar", contract.verlengings_termijn || "Ja") : "",
+    ].join("");
 
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -35,41 +79,162 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
         <meta charset="UTF-8">
         <title>Contract ${contract.contract_nummer}</title>
         <style>
-          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
-          * { margin: 0; padding: 0; box-sizing: border-box; }
-          body { font-family: 'Inter', sans-serif; color: #1a1a2e; padding: 40px; line-height: 1.6; }
-          h1, h2, h3 { font-family: 'Space Grotesk', sans-serif; }
-          .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 3px solid #e88c0a; }
-          .logo-section h1 { font-size: 24px; color: #e88c0a; }
-          .logo-section p { font-size: 12px; color: #666; }
-          .contract-ref { text-align: right; }
-          .contract-ref h2 { font-size: 14px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-          .contract-ref p { font-size: 18px; font-family: 'Space Grotesk', sans-serif; font-weight: 600; }
-          .section { margin-bottom: 28px; }
-          .section h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #e88c0a; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid #eee; }
-          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-          .field { }
-          .field-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
-          .field-value { font-size: 14px; font-weight: 500; margin-top: 2px; }
-          .services { display: flex; flex-wrap: wrap; gap: 8px; }
-          .service-tag { font-size: 12px; padding: 4px 12px; background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; border-radius: 20px; }
-          .terms { font-size: 12px; color: #555; }
-          .terms li { margin-bottom: 6px; }
-          .signature-section { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-top: 60px; padding-top: 20px; }
-          .signature-block { }
-          .signature-block p { font-size: 12px; color: #888; margin-bottom: 4px; }
-          .signature-line { border-bottom: 1px solid #333; height: 60px; margin-bottom: 8px; }
-          .signature-name { font-size: 13px; font-weight: 500; }
-          .footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #eee; text-align: center; font-size: 11px; color: #999; }
-          @media print { body { padding: 20px; } }
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+          :root {
+            --primary: #3B82F6;
+            --primary-dark: #1E40AF;
+            --ink: #0F172A;
+            --muted: #64748B;
+            --line: #E2E8F0;
+            --soft: #F8FAFC;
+            --success: #16A34A;
+            --success-soft: #ECFDF5;
+          }
+          * { margin: 0; padding: 0; box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          html, body { background: #fff; }
+          body {
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            color: var(--ink);
+            line-height: 1.55;
+            font-size: 11pt;
+            padding: 28mm 22mm 24mm;
+          }
+          .doc { max-width: 100%; }
+
+          /* Header */
+          .hdr { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 18px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
+          .hdr-brand { display: flex; align-items: center; gap: 12px; }
+          .hdr-brand img { height: 36px; width: auto; }
+          .hdr-brand .org { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; color: var(--ink); }
+          .hdr-brand .tag { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+          .hdr-meta { text-align: right; }
+          .hdr-meta .label { font-size: 9.5px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+          .hdr-meta .ref { font-size: 14px; font-weight: 700; color: var(--primary-dark); margin-top: 2px; font-feature-settings: "tnum"; }
+          .hdr-meta .date { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+
+          /* Title strip */
+          .title { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 18px; border-radius: 10px; background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%); border: 1px solid #BFDBFE; margin-bottom: 26px; }
+          .title h1 { font-size: 16px; font-weight: 700; color: var(--primary-dark); letter-spacing: -0.01em; }
+          .title .pill { background: var(--primary); color: #fff; font-size: 10.5px; font-weight: 600; padding: 4px 10px; border-radius: 999px; text-transform: capitalize; letter-spacing: 0.2px; }
+
+          /* Blocks */
+          .block { margin-bottom: 22px; page-break-inside: avoid; }
+          .block h3 { font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 700; color: var(--primary); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+          .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; }
+          .field { padding: 8px 12px; background: var(--soft); border: 1px solid var(--line); border-radius: 8px; }
+          .field .lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); font-weight: 600; }
+          .field .val { font-size: 11.5px; font-weight: 500; color: var(--ink); margin-top: 2px; word-break: break-word; }
+
+          /* Tags */
+          .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+          .tag { display: inline-block; font-size: 10.5px; padding: 4px 10px; background: var(--success-soft); color: var(--success); border: 1px solid #BBF7D0; border-radius: 999px; font-weight: 500; }
+
+          /* Notes */
+          .note { padding: 12px 14px; background: var(--soft); border-left: 3px solid var(--primary); border-radius: 4px; font-size: 11pt; color: #334155; }
+
+          /* Terms */
+          .terms { padding-left: 18px; }
+          .terms li { font-size: 10.5px; color: #475569; margin-bottom: 5px; line-height: 1.5; }
+
+          /* Signatures */
+          .sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-top: 40px; page-break-inside: avoid; }
+          .sig { }
+          .sig .role { font-size: 9.5px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 600; margin-bottom: 28px; }
+          .sig .line { border-bottom: 1.5px solid var(--ink); height: 1px; margin-bottom: 8px; }
+          .sig .name { font-size: 11pt; font-weight: 600; color: var(--ink); }
+          .sig .meta { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+          /* Footer */
+          .footer { margin-top: 36px; padding-top: 12px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; font-size: 9.5px; color: var(--muted); }
+
+          @page { size: A4; margin: 0; }
+          @media print {
+            body { padding: 18mm 16mm; }
+            .block, .sigs { page-break-inside: avoid; }
+          }
         </style>
       </head>
-      <body>${content.innerHTML}</body>
+      <body>
+        <div class="doc">
+          <header class="hdr">
+            <div class="hdr-brand">
+              <img src="${logoSrc}" alt="${escapeHtml(orgNaam)}" />
+              <div>
+                <div class="org">${escapeHtml(orgNaam)}</div>
+                <div class="tag">Wagenpark | Leasebeheer</div>
+              </div>
+            </div>
+            <div class="hdr-meta">
+              <div class="label">Contractnummer</div>
+              <div class="ref">${escapeHtml(contract.contract_nummer)}</div>
+              <div class="date">${today}</div>
+            </div>
+          </header>
+
+          <div class="title">
+            <h1>${escapeHtml(getContractTypeLabel(contract.type))} overeenkomst</h1>
+            <span class="pill">${escapeHtml(contract.status)}</span>
+          </div>
+
+          <section class="block">
+            <h3>Contractgegevens</h3>
+            <div class="grid">${contractRows}</div>
+          </section>
+
+          <section class="block">
+            <h3>Klantgegevens</h3>
+            <div class="grid">${klantRows}</div>
+          </section>
+
+          ${vehicleBlock}
+
+          ${services ? `<section class="block"><h3>Inbegrepen services</h3><div class="tags">${services}</div></section>` : ""}
+
+          ${contract.notities ? `<section class="block"><h3>Bijzonderheden</h3><div class="note">${escapeHtml(contract.notities)}</div></section>` : ""}
+
+          ${contract.boeteclausule ? `<section class="block"><h3>Boeteclausule</h3><div class="note">${escapeHtml(contract.boeteclausule)}</div></section>` : ""}
+
+          <section class="block">
+            <h3>Algemene voorwaarden</h3>
+            <ol class="terms">
+              <li>Dit contract is geldig voor de bovengenoemde looptijd en wordt automatisch beëindigd op de einddatum.</li>
+              <li>Maandelijkse betalingen dienen vóór de 1e van elke maand te worden voldaan.</li>
+              <li>Het voertuig dient in goede staat te worden geretourneerd aan het einde van het contract.</li>
+              <li>Bij vroegtijdige beëindiging zijn de resterende termijnen verschuldigd, tenzij anders overeengekomen.</li>
+              <li>De leasenemer is verantwoordelijk voor schade die niet onder de verzekering valt.</li>
+              <li>Kilometrage boven het afgesproken aantal wordt in rekening gebracht tegen het geldende tarief.</li>
+            </ol>
+          </section>
+
+          <section class="sigs">
+            <div class="sig">
+              <div class="role">Verhuurder</div>
+              <div class="line"></div>
+              <div class="name">${escapeHtml(orgNaam)}</div>
+              <div class="meta">Datum: _____________________</div>
+            </div>
+            <div class="sig">
+              <div class="role">Huurder | Leasenemer</div>
+              <div class="line"></div>
+              <div class="name">${escapeHtml(contract.klant_naam)}</div>
+              <div class="meta">Datum: _____________________</div>
+            </div>
+          </section>
+
+          <footer class="footer">
+            <span>${escapeHtml(orgNaam)} | Contract ${escapeHtml(contract.contract_nummer)}</span>
+            <span>Gegenereerd op ${today}</span>
+          </footer>
+        </div>
+      </body>
       </html>
     `);
     printWindow.document.close();
     printWindow.focus();
-    setTimeout(() => printWindow.print(), 300);
+    // Wacht tot logo en fonts geladen zijn
+    const triggerPrint = () => setTimeout(() => printWindow.print(), 250);
+    if (printWindow.document.readyState === "complete") triggerPrint();
+    else printWindow.onload = triggerPrint;
   };
 
   return (
@@ -237,4 +402,18 @@ function Field({ label, value }: { label: string; value: string }) {
       <p className="text-sm font-medium mt-0.5 capitalize">{value}</p>
     </div>
   );
+}
+
+function escapeHtml(s: string | null | undefined): string {
+  if (s == null) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function field(label: string, value: string | null | undefined): string {
+  return `<div class="field"><div class="lbl">${escapeHtml(label)}</div><div class="val">${escapeHtml(value || "-")}</div></div>`;
 }
