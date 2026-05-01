@@ -47,10 +47,6 @@ interface VehicleFormProps {
   onOpenChange: (open: boolean) => void;
 }
 
-const merken = [
-  "Volkswagen", "Audi", "Škoda", "SEAT", "CUPRA", "Porsche",
-];
-
 export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
   const { addVoertuig } = useVoertuigen();
   const [preview, setPreview] = useState({ merk: "", model: "" });
@@ -111,11 +107,6 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
     });
   };
 
-  const isVAGMerk = (merk: string): boolean => {
-    const vag = ["Volkswagen", "Audi", "Skoda", "Škoda", "Seat", "SEAT", "Cupra", "CUPRA", "Porsche"];
-    return vag.some(m => m.toLowerCase() === merk.toLowerCase());
-  };
-
   const handleRdwLookup = async () => {
     const kenteken = form.getValues("kenteken");
     if (!kenteken || kenteken.length < 4) {
@@ -130,15 +121,14 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
       if (error) throw error;
       if (!data || data.error) throw new Error(data?.error || "Geen data");
 
-      // Normaliseer Skoda spelling
+      // Normaliseer enkele bekende merknamen
       let merk = data.merk || "";
-      if (merk.toLowerCase() === "skoda") merk = "Škoda";
-      if (merk.toLowerCase() === "seat") merk = "SEAT";
-      if (merk.toLowerCase() === "cupra") merk = "CUPRA";
-
-      if (merk && !isVAGMerk(merk)) {
-        toast.warning(`Let op: ${merk} is geen VAG-merk. Fleeflo richt zich op VAG-voertuigen.`);
-      }
+      const upper = merk.toUpperCase();
+      if (upper === "SKODA") merk = "Škoda";
+      else if (upper === "SEAT") merk = "SEAT";
+      else if (upper === "CUPRA") merk = "CUPRA";
+      else if (upper === "BMW") merk = "BMW";
+      else if (upper === "MG") merk = "MG";
 
       form.setValue("merk", merk, { shouldValidate: true });
       form.setValue("model", data.model || "", { shouldValidate: true });
@@ -223,20 +213,17 @@ export function VehicleForm({ open, onOpenChange }: VehicleFormProps) {
               <FormField control={form.control} name="merk" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Merk</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={(val) => {
-                      field.onChange(val);
-                      setPreview(p => ({ ...p, merk: val }));
-                    }}
-                  >
-                    <FormControl>
-                      <SelectTrigger><SelectValue placeholder="Selecteer merk" /></SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {merken.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <FormControl>
+                    <Input
+                      placeholder="Bv. Volkswagen, BMW, Toyota..."
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        setPreview(p => ({ ...p, merk: e.target.value }));
+                      }}
+                      maxLength={50}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
