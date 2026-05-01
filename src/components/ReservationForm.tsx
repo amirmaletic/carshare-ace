@@ -17,18 +17,30 @@ interface ReservationFormProps {
   onOpenChange: (open: boolean) => void;
   prefilledVehicleId?: string;
   prefilledKlantId?: string;
+  prefilledStartDatum?: string;
+  prefilledEindDatum?: string;
 }
 
-export function ReservationForm({ open, onOpenChange, prefilledVehicleId, prefilledKlantId }: ReservationFormProps) {
+export function ReservationForm({ open, onOpenChange, prefilledVehicleId, prefilledKlantId, prefilledStartDatum, prefilledEindDatum }: ReservationFormProps) {
   const qc = useQueryClient();
   const { data: klanten = [] } = useKlanten();
   const { voertuigen } = useVoertuigen();
 
   const [klantId, setKlantId] = useState<string>(prefilledKlantId ?? "");
   const [voertuigId, setVoertuigId] = useState<string>(prefilledVehicleId ?? "");
-  const [startDatum, setStartDatum] = useState<string>("");
-  const [eindDatum, setEindDatum] = useState<string>("");
+  const [startDatum, setStartDatum] = useState<string>(prefilledStartDatum ?? "");
+  const [eindDatum, setEindDatum] = useState<string>(prefilledEindDatum ?? "");
   const [notities, setNotities] = useState<string>("");
+
+  // Sync wanneer dialog opnieuw geopend wordt met andere prefill
+  useMemo(() => {
+    if (open) {
+      if (prefilledStartDatum) setStartDatum(prefilledStartDatum);
+      if (prefilledEindDatum) setEindDatum(prefilledEindDatum);
+      if (prefilledVehicleId) setVoertuigId(prefilledVehicleId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, prefilledStartDatum, prefilledEindDatum, prefilledVehicleId]);
 
   const selectedVoertuig = useMemo(
     () => voertuigen.find((v) => v.id === voertuigId),
@@ -72,8 +84,8 @@ export function ReservationForm({ open, onOpenChange, prefilledVehicleId, prefil
       onOpenChange(false);
       setKlantId(prefilledKlantId ?? "");
       setVoertuigId(prefilledVehicleId ?? "");
-      setStartDatum("");
-      setEindDatum("");
+      setStartDatum(prefilledStartDatum ?? "");
+      setEindDatum(prefilledEindDatum ?? "");
       setNotities("");
     },
     onError: (e: any) => toast.error(e?.message ?? "Aanmaken mislukt"),
