@@ -135,7 +135,7 @@ export function usePermissions() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
 
-  const { data: userRoles = [] } = useQuery({
+  const { data: userRoles = [], isLoading: rolesLoading } = useQuery({
     queryKey: ["user_roles", user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -148,7 +148,7 @@ export function usePermissions() {
     enabled: !!user,
   });
 
-  const { data: permissions = [], isLoading } = useQuery({
+  const { data: permissions = [], isLoading: permsLoading } = useQuery({
     queryKey: ["role_permissions"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -162,14 +162,20 @@ export function usePermissions() {
     enabled: !!user,
   });
 
+  const isLoading = rolesLoading || permsLoading;
   const effectiveRoles: AppRole[] = userRoles.length > 0
-    ? userRoles.map(r => r.role)
-    : ["beheerder"];
+    ? (userRoles.map(r => r.role).filter(r =>
+        r === "beheerder" || r === "leidinggevende" || r === "medewerker" || r === "chauffeur" || r === "klant"
+      ) as AppRole[])
+    : [];
 
   const isAdmin = effectiveRoles.includes("beheerder");
 
   const hasAccess = (module: string): boolean => {
+    // While loading, optimistically allow to avoid flash of "no access"
+    if (isLoading) return true;
     if (effectiveRoles.includes("beheerder")) return true;
+    if (effectiveRoles.length === 0) return false;
     return effectiveRoles.some(role => {
       const perm = permissions.find(p => p.role === role && p.module === module);
       return perm ? perm.allowed : false;
@@ -178,7 +184,9 @@ export function usePermissions() {
 
   // Check a specific function permission (e.g. "voertuigen.toevoegen")
   const hasFunctionAccess = (funcKey: string): boolean => {
+    if (isLoading) return true;
     if (effectiveRoles.includes("beheerder")) return true;
+    if (effectiveRoles.length === 0) return false;
     // First check module-level access
     const moduleKey = funcKey.split(".")[0];
     if (!hasAccess(moduleKey)) return false;
@@ -199,9 +207,10 @@ export function usePermissions() {
           .eq("id", existing.id);
         if (error) throw error;
       } else {
+        // organisatie_id is auto-set by database trigger based on auth.uid()
         const { error } = await supabase
           .from("role_permissions")
-          .insert({ role: role as any, module, allowed });
+          .insert({ role: role as any, module, allowed } as any);
         if (error) throw error;
       }
     },

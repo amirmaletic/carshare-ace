@@ -13,6 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useBedrijfsgegevens, type Bedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 import { useOrganisatieVoorkeuren, type Voorkeuren } from "@/hooks/useOrganisatieVoorkeuren";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useModuleModus, WAGENPARK_HIDDEN_SETTINGS_TABS } from "@/hooks/useModuleModus";
 import AutorisatieTab from "@/components/settings/AutorisatieTab";
 import LocatiesTab from "@/components/settings/LocatiesTab";
 import TeamTab from "@/components/settings/TeamTab";
@@ -42,8 +43,25 @@ export default function SettingsPage() {
   const isMobile = useIsMobile();
   const { userRoles } = usePermissions();
   const isBeheerder = userRoles.includes("beheerder");
+  const { data: modus } = useModuleModus();
+  const isWagenpark = modus === "wagenpark";
+
+  // Tabs filteren op modus + rol (alleen beheerders zien autorisatie/api/team)
+  const visibleTabs = tabs.filter((t) => {
+    if (isWagenpark && WAGENPARK_HIDDEN_SETTINGS_TABS.has(t.value)) return false;
+    if (!isBeheerder && (t.value === "autorisatie" || t.value === "api" || t.value === "team")) return false;
+    return true;
+  });
 
   const [activeTab, setActiveTab] = useState("bedrijf");
+
+  // Als de actieve tab niet meer in de zichtbare lijst zit (bv. door modus-wissel),
+  // val terug op de eerste beschikbare tab.
+  useEffect(() => {
+    if (!visibleTabs.find((t) => t.value === activeTab)) {
+      setActiveTab(visibleTabs[0]?.value ?? "bedrijf");
+    }
+  }, [visibleTabs, activeTab]);
 
   const { data: bedrijfsData, save: saveBedrijf } = useBedrijfsgegevens();
   const { data: voorkeurenData, save: saveVoorkeuren } = useOrganisatieVoorkeuren();
@@ -91,7 +109,7 @@ export default function SettingsPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {tabs.map((t) => (
+              {visibleTabs.map((t) => (
                 <SelectItem key={t.value} value={t.value}>
                   <div className="flex items-center gap-2">
                     <t.icon className="w-4 h-4" />
@@ -107,11 +125,11 @@ export default function SettingsPage() {
         <div className="grid grid-cols-[260px_1fr] gap-8 items-start">
           {/* Side navigation */}
           <aside className="sticky top-6 space-y-6">
-            {Array.from(new Set(tabs.map((t) => t.group))).map((group) => (
+            {Array.from(new Set(visibleTabs.map((t) => t.group))).map((group) => (
               <div key={group} className="space-y-1">
                 <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{group}</p>
                 <nav className="space-y-0.5">
-                  {tabs.filter((t) => t.group === group).map((t) => {
+                  {visibleTabs.filter((t) => t.group === group).map((t) => {
                     const isActive = activeTab === t.value;
                     return (
                       <button
@@ -137,7 +155,7 @@ export default function SettingsPage() {
           {/* Content panel */}
           <div className="min-w-0 space-y-5 max-w-3xl">
             {(() => {
-              const current = tabs.find((t) => t.value === activeTab);
+              const current = visibleTabs.find((t) => t.value === activeTab);
               if (!current) return null;
               const Icon = current.icon;
               return (
