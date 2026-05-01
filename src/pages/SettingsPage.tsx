@@ -176,11 +176,11 @@ export default function SettingsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="kvk">KVK-nummer</Label>
-                  <Input id="kvk" value={bedrijf.kvkNummer} onChange={(e) => setBedrijf({ ...bedrijf, kvkNummer: e.target.value })} placeholder="12345678" />
+                  <Input id="kvk" value={bedrijf.kvk_nummer} onChange={(e) => setBedrijf({ ...bedrijf, kvk_nummer: e.target.value })} placeholder="12345678" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="btw">BTW-nummer</Label>
-                  <Input id="btw" value={bedrijf.btwNummer} onChange={(e) => setBedrijf({ ...bedrijf, btwNummer: e.target.value })} placeholder="NL123456789B01" />
+                  <Input id="btw" value={bedrijf.btw_nummer} onChange={(e) => setBedrijf({ ...bedrijf, btw_nummer: e.target.value })} placeholder="NL123456789B01" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="telefoon">Telefoon</Label>
@@ -207,8 +207,8 @@ export default function SettingsPage() {
                 </div>
               </div>
               <div className="flex justify-end pt-2">
-                <Button onClick={handleSaveBedrijf} className="gap-2">
-                  <Save className="w-4 h-4" /> Opslaan
+                <Button onClick={handleSaveBedrijf} disabled={!isBeheerder || saveBedrijf.isPending} className="gap-2">
+                  <Save className="w-4 h-4" /> {saveBedrijf.isPending ? "Opslaan..." : "Opslaan"}
                 </Button>
               </div>
             </CardContent>
@@ -224,12 +224,12 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-5">
               {[
-                { key: "apkHerinnering", label: "APK-herinnering", desc: "Ontvang een melding voordat de APK verloopt", select: { key: "apkDagenVooraf" as const, options: ["14", "30", "60"], suffix: "dagen" } },
-                { key: "verzekeringHerinnering", label: "Verzekering-herinnering", desc: "Melding bij verlopen verzekering" },
-                { key: "onderhoudHerinnering", label: "Onderhouds-herinnering", desc: "Melding bij gepland onderhoud" },
-                { key: "contractVerloop", label: "Contract-verloop", desc: "Herinnering voordat een contract verloopt", select: { key: "contractDagenVooraf" as const, options: ["30", "60", "90"], suffix: "dagen" } },
-                { key: "factuurHerinnering", label: "Factuur-herinnering", desc: "Melding bij openstaande facturen" },
-                { key: "kmOverschrijding", label: "Kilometer-overschrijding", desc: "Waarschuwing wanneer km-limiet bijna bereikt is" },
+                { key: "apk_herinnering", label: "APK-herinnering", desc: "Ontvang een melding voordat de APK verloopt", select: { key: "apk_dagen_vooraf" as const, options: ["14", "30", "60"], suffix: "dagen" } },
+                { key: "verzekering_herinnering", label: "Verzekering-herinnering", desc: "Melding bij verlopen verzekering" },
+                { key: "onderhoud_herinnering", label: "Onderhouds-herinnering", desc: "Melding bij gepland onderhoud" },
+                { key: "contract_verloop", label: "Contract-verloop", desc: "Herinnering voordat een contract verloopt", select: { key: "contract_dagen_vooraf" as const, options: ["30", "60", "90"], suffix: "dagen" } },
+                { key: "factuur_herinnering", label: "Factuur-herinnering", desc: "Melding bij openstaande facturen" },
+                { key: "km_overschrijding", label: "Kilometer-overschrijding", desc: "Waarschuwing wanneer km-limiet bijna bereikt is" },
               ].map((item, idx) => (
                 <div key={item.key}>
                   {idx > 0 && <Separator className="mb-5" />}
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
                       {item.select && (
-                        <Select value={notificaties[item.select.key]} onValueChange={(v) => setNotificaties({ ...notificaties, [item.select!.key]: v })}>
+                        <Select value={String(voorkeuren[item.select.key])} onValueChange={(v) => setVoorkeuren({ ...voorkeuren, [item.select!.key]: Number(v) })}>
                           <SelectTrigger className="w-20 h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
@@ -252,16 +252,17 @@ export default function SettingsPage() {
                         </Select>
                       )}
                       <Switch
-                        checked={notificaties[item.key as keyof NotificatieInstellingen] as boolean}
-                        onCheckedChange={(v) => setNotificaties({ ...notificaties, [item.key]: v })}
+                        checked={voorkeuren[item.key as keyof Voorkeuren] as boolean}
+                        onCheckedChange={(v) => setVoorkeuren({ ...voorkeuren, [item.key]: v })}
+                        disabled={!isBeheerder}
                       />
                     </div>
                   </div>
                 </div>
               ))}
               <div className="flex justify-end pt-2">
-                <Button onClick={handleSaveNotificaties} className="gap-2">
-                  <Save className="w-4 h-4" /> Opslaan
+                <Button onClick={() => handleSaveVoorkeuren("Notificatie-instellingen")} disabled={!isBeheerder || saveVoorkeuren.isPending} className="gap-2">
+                  <Save className="w-4 h-4" /> {saveVoorkeuren.isPending ? "Opslaan..." : "Opslaan"}
                 </Button>
               </div>
             </CardContent>
@@ -299,15 +300,15 @@ export default function SettingsPage() {
             <CardContent className="space-y-4">
               <div className="grid gap-4 sm:grid-cols-2">
                 {[
-                  { label: "Standaard BTW-tarief", value: algemeen.standaardBtw, key: "standaardBtw", options: [{ v: "0", l: "0%" }, { v: "9", l: "9%" }, { v: "21", l: "21%" }] },
-                  { label: "Valuta", value: algemeen.valuta, key: "valuta", options: [{ v: "EUR", l: "Euro (€)" }, { v: "USD", l: "Dollar ($)" }, { v: "GBP", l: "Pond (£)" }] },
-                  { label: "Datumformaat", value: algemeen.datumFormaat, key: "datumFormaat", options: [{ v: "dd-mm-yyyy", l: "DD-MM-YYYY" }, { v: "yyyy-mm-dd", l: "YYYY-MM-DD" }, { v: "mm-dd-yyyy", l: "MM-DD-YYYY" }] },
-                  { label: "KM-registratie interval", value: algemeen.kmRegistratieInterval, key: "kmRegistratieInterval", options: [{ v: "wekelijks", l: "Wekelijks" }, { v: "maandelijks", l: "Maandelijks" }, { v: "per_kwartaal", l: "Per kwartaal" }] },
-                  { label: "Standaard contractduur", value: algemeen.standaardContractDuur, key: "standaardContractDuur", options: [{ v: "6", l: "6 maanden" }, { v: "12", l: "12 maanden" }, { v: "24", l: "24 maanden" }, { v: "36", l: "36 maanden" }, { v: "48", l: "48 maanden" }] },
+                  { label: "Standaard BTW-tarief", value: voorkeuren.standaard_btw, key: "standaard_btw", options: [{ v: "0", l: "0%" }, { v: "9", l: "9%" }, { v: "21", l: "21%" }] },
+                  { label: "Valuta", value: voorkeuren.valuta, key: "valuta", options: [{ v: "EUR", l: "Euro (€)" }, { v: "USD", l: "Dollar ($)" }, { v: "GBP", l: "Pond (£)" }] },
+                  { label: "Datumformaat", value: voorkeuren.datum_formaat, key: "datum_formaat", options: [{ v: "dd-mm-yyyy", l: "DD-MM-YYYY" }, { v: "yyyy-mm-dd", l: "YYYY-MM-DD" }, { v: "mm-dd-yyyy", l: "MM-DD-YYYY" }] },
+                  { label: "KM-registratie interval", value: voorkeuren.km_registratie_interval, key: "km_registratie_interval", options: [{ v: "wekelijks", l: "Wekelijks" }, { v: "maandelijks", l: "Maandelijks" }, { v: "per_kwartaal", l: "Per kwartaal" }] },
+                  { label: "Standaard contractduur", value: voorkeuren.standaard_contract_duur, key: "standaard_contract_duur", options: [{ v: "6", l: "6 maanden" }, { v: "12", l: "12 maanden" }, { v: "24", l: "24 maanden" }, { v: "36", l: "36 maanden" }, { v: "48", l: "48 maanden" }] },
                 ].map((field) => (
                   <div key={field.key} className="space-y-2">
                     <Label>{field.label}</Label>
-                    <Select value={field.value} onValueChange={(v) => setAlgemeen({ ...algemeen, [field.key]: v })}>
+                    <Select value={field.value} onValueChange={(v) => setVoorkeuren({ ...voorkeuren, [field.key]: v })} disabled={!isBeheerder}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         {field.options.map((o) => (
@@ -319,8 +320,8 @@ export default function SettingsPage() {
                 ))}
               </div>
               <div className="flex justify-end pt-2">
-                <Button onClick={handleSaveAlgemeen} className="gap-2">
-                  <Save className="w-4 h-4" /> Opslaan
+                <Button onClick={() => handleSaveVoorkeuren("Algemene instellingen")} disabled={!isBeheerder || saveVoorkeuren.isPending} className="gap-2">
+                  <Save className="w-4 h-4" /> {saveVoorkeuren.isPending ? "Opslaan..." : "Opslaan"}
                 </Button>
               </div>
             </CardContent>
