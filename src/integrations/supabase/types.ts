@@ -33,7 +33,7 @@ export type Database = {
           organisatie_id: string | null
           status: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           ai_motivatie?: string | null
@@ -53,7 +53,7 @@ export type Database = {
           organisatie_id?: string | null
           status?: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           ai_motivatie?: string | null
@@ -73,7 +73,7 @@ export type Database = {
           organisatie_id?: string | null
           status?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -1648,6 +1648,21 @@ export type Database = {
           _trial_ends_at?: string
         }
         Returns: undefined
+      }
+      create_gast_aanvraag: {
+        Args: {
+          _eind_datum?: string
+          _gewenste_brandstof?: string
+          _gewenste_categorie?: string
+          _klant_email: string
+          _klant_naam: string
+          _klant_telefoon?: string
+          _notitie?: string
+          _organisatie_id: string
+          _start_datum?: string
+          _voertuig_id?: string
+        }
+        Returns: string
       }
       delete_email: {
         Args: { message_id: number; queue_name: string }
