@@ -1528,6 +1528,7 @@ export type Database = {
           created_at: string
           id: string
           module: string
+          organisatie_id: string
           role: Database["public"]["Enums"]["app_role"]
           updated_at: string
         }
@@ -1536,6 +1537,7 @@ export type Database = {
           created_at?: string
           id?: string
           module: string
+          organisatie_id: string
           role: Database["public"]["Enums"]["app_role"]
           updated_at?: string
         }
@@ -1544,6 +1546,7 @@ export type Database = {
           created_at?: string
           id?: string
           module?: string
+          organisatie_id?: string
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
         }
