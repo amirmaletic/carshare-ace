@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { KlantLayout } from "@/components/KlantLayout";
 import { MarketingLayout } from "@/components/MarketingLayout";
+import { TenantPortaalLayout } from "@/components/TenantPortaalLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -39,6 +40,8 @@ const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminPlatform = lazy(() => import("./pages/AdminPlatform"));
+const TenantAanbod = lazy(() => import("./pages/tenant/TenantAanbod"));
+const TenantInloggen = lazy(() => import("./pages/tenant/TenantInloggen"));
 
 function PageLoader() {
   return (
@@ -154,6 +157,14 @@ const App = () => (
           <Route path="/portaal/reserveren" element={<KlantProtectedRoute><KlantLayout><ReserveerVoertuig /></KlantLayout></KlantProtectedRoute>} />
           <Route path="/portaal/facturen" element={<KlantProtectedRoute><KlantLayout><MijnFacturen /></KlantLayout></KlantProtectedRoute>} />
           <Route path="/portaal/profiel" element={<KlantProtectedRoute><KlantLayout><MijnProfiel /></KlantLayout></KlantProtectedRoute>} />
+
+          {/* White-label tenant portal (per organisatie) */}
+          <Route path="/t/:slug" element={<TenantPortaalLayout><TenantAanbod /></TenantPortaalLayout>} />
+          <Route path="/t/:slug/inloggen" element={<TenantInloggen />} />
+          <Route path="/t/:slug/reserveringen" element={<KlantProtectedRoute><TenantPortaalLayout><MijnReserveringen /></TenantPortaalLayout></KlantProtectedRoute>} />
+          <Route path="/t/:slug/reserveren" element={<KlantProtectedRoute><TenantPortaalLayout><ReserveerVoertuig /></TenantPortaalLayout></KlantProtectedRoute>} />
+          <Route path="/t/:slug/facturen" element={<KlantProtectedRoute><TenantPortaalLayout><MijnFacturen /></TenantPortaalLayout></KlantProtectedRoute>} />
+          <Route path="/t/:slug/profiel" element={<KlantProtectedRoute><TenantPortaalLayout><MijnProfiel /></TenantPortaalLayout></KlantProtectedRoute>} />
 
           {/* FleeFlo super-admin */}
           <Route path="/admin" element={<AdminPlatform />} />
