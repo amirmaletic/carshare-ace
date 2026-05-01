@@ -116,9 +116,14 @@ Deno.serve(async (req) => {
       day: 'numeric', month: 'long', year: 'numeric'
     })
 
-    // Roep send-transactional-email aan
-    const { error: sendErr } = await supabase.functions.invoke('send-transactional-email', {
-      body: {
+    // Roep send-transactional-email aan via directe HTTP fetch (invoke heeft geen auth context binnen edge functions)
+    const sendRes = await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/send-transactional-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
+      },
+      body: JSON.stringify({
         templateName: 'rijbewijs-verzoek',
         recipientEmail: klant.email,
         templateData: {
@@ -128,12 +133,12 @@ Deno.serve(async (req) => {
           vervaltOp,
           isHerinnering: !!is_herinnering,
         },
-      },
+      }),
     })
-
-    if (sendErr) {
-      console.error('Email send error', sendErr)
-      return json({ error: 'E-mail versturen mislukt' }, 500)
+    const sendBody = await sendRes.text()
+    if (!sendRes.ok) {
+      console.error('Email send error', sendRes.status, sendBody)
+      return json({ error: `E-mail versturen mislukt: ${sendBody}` }, 500)
     }
 
     // Update tijdstempel
