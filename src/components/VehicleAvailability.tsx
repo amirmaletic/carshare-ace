@@ -1,12 +1,20 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays, startOfWeek, differenceInDays, addWeeks, isWithinInterval, isAfter } from "date-fns";
 import { nl } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, CheckCircle2, Clock, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Clock, Plus, CalendarRange, FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ReservationForm } from "@/components/ReservationForm";
+import { ContractForm } from "@/components/ContractForm";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 
 const CELL_WIDTH = 28;
 const ROW_HEIGHT = 36;
@@ -28,6 +36,15 @@ interface VehicleAvailabilityProps {
 export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
   const [weekOffset, setWeekOffset] = useState(0);
   const [formOpen, setFormOpen] = useState(false);
+  const [contractOpen, setContractOpen] = useState(false);
+  const [prefillStart, setPrefillStart] = useState<string | undefined>(undefined);
+  const [prefillEnd, setPrefillEnd] = useState<string | undefined>(undefined);
+
+  // Drag selectie
+  const [dragStart, setDragStart] = useState<number | null>(null);
+  const [dragEnd, setDragEnd] = useState<number | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const rowRef = useRef<HTMLDivElement | null>(null);
 
   const startDate = useMemo(
     () => startOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 }),
@@ -114,6 +131,44 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
 
   const endDate = days[days.length - 1];
 
+  const selStart = dragStart !== null && dragEnd !== null ? Math.min(dragStart, dragEnd) : null;
+  const selEnd = dragStart !== null && dragEnd !== null ? Math.max(dragStart, dragEnd) : null;
+  const hasSelection = selStart !== null && selEnd !== null;
+
+  const selectionStartDate = hasSelection ? days[selStart!] : null;
+  const selectionEndDate = hasSelection ? days[selEnd!] : null;
+  const selectionDays = hasSelection ? selEnd! - selStart! + 1 : 0;
+
+  const formatIso = (d: Date) => format(d, "yyyy-MM-dd");
+
+  const openReservation = () => {
+    if (!selectionStartDate || !selectionEndDate) return;
+    setPrefillStart(formatIso(selectionStartDate));
+    setPrefillEnd(formatIso(selectionEndDate));
+    setFormOpen(true);
+  };
+
+  const openContract = () => {
+    if (!selectionStartDate || !selectionEndDate) return;
+    setPrefillStart(formatIso(selectionStartDate));
+    setPrefillEnd(formatIso(selectionEndDate));
+    setContractOpen(true);
+  };
+
+  const clearSelection = () => {
+    setDragStart(null);
+    setDragEnd(null);
+  };
+
+  const dayIndexFromEvent = (e: React.MouseEvent | React.PointerEvent) => {
+    const el = rowRef.current;
+    if (!el) return null;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const idx = Math.floor(x / CELL_WIDTH);
+    return Math.max(0, Math.min(DAYS_VISIBLE - 1, idx));
+  };
+
   return (
     <div className="space-y-4">
       <div
@@ -137,6 +192,27 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
           <Plus className="w-3.5 h-3.5" /> Reserveren
         </Button>
       </div>
+
+      {hasSelection && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 flex items-center gap-2 flex-wrap">
+          <CalendarRange className="w-4 h-4 text-primary" />
+          <span className="text-xs font-medium text-foreground">
+            {format(selectionStartDate!, "d MMM", { locale: nl })} tot {format(selectionEndDate!, "d MMM yyyy", { locale: nl })}
+            <span className="text-muted-foreground ml-1">({selectionDays} dagen)</span>
+          </span>
+          <div className="ml-auto flex gap-1.5">
+            <Button size="sm" variant="outline" className="h-7 text-xs gap-1" onClick={openReservation}>
+              <CalendarRange className="w-3 h-3" /> Reservering
+            </Button>
+            <Button size="sm" className="h-7 text-xs gap-1" onClick={openContract}>
+              <FileText className="w-3 h-3" /> Contract
+            </Button>
+            <Button size="sm" variant="ghost" className="h-7 w-7 p-0" onClick={clearSelection}>
+              <X className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="border border-border rounded-lg overflow-hidden">
         <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
@@ -176,7 +252,38 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
               })}
             </div>
 
-            <div className="relative" style={{ height: ROW_HEIGHT }}>
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <div
+                  ref={rowRef}
+                  className="relative select-none cursor-crosshair"
+                  style={{ height: ROW_HEIGHT }}
+                  onPointerDown={(e) => {
+                    if (e.button !== 0) return;
+                    const idx = dayIndexFromEvent(e);
+                    if (idx === null) return;
+                    setDragStart(idx);
+                    setDragEnd(idx);
+                    setIsDragging(true);
+                    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+                  }}
+                  onPointerMove={(e) => {
+                    if (!isDragging) return;
+                    const idx = dayIndexFromEvent(e);
+                    if (idx === null) return;
+                    setDragEnd(idx);
+                  }}
+                  onPointerUp={() => setIsDragging(false)}
+                  onContextMenu={(e) => {
+                    if (!hasSelection) {
+                      const idx = dayIndexFromEvent(e);
+                      if (idx !== null) {
+                        setDragStart(idx);
+                        setDragEnd(idx);
+                      }
+                    }
+                  }}
+                >
               <div className="absolute inset-0 flex">
                 {days.map((d, i) => {
                   const isWeekend = d.getDay() === 0 || d.getDay() === 6;
@@ -194,6 +301,15 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
                   );
                 })}
               </div>
+              {hasSelection && (
+                <div
+                  className="absolute top-0 bottom-0 bg-primary/15 border-x-2 border-primary pointer-events-none z-[1]"
+                  style={{
+                    left: selStart! * CELL_WIDTH,
+                    width: (selEnd! - selStart! + 1) * CELL_WIDTH,
+                  }}
+                />
+              )}
               {blocks.map((block) => {
                 const blockStart = differenceInDays(block.start, startDate);
                 const blockEnd = differenceInDays(block.end, startDate);
@@ -232,7 +348,32 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
                   />
                 );
               })()}
-            </div>
+                </div>
+              </ContextMenuTrigger>
+              <ContextMenuContent className="w-56">
+                {hasSelection ? (
+                  <>
+                    <div className="px-2 py-1.5 text-[11px] text-muted-foreground">
+                      {format(selectionStartDate!, "d MMM", { locale: nl })} tot {format(selectionEndDate!, "d MMM", { locale: nl })}
+                      <span className="ml-1">({selectionDays}d)</span>
+                    </div>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem onSelect={openReservation} className="gap-2">
+                      <CalendarRange className="w-4 h-4" /> Reservering aanmaken
+                    </ContextMenuItem>
+                    <ContextMenuItem onSelect={openContract} className="gap-2">
+                      <FileText className="w-4 h-4" /> Contract aanmaken
+                    </ContextMenuItem>
+                    <ContextMenuSeparator />
+                    <ContextMenuItem onSelect={clearSelection} className="gap-2 text-muted-foreground">
+                      <X className="w-4 h-4" /> Selectie wissen
+                    </ContextMenuItem>
+                  </>
+                ) : (
+                  <ContextMenuItem disabled>Sleep eerst over een periode</ContextMenuItem>
+                )}
+              </ContextMenuContent>
+            </ContextMenu>
           </div>
         </div>
 
@@ -240,10 +381,24 @@ export function VehicleAvailability({ voertuigId }: VehicleAvailabilityProps) {
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-primary/70" />Contract</span>
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-warning/70" />Concept</span>
           <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded bg-info/70" />Reservering</span>
+          <span className="ml-auto text-muted-foreground/80 italic">Sleep om periode te kiezen · rechtsklik voor opties</span>
         </div>
       </div>
 
-      <ReservationForm open={formOpen} onOpenChange={setFormOpen} prefilledVehicleId={voertuigId} />
+      <ReservationForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        prefilledVehicleId={voertuigId}
+        prefilledStartDatum={prefillStart}
+        prefilledEindDatum={prefillEnd}
+      />
+      <ContractForm
+        open={contractOpen}
+        onOpenChange={setContractOpen}
+        prefilledVehicleId={voertuigId}
+        prefilledStartDatum={prefillStart}
+        prefilledEindDatum={prefillEnd}
+      />
     </div>
   );
 }
