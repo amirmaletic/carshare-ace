@@ -128,7 +128,7 @@ interface VehicleImportProps {
 }
 
 export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
-  const { addVoertuig } = useVoertuigen();
+  const { addVoertuig, voertuigen } = useVoertuigen();
   const fileRef = useRef<HTMLInputElement>(null);
   const [parsed, setParsed] = useState<ParsedResult | null>(null);
   const [importing, setImporting] = useState(false);
@@ -137,6 +137,8 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
   const [kentekenInput, setKentekenInput] = useState("");
   const [lookingUp, setLookingUp] = useState(false);
   const [lookupProgress, setLookupProgress] = useState({ done: 0, total: 0 });
+  const [importProgress, setImportProgress] = useState({ done: 0, total: 0 });
+  const [importErrors, setImportErrors] = useState<{ kenteken: string; message: string }[]>([]);
 
   const handleKentekenLookup = async () => {
     const lines = kentekenInput
@@ -188,14 +190,28 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
   const handleImport = async () => {
     if (!parsed || parsed.valid.length === 0) return;
     setImporting(true);
+    setImportErrors([]);
+    setImportProgress({ done: 0, total: parsed.valid.length });
 
     let success = 0;
-    let failed = 0;
+    const failures: { kenteken: string; message: string }[] = [];
+    const existingKentekens = new Set(
+      (voertuigen ?? []).map((v) => (v.kenteken || "").toUpperCase().replace(/[^A-Z0-9]/g, ""))
+    );
 
-    for (const row of parsed.valid) {
+    for (let i = 0; i < parsed.valid.length; i++) {
+      const row = parsed.valid[i];
+      const cleanKenteken = (row.kenteken || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+
+      if (existingKentekens.has(cleanKenteken)) {
+        failures.push({ kenteken: row.kenteken, message: "Bestaat al in je vloot" });
+        setImportProgress({ done: i + 1, total: parsed.valid.length });
+        continue;
+      }
+
       try {
         await addVoertuig.mutateAsync({
-          kenteken: row.kenteken,
+          kenteken: cleanKenteken,
           merk: row.merk,
           model: row.model,
           bouwjaar: row.bouwjaar,
@@ -209,17 +225,28 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
           verzekering_vervaldatum: null,
           locatie: row.locatie || null,
         });
+        existingKentekens.add(cleanKenteken);
         success++;
-      } catch {
-        failed++;
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : "Onbekende fout";
+        failures.push({ kenteken: row.kenteken, message: msg });
       }
+      setImportProgress({ done: i + 1, total: parsed.valid.length });
     }
 
     setImporting(false);
-    toast.success(`${success} voertuig${success !== 1 ? "en" : ""} geïmporteerd${failed > 0 ? `, ${failed} mislukt` : ""}`);
-    setParsed(null);
-    setFileName("");
-    onOpenChange(false);
+    setImportErrors(failures);
+    if (success > 0) {
+      toast.success(`${success} voertuig${success !== 1 ? "en" : ""} geïmporteerd${failures.length > 0 ? `, ${failures.length} mislukt` : ""}`);
+    } else if (failures.length > 0) {
+      toast.error(`Import mislukt: ${failures[0].message}`);
+    }
+    if (failures.length === 0) {
+      setParsed(null);
+      setFileName("");
+      setKentekenInput("");
+      onOpenChange(false);
+    }
   };
 
   const handleClose = () => {
@@ -227,6 +254,8 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
     setFileName("");
     setKentekenInput("");
     setLookupProgress({ done: 0, total: 0 });
+    setImportProgress({ done: 0, total: 0 });
+    setImportErrors([]);
     onOpenChange(false);
   };
 
