@@ -192,22 +192,26 @@ export default function PortaalTab() {
         </CardContent>
       </Card>
 
-      {form.slug && (
-        <>
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Jouw portaal-URL</CardTitle>
-              <CardDescription>Deel deze link met je klanten.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <UrlRow label="Direct beschikbaar" url={previewUrl!} />
-              <UrlRow label="Via subdomein (zodra DNS actief is)" url={subdomeinUrl!} hint="Vereist wildcard DNS *.fleeflo.nl" />
-            </CardContent>
-          </Card>
-
-          <CustomDomeinenSectie organisatieId={org.id} />
-        </>
+      {form.slug ? (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Jouw portaal-URL</CardTitle>
+            <CardDescription>Deel deze link met je klanten.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <UrlRow label="Direct beschikbaar" url={previewUrl!} />
+            <UrlRow label="Via subdomein (zodra DNS actief is)" url={subdomeinUrl!} hint="Vereist wildcard DNS *.fleeflo.nl" />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-dashed">
+          <CardContent className="p-6 text-center text-sm text-muted-foreground">
+            Stel hierboven een <span className="font-medium text-foreground">slug</span> in en klik op <span className="font-medium text-foreground">Opslaan</span> om je portaal-URL en domein-instellingen te activeren.
+          </CardContent>
+        </Card>
       )}
+
+      <CustomDomeinenSectie organisatieId={org.id} />
     </div>
   );
 }
