@@ -16,7 +16,6 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 
-const CELL_WIDTH = 28;
 const ROW_HEIGHT = 36;
 const DAYS_VISIBLE = 28;
 
