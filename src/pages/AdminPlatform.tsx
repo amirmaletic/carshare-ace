@@ -7,6 +7,7 @@ import {
   useAdminOrganisatieDetail,
   useUpdateOrganisatie,
   useGrantPlatformAdmin,
+  useDeleteOrganisatie,
   type AdminOrgRow,
 } from "@/hooks/usePlatformAdmin";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,7 +25,7 @@ import { format, formatDistanceToNow, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import {
   Search, Building2, Users, Car, FileText, Activity, Calendar, Shield,
-  AlertTriangle, CheckCircle2, XCircle, RefreshCw,
+  AlertTriangle, CheckCircle2, XCircle, RefreshCw, Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 
