@@ -576,6 +576,17 @@ export default function MarketingHome() {
               </article>
             ))}
           </div>
+          <div className="mt-12 max-w-5xl mx-auto">
+            <img
+              src={productTerugmelden}
+              alt="Terugmelden scherm in FleeFlo met kentekenzoek, statistieken en recent teruggekomen voertuigen"
+              className="w-full rounded-xl border border-border shadow-xl"
+              loading="lazy"
+              decoding="async"
+              width={1536}
+              height={864}
+            />
+          </div>
         </div>
       </section>
 
