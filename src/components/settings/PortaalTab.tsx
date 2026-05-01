@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Globe, Upload, Copy, ExternalLink, Check } from "lucide-react";
+import CustomDomeinenSectie from "./CustomDomeinenSectie";
 
 export default function PortaalTab() {
   const { user } = useAuth();
@@ -192,16 +193,20 @@ export default function PortaalTab() {
       </Card>
 
       {form.slug && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Jouw portaal-URL</CardTitle>
-            <CardDescription>Deel deze link met je klanten.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <UrlRow label="Direct beschikbaar" url={previewUrl!} />
-            <UrlRow label="Via subdomein (zodra DNS actief is)" url={subdomeinUrl!} hint="Vereist wildcard DNS *.fleeflo.nl" />
-          </CardContent>
-        </Card>
+        <>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Jouw portaal-URL</CardTitle>
+              <CardDescription>Deel deze link met je klanten.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <UrlRow label="Direct beschikbaar" url={previewUrl!} />
+              <UrlRow label="Via subdomein (zodra DNS actief is)" url={subdomeinUrl!} hint="Vereist wildcard DNS *.fleeflo.nl" />
+            </CardContent>
+          </Card>
+
+          <CustomDomeinenSectie organisatieId={org.id} />
+        </>
       )}
     </div>
   );
