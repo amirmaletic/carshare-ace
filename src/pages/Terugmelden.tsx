@@ -32,6 +32,7 @@ function formatKentekenInput(input: string): string {
 
 export default function Terugmelden() {
   const { user } = useAuth();
+  const { organisatieId } = useOrganisatie();
   const queryClient = useQueryClient();
   const { voertuigen: dbVoertuigen } = useVoertuigen();
 
