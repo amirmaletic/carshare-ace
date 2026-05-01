@@ -93,18 +93,21 @@ Deno.serve(async (req) => {
 
     // Email versturen via bestaande transactional email functie
     const verzoekUrl = `${origin}/betaal-verificatie/${verificatie.upload_token}`;
-    await supabase.functions.invoke("send-transactional-email", {
+    const { error: mailErr } = await supabase.functions.invoke("send-transactional-email", {
       body: {
-        to: contract.klant_email,
-        template: "borg-verificatie",
-        data: {
+        templateName: "borg-verificatie",
+        recipientEmail: contract.klant_email,
+        idempotencyKey: `borg-verificatie-${verificatie.id}`,
+        templateData: {
           klant_naam: contract.klant_naam,
           contract_nummer: contract.contract_nummer,
           checkout_url: session.url,
+          verzoek_url: verzoekUrl,
           bedrag: "0,01",
         },
       },
     });
+    if (mailErr) console.error("send-transactional-email error:", mailErr);
 
     return new Response(
       JSON.stringify({ success: true, checkout_url: session.url, verificatie_id: verificatie.id }),
