@@ -19,6 +19,7 @@ import { getStatusColor, type Vehicle } from "@/data/mockData";
 import { VehicleImage } from "@/components/VehicleImage";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
+import { Can } from "@/components/Can";
 
 const categories = ['Alle', 'Stadsauto', 'SUV', 'Bestelwagen', 'Luxe', 'Elektrisch'] as const;
 
@@ -81,14 +82,16 @@ export default function Vehicles() {
           </div>
           <div className="flex flex-col sm:flex-row gap-2">
             <KentekenSearch />
-            <Button variant="outline" className="gap-2 w-full sm:w-auto" onClick={() => setImportOpen(true)}>
-              <Upload className="w-4 h-4" />
-              Importeren
-            </Button>
-            <Button className="gap-2 w-full sm:w-auto" onClick={() => setFormOpen(true)}>
-              <Plus className="w-4 h-4" />
-              Voertuig toevoegen
-            </Button>
+            <Can fn="voertuigen.toevoegen">
+              <Button variant="outline" className="gap-2 w-full sm:w-auto" onClick={() => setImportOpen(true)}>
+                <Upload className="w-4 h-4" />
+                Importeren
+              </Button>
+              <Button className="gap-2 w-full sm:w-auto" onClick={() => setFormOpen(true)}>
+                <Plus className="w-4 h-4" />
+                Voertuig toevoegen
+              </Button>
+            </Can>
           </div>
         </div>
 
@@ -175,10 +178,12 @@ export default function Vehicles() {
                   : "Pas je zoekcriteria aan."}
               </p>
               {allVehicles.length === 0 && (
-                <Button onClick={() => setFormOpen(true)} className="gap-2">
-                  <Plus className="w-4 h-4" />
-                  Voertuig toevoegen
-                </Button>
+                <Can fn="voertuigen.toevoegen">
+                  <Button onClick={() => setFormOpen(true)} className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Voertuig toevoegen
+                  </Button>
+                </Can>
               )}
             </div>
           ) : (
