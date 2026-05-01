@@ -1509,10 +1509,12 @@ export type Database = {
           created_at: string
           eigenaar_email: string
           eigenaar_id: string
+          eigenaar_last_sign_in_at: string
           id: string
           is_active: boolean
           klant_count: number
           laatste_activiteit: string
+          laatste_inlog_org: string
           naam: string
           trial_ends_at: string
           user_count: number
