@@ -25,6 +25,9 @@ import {
   Star,
   Receipt,
   ClipboardCheck,
+  Briefcase,
+  Building2,
+  Fuel,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -167,6 +170,9 @@ const voorWie = [
   "Camper en caravanverhuur",
   "Fietslease en e bike verhuur",
   "Importeurs en occasionhandel met verhuurtak",
+  "Bedrijven met eigen wagenpark en lease auto's",
+  "Bouw, installatie en service met bestelbussen",
+  "Gemeenten en zorginstellingen met poolauto's",
 ];
 
 const testimonials = [
@@ -204,7 +210,7 @@ export default function MarketingHome() {
             url: "https://fleeflo.nl/",
             inLanguage: "nl-NL",
             description:
-              "Compleet wagenparkbeheer voor autoverhuur en leasebedrijven met RDW koppeling, digitale contracten, klantportaal, schade inspectie en AI copilot.",
+              "Compleet platform voor autoverhuur én eigen wagenparkbeheer met RDW koppeling, digitale contracten, planning, onderhoud, kostenbeheer, klantportaal en AI copilot.",
             featureList: [
               "RDW kenteken lookup",
               "Digitale lease en verhuur contracten",
@@ -279,11 +285,12 @@ export default function MarketingHome() {
             </div>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-[1.1]">
               Het complete platform voor{" "}
-              <span className="text-primary">autoverhuur en lease</span>
+              <span className="text-primary">autoverhuur en wagenparkbeheer</span>
             </h1>
             <p className="mt-4 sm:mt-6 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Van RDW kenteken tot digitale handtekening, van klantportaal tot AI copilot.
-              FleeFlo bundelt voertuigbeheer, contracten, planning, facturatie en schade inspectie in één Nederlands platform.
+              Eén platform voor verhuurbedrijven én voor bedrijven met een eigen wagenpark.
+              Van RDW kenteken tot digitale handtekening, van planning en onderhoud tot AI copilot.
+              Schakel met één klik tussen modus Autoverhuur en modus Wagenparkbeheer.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
               <Button size="lg" className="gap-2 text-base" asChild>
@@ -335,7 +342,7 @@ export default function MarketingHome() {
       <section className="border-y border-border bg-muted/20 py-10 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <p className="text-center text-xs uppercase tracking-widest text-muted-foreground font-semibold mb-5">
-            Gebouwd voor verhuur en leasebedrijven
+            Gebouwd voor verhuur, lease en eigen wagenparken
           </p>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-foreground/80">
             {voorWie.map((v) => (
@@ -344,6 +351,83 @@ export default function MarketingHome() {
               </span>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Twee modi */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 border-b border-border" id="modi">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
+              <Sparkles className="w-3.5 h-3.5" /> Twee modi · één platform
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+              Autoverhuur of wagenparkbeheer, jij kiest de modus
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              FleeFlo past zich aan jouw werkwijze aan. Verhuur je voertuigen aan klanten of beheer je
+              een eigen vloot voor medewerkers? In Instellingen kies je de modus en de interface verbergt
+              automatisch wat je niet nodig hebt.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-6">
+            <article className="p-8 rounded-2xl border-2 border-primary/30 bg-primary/5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 rounded-xl bg-primary/15">
+                  <Building2 className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">Modus Autoverhuur</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+                Voor verhuurbedrijven, leasemaatschappijen en alles met klanten. Inclusief contracten,
+                klantportaal, reserveringen, facturatie en publieke boekingspagina.
+              </p>
+              <ul className="space-y-2.5">
+                {[
+                  "Lease en verhuur contracten met digitale ondertekening",
+                  "Reserveringen en publiek boeken onder eigen domein",
+                  "Klantportaal met facturen en profiel",
+                  "Borg, betaalverificatie en Stripe betaallinks",
+                  "AI copilot koppelt aanvragen aan beschikbare auto's",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-foreground">
+                    <CheckCircle2 className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </article>
+            <article className="p-8 rounded-2xl border-2 border-amber-500/30 bg-amber-500/5">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 rounded-xl bg-amber-500/15">
+                  <Briefcase className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground">Modus Wagenparkbeheer</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+                Voor bedrijven met een eigen vloot van bedrijfsauto's, lease auto's of bestelbussen.
+                Strak gefocust op voertuigen, chauffeurs, onderhoud, kosten en rapportages, zonder
+                klantgerichte modules.
+              </p>
+              <ul className="space-y-2.5">
+                {[
+                  "Voertuigen, chauffeurs en rijbewijzen centraal",
+                  "Onderhoud, APK en verzekering met automatische waarschuwingen",
+                  "Kosten per voertuig, brandstof en totale TCO",
+                  "Ritregistratie voor zakelijk en privé",
+                  "Rapportages over bezetting, kosten en duurzaamheid",
+                ].map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-sm text-foreground">
+                    <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </article>
+          </div>
+          <p className="text-center mt-8 text-sm text-muted-foreground">
+            Beheerders schakelen op elk moment tussen modi via Instellingen · Bedrijf.
+          </p>
         </div>
       </section>
 
@@ -389,7 +473,8 @@ export default function MarketingHome() {
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               Geen losse tools meer. FleeFlo combineert RDW lookup, contracten, planning, overdracht,
-              schade, facturatie en AI in één Nederlands platform dat speciaal voor verhuur is gebouwd.
+              onderhoud, schade, facturatie, kosten en AI in één Nederlands platform voor verhuur én
+              eigen wagenparken.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -595,11 +680,11 @@ export default function MarketingHome() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
-              Waarom verhuurbedrijven kiezen voor FleeFlo
+              Waarom bedrijven kiezen voor FleeFlo
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Of je nu vijf of vijftig voertuigen beheert, FleeFlo groeit mee met je bedrijf en
-              vervangt losse tools, spreadsheets en papierwerk door één strak platform.
+              Of je nu vijf of vijfhonderd voertuigen beheert, voor verhuur of voor eigen gebruik,
+              FleeFlo groeit mee en vervangt losse tools, spreadsheets en papierwerk door één strak platform.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
