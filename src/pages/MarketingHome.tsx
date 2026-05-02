@@ -285,11 +285,12 @@ export default function MarketingHome() {
             </div>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-[1.1]">
               Het complete platform voor{" "}
-              <span className="text-primary">autoverhuur en lease</span>
+              <span className="text-primary">autoverhuur en wagenparkbeheer</span>
             </h1>
             <p className="mt-4 sm:mt-6 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Van RDW kenteken tot digitale handtekening, van klantportaal tot AI copilot.
-              FleeFlo bundelt voertuigbeheer, contracten, planning, facturatie en schade inspectie in één Nederlands platform.
+              Eén platform voor verhuurbedrijven én voor bedrijven met een eigen wagenpark.
+              Van RDW kenteken tot digitale handtekening, van planning en onderhoud tot AI copilot.
+              Schakel met één klik tussen modus Autoverhuur en modus Wagenparkbeheer.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
               <Button size="lg" className="gap-2 text-base" asChild>
