@@ -170,6 +170,9 @@ const voorWie = [
   "Camper en caravanverhuur",
   "Fietslease en e bike verhuur",
   "Importeurs en occasionhandel met verhuurtak",
+  "Bedrijven met eigen wagenpark en lease auto's",
+  "Bouw, installatie en service met bestelbussen",
+  "Gemeenten en zorginstellingen met poolauto's",
 ];
 
 const testimonials = [
