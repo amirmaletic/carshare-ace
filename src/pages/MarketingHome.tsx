@@ -210,7 +210,7 @@ export default function MarketingHome() {
             url: "https://fleeflo.nl/",
             inLanguage: "nl-NL",
             description:
-              "Compleet wagenparkbeheer voor autoverhuur en leasebedrijven met RDW koppeling, digitale contracten, klantportaal, schade inspectie en AI copilot.",
+              "Compleet platform voor autoverhuur én eigen wagenparkbeheer met RDW koppeling, digitale contracten, planning, onderhoud, kostenbeheer, klantportaal en AI copilot.",
             featureList: [
               "RDW kenteken lookup",
               "Digitale lease en verhuur contracten",
