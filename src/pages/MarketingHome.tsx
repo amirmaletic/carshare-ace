@@ -680,11 +680,11 @@ export default function MarketingHome() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-14">
             <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
-              Waarom verhuurbedrijven kiezen voor FleeFlo
+              Waarom bedrijven kiezen voor FleeFlo
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
-              Of je nu vijf of vijftig voertuigen beheert, FleeFlo groeit mee met je bedrijf en
-              vervangt losse tools, spreadsheets en papierwerk door één strak platform.
+              Of je nu vijf of vijfhonderd voertuigen beheert, voor verhuur of voor eigen gebruik,
+              FleeFlo groeit mee en vervangt losse tools, spreadsheets en papierwerk door één strak platform.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
