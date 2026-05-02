@@ -25,6 +25,9 @@ import {
   Star,
   Receipt,
   ClipboardCheck,
+  Briefcase,
+  Building2,
+  Fuel,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
