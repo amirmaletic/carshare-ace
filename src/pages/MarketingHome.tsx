@@ -473,7 +473,8 @@ export default function MarketingHome() {
             </h2>
             <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
               Geen losse tools meer. FleeFlo combineert RDW lookup, contracten, planning, overdracht,
-              schade, facturatie en AI in één Nederlands platform dat speciaal voor verhuur is gebouwd.
+              onderhoud, schade, facturatie, kosten en AI in één Nederlands platform voor verhuur én
+              eigen wagenparken.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
