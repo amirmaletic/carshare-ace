@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, Plus, CalendarRange } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,9 +14,31 @@ const statusFilters = ['Alle', 'aangevraagd', 'bevestigd', 'actief', 'voltooid',
 
 export default function Reservations() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Alle");
   const [formOpen, setFormOpen] = useState(false);
+  const [prefill, setPrefill] = useState<{
+    voertuig?: string;
+    klant?: string;
+    start?: string;
+    eind?: string;
+  }>({});
+
+  // Diepe link vanuit Copilot: /reserveringen?nieuw=1&voertuig=...&klant=...&start=...&eind=...
+  useEffect(() => {
+    if (searchParams.get("nieuw") !== "1") return;
+    setPrefill({
+      voertuig: searchParams.get("voertuig") ?? undefined,
+      klant: searchParams.get("klant") ?? undefined,
+      start: searchParams.get("start") ?? undefined,
+      eind: searchParams.get("eind") ?? undefined,
+    });
+    setFormOpen(true);
+    const next = new URLSearchParams(searchParams);
+    ["nieuw", "voertuig", "klant", "start", "eind"].forEach((k) => next.delete(k));
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const { data: reserveringen = [], isLoading } = useQuery({
     queryKey: ["reserveringen-page"],
