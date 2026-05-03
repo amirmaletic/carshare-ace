@@ -11,12 +11,13 @@ import {
   parseCopilotMessage,
   type CopilotActionPrimary,
   type CopilotActionVehicle,
+  type CopilotVoorstel,
 } from "./CopilotActions";
 
 export function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
-  const { messages, isLoading, send, clearMessages } = useAiChat();
+  const { messages, isLoading, send, clearMessages, executeVoorstel } = useAiChat();
   const scrollRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -33,12 +34,12 @@ export function AiAssistant() {
   };
 
   const suggesties = [
-    "Welke voertuigen zijn morgen vrij?",
-    "Welke bestelbus is komende week 3 dagen vrij?",
+    "Wat staat er vandaag en morgen op de agenda?",
+    "Welke voertuigen zijn komende week 3 dagen vrij?",
+    "Welke 5 voertuigen kosten dit jaar het meest aan onderhoud?",
+    "Maak een reservering voor onze vaste klant volgende week",
     "Toon contracten die binnen 30 dagen aflopen",
-    "Wat was mijn omzet vorige maand?",
-    "Welke APK's verlopen binnenkort?",
-    "Geef me de vlootstatistieken",
+    "Onthoud dat ik altijd 90 euro per dag reken voor bestelbussen",
   ];
 
   const handleOpenVehicle = (v: CopilotActionVehicle) => {
@@ -64,6 +65,21 @@ export function AiAssistant() {
     }
     if (p.type === "open_voertuig" && p.kenteken) {
       navigate(`/voertuigen?kenteken=${encodeURIComponent(p.kenteken)}`);
+    }
+  };
+
+  const handleConfirmVoorstel = async (v: CopilotVoorstel) => {
+    try {
+      const res = await executeVoorstel(v);
+      if (res?.href) {
+        setTimeout(() => {
+          setOpen(false);
+          navigate(res.href);
+        }, 800);
+      }
+      return res;
+    } catch (e: any) {
+      return { error: e?.message || "Mislukt" };
     }
   };
 
@@ -154,6 +170,7 @@ export function AiAssistant() {
                             data={parsed.actions}
                             onOpenVehicle={handleOpenVehicle}
                             onPrimary={handlePrimary}
+                            onConfirmVoorstel={handleConfirmVoorstel}
                           />
                         )}
                       </>
