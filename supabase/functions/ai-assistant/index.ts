@@ -310,7 +310,7 @@ const tools = [
 ];
 
 // ----------------- Tool executor -----------------
-async function runTool(name: string, args: any, sb: any): Promise<any> {
+async function runTool(name: string, args: any, sb: any, ctx: { userId?: string; orgId?: string }): Promise<any> {
   try {
     switch (name) {
       case "lijst_voertuigen": {
@@ -441,6 +441,143 @@ async function runTool(name: string, args: any, sb: any): Promise<any> {
         const k = String(args.kenteken ?? "").trim();
         if (!k) return { error: "kenteken vereist" };
         return { href: `/voertuigen?kenteken=${encodeURIComponent(k)}` };
+      }
+      case "voertuig_detail": {
+        let q = sb.from("voertuigen").select("*").limit(1);
+        if (args.id) q = q.eq("id", args.id);
+        else if (args.kenteken) q = q.ilike("kenteken", String(args.kenteken));
+        else return { error: "kenteken of id vereist" };
+        const { data, error } = await q.maybeSingle();
+        if (error) throw error;
+        return { voertuig: data };
+      }
+      case "voertuig_geschiedenis": {
+        const lim = Math.min(args.limit ?? 10, 30);
+        let vid = args.voertuig_id ? String(args.voertuig_id) : null;
+        let kent = args.kenteken ? String(args.kenteken) : null;
+        if (!vid && kent) {
+          const { data: v } = await sb.from("voertuigen").select("id,kenteken").ilike("kenteken", kent).maybeSingle();
+          vid = v?.id ? String(v.id) : null;
+          kent = v?.kenteken ?? kent;
+        } else if (vid && !kent) {
+          const { data: v } = await sb.from("voertuigen").select("kenteken").eq("id", vid).maybeSingle();
+          kent = v?.kenteken ?? null;
+        }
+        const filterIds = [vid, kent].filter(Boolean);
+        const ids = `(${filterIds.map(x => `"${x}"`).join(",")})`;
+        const [schade, onderh, contr, ritt] = await Promise.all([
+          sb.from("schade_rapporten").select("datum,omschrijving,ernst,kosten,hersteld").in("voertuig_id", filterIds).order("datum", { ascending: false }).limit(lim),
+          sb.from("service_historie").select("datum,type,omschrijving,kosten,garage,kilometerstand").in("voertuig_id", filterIds).order("datum", { ascending: false }).limit(lim),
+          sb.from("contracts").select("contract_nummer,klant_naam,start_datum,eind_datum,status,maandprijs").in("voertuig_id", filterIds).order("start_datum", { ascending: false }).limit(lim),
+          sb.from("ritten").select("datum,van_locatie,naar_locatie,afstand_km,kosten,status").in("voertuig_id", filterIds).order("datum", { ascending: false }).limit(lim),
+        ]);
+        return { kenteken: kent, schade: schade.data, onderhoud: onderh.data, contracten: contr.data, ritten: ritt.data };
+      }
+      case "klant_detail": {
+        let kid = args.klant_id ? String(args.klant_id) : null;
+        if (!kid && args.query) {
+          const p = `%${String(args.query).trim()}%`;
+          const { data: k } = await sb.from("klanten").select("id").or(`voornaam.ilike.${p},achternaam.ilike.${p},bedrijfsnaam.ilike.${p},email.ilike.${p}`).limit(1).maybeSingle();
+          kid = k?.id ? String(k.id) : null;
+        }
+        if (!kid) return { error: "klant niet gevonden" };
+        const { data: klant } = await sb.from("klanten").select("*").eq("id", kid).maybeSingle();
+        const email = klant?.email;
+        const [contr, res] = await Promise.all([
+          email ? sb.from("contracts").select("contract_nummer,start_datum,eind_datum,status,maandprijs,voertuig_id").eq("klant_email", email).order("start_datum", { ascending: false }) : Promise.resolve({ data: [] }),
+          sb.from("reserveringen").select("start_datum,eind_datum,status,totaalprijs,voertuig_id").eq("klant_id", kid).order("start_datum", { ascending: false }),
+        ]);
+        return { klant, contracten: contr.data, reserveringen: res.data };
+      }
+      case "lijst_chauffeurs": {
+        let q = sb.from("chauffeurs").select("id,voornaam,achternaam,status,rijbewijs_categorie,rijbewijs_verloopt,telefoon").limit(100);
+        if (args.status) q = q.eq("status", args.status);
+        const { data, error } = await q;
+        if (error) throw error;
+        return { count: data?.length ?? 0, chauffeurs: data };
+      }
+      case "ritten_overzicht": {
+        const lim = Math.min(args.limit ?? 30, 100);
+        let q = sb.from("ritten").select("datum,van_locatie,naar_locatie,afstand_km,kosten,status,chauffeur_id,voertuig_id,type").order("datum", { ascending: false }).limit(lim);
+        if (args.sinds) q = q.gte("datum", args.sinds);
+        if (args.chauffeur_id) q = q.eq("chauffeur_id", args.chauffeur_id);
+        const { data, error } = await q;
+        if (error) throw error;
+        const totaal_km = (data ?? []).reduce((s: number, r: any) => s + Number(r.afstand_km || 0), 0);
+        const totaal_kosten = (data ?? []).reduce((s: number, r: any) => s + Number(r.kosten || 0), 0);
+        return { count: data?.length ?? 0, totaal_km, totaal_kosten_euro: totaal_kosten, ritten: data };
+      }
+      case "onderhoud_overzicht": {
+        const lim = Math.min(args.limit ?? 30, 100);
+        let q = sb.from("service_historie").select("datum,type,omschrijving,kosten,garage,voertuig_id,kilometerstand").order("datum", { ascending: false }).limit(lim);
+        if (args.voertuig_id) q = q.eq("voertuig_id", args.voertuig_id);
+        if (args.sinds) q = q.gte("datum", args.sinds);
+        const { data, error } = await q;
+        if (error) throw error;
+        const totaal = (data ?? []).reduce((s: number, r: any) => s + Number(r.kosten || 0), 0);
+        return { count: data?.length ?? 0, totaal_kosten_euro: totaal, items: data };
+      }
+      case "kosten_per_voertuig": {
+        const sinds = args.sinds || new Date(Date.now() - 365 * 86400000).toISOString().slice(0, 10);
+        const lim = Math.min(args.limit ?? 10, 50);
+        const [{ data: onderh }, { data: schade }] = await Promise.all([
+          sb.from("service_historie").select("voertuig_id,kosten,datum").gte("datum", sinds),
+          sb.from("schade_rapporten").select("voertuig_id,kosten,datum").gte("datum", sinds),
+        ]);
+        const map = new Map<string, { onderhoud: number; schade: number }>();
+        for (const r of onderh ?? []) {
+          const k = String(r.voertuig_id);
+          const v = map.get(k) || { onderhoud: 0, schade: 0 };
+          v.onderhoud += Number(r.kosten || 0);
+          map.set(k, v);
+        }
+        for (const r of schade ?? []) {
+          const k = String(r.voertuig_id);
+          const v = map.get(k) || { onderhoud: 0, schade: 0 };
+          v.schade += Number(r.kosten || 0);
+          map.set(k, v);
+        }
+        const ids = [...map.keys()];
+        const { data: vts } = ids.length
+          ? await sb.from("voertuigen").select("id,kenteken,merk,model").or(ids.map(i => `id.eq.${i},kenteken.eq.${i}`).join(","))
+          : { data: [] as any[] };
+        const lookup = new Map<string, any>();
+        for (const v of vts ?? []) {
+          lookup.set(String(v.id), v);
+          if (v.kenteken) lookup.set(String(v.kenteken), v);
+        }
+        const rows = ids.map(id => {
+          const v = lookup.get(id);
+          const m = map.get(id)!;
+          return { id, kenteken: v?.kenteken, merk: v?.merk, model: v?.model, onderhoud_euro: m.onderhoud, schade_euro: m.schade, totaal_euro: m.onderhoud + m.schade };
+        }).sort((a, b) => b.totaal_euro - a.totaal_euro).slice(0, lim);
+        return { sinds, top: rows };
+      }
+      case "agenda_vandaag": {
+        const dagen = args.dagen ?? 2;
+        const today = new Date().toISOString().slice(0, 10);
+        const horizon = new Date(Date.now() + dagen * 86400000).toISOString().slice(0, 10);
+        const [overdr, ritt, contr, apk] = await Promise.all([
+          sb.from("overdrachten").select("type,datum,voertuig_kenteken,klant_naam,status").gte("datum", today).lte("datum", horizon).order("datum"),
+          sb.from("ritten").select("datum,vertrek_tijd,van_locatie,naar_locatie,chauffeur_id,voertuig_id,status").gte("datum", today).lte("datum", horizon).order("datum"),
+          sb.from("contracts").select("contract_nummer,klant_naam,eind_datum,status").gte("eind_datum", today).lte("eind_datum", horizon).order("eind_datum"),
+          sb.from("voertuigen").select("kenteken,merk,model,apk_vervaldatum").gte("apk_vervaldatum", today).lte("apk_vervaldatum", horizon).order("apk_vervaldatum"),
+        ]);
+        return { periode: `${today} t/m ${horizon}`, overdrachten: overdr.data, ritten: ritt.data, aflopende_contracten: contr.data, aflopende_apk: apk.data };
+      }
+      case "onthoud_feit": {
+        if (!ctx.userId) return { error: "geen ingelogde gebruiker" };
+        const feit = String(args.feit || "").trim();
+        if (!feit) return { error: "feit vereist" };
+        const { data, error } = await sb.from("copilot_geheugen").insert({ user_id: ctx.userId, organisatie_id: ctx.orgId, feit }).select("id").maybeSingle();
+        if (error) return { error: error.message };
+        return { ok: true, id: data?.id };
+      }
+      case "vergeet_feit": {
+        if (!ctx.userId || !args.id) return { error: "id vereist" };
+        const { error } = await sb.from("copilot_geheugen").delete().eq("id", args.id).eq("user_id", ctx.userId);
+        if (error) return { error: error.message };
+        return { ok: true };
       }
       default:
         return { error: `Onbekende tool: ${name}` };
