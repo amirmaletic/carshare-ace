@@ -227,6 +227,86 @@ const tools = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "voertuig_detail",
+      description: "Volledige details van één voertuig op kenteken of id (incl. APK, KM, brandstof, status, dagprijs, locatie).",
+      parameters: { type: "object", properties: { kenteken: { type: "string" }, id: { type: "string" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "voertuig_geschiedenis",
+      description: "Toon recente activiteit voor een voertuig: laatste schades, onderhoud, ritten en contracten.",
+      parameters: { type: "object", properties: { voertuig_id: { type: "string" }, kenteken: { type: "string" }, limit: { type: "number" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "klant_detail",
+      description: "Klantprofiel met contracten, reserveringen en openstaande facturen.",
+      parameters: { type: "object", properties: { klant_id: { type: "string" }, query: { type: "string" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "lijst_chauffeurs",
+      description: "Lijst chauffeurs met status en rijbewijs vervaldatum.",
+      parameters: { type: "object", properties: { status: { type: "string" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "ritten_overzicht",
+      description: "Recente ritten (transport), optioneel filter op periode of chauffeur.",
+      parameters: { type: "object", properties: { sinds: { type: "string" }, chauffeur_id: { type: "string" }, limit: { type: "number" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "onderhoud_overzicht",
+      description: "Service-historie / onderhoud per voertuig of recent.",
+      parameters: { type: "object", properties: { voertuig_id: { type: "string" }, sinds: { type: "string" }, limit: { type: "number" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "kosten_per_voertuig",
+      description: "Totale kosten (onderhoud + schade) per voertuig in een periode. Toont top kostenposten.",
+      parameters: { type: "object", properties: { sinds: { type: "string" }, limit: { type: "number" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "agenda_vandaag",
+      description: "Wat gebeurt er vandaag/morgen: ophaalmomenten, retourmomenten, ritten, aflopende contracten en APKs.",
+      parameters: { type: "object", properties: { dagen: { type: "number" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "onthoud_feit",
+      description: "Sla een blijvend feit op over de gebruiker of zijn vloot dat in latere gesprekken gebruikt mag worden (bv. voorkeur, vaste klant, standaardprijs).",
+      parameters: { type: "object", properties: { feit: { type: "string", description: "Korte zin." } }, required: ["feit"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "vergeet_feit",
+      description: "Verwijder een eerder onthouden feit op id (gebruik onthouden_feiten om id's te zien).",
+      parameters: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
+    },
+  },
 ];
 
 // ----------------- Tool executor -----------------
