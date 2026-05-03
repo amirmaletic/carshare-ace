@@ -149,6 +149,67 @@ const tools = [
       parameters: { type: "object", properties: {} },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "zoek_voertuig",
+      description: "Zoek voertuigen op (deel van) kenteken, merk of model. Geeft id, kenteken en samenvatting terug, voor gebruik in actieblokken.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Vrije tekst, bv. 'sprinter' of '78-XY'" },
+          limit: { type: "number", description: "Max aantal (1-20)" },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "zoek_klant",
+      description: "Zoek klanten op naam, bedrijf of email. Geeft id en naam terug voor gebruik in actieblokken (bv. reservering).",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string" },
+          limit: { type: "number" },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "start_reservering_link",
+      description: "Bouw een diepe link naar het reserveringsformulier met voorgevulde waarden.",
+      parameters: {
+        type: "object",
+        properties: {
+          voertuig_id: { type: "string" },
+          klant_id: { type: "string" },
+          start_datum: { type: "string" },
+          eind_datum: { type: "string" },
+        },
+        required: ["voertuig_id"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "open_voertuig_link",
+      description: "Bouw een diepe link naar de voertuigpagina met dat voertuig direct geopend.",
+      parameters: {
+        type: "object",
+        properties: {
+          kenteken: { type: "string" },
+        },
+        required: ["kenteken"],
+      },
+    },
+  },
 ];
 
 // ----------------- Tool executor -----------------
