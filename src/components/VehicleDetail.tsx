@@ -61,9 +61,9 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent className="sm:max-w-2xl w-full max-w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto p-0 rounded-none sm:rounded-lg gap-0">
         {/* Hero image */}
-        <div className="relative h-48 bg-gradient-to-br from-sidebar to-sidebar-accent overflow-hidden">
+        <div className="relative h-40 sm:h-48 bg-gradient-to-br from-sidebar to-sidebar-accent overflow-hidden">
           <VehicleImage
             merk={vehicle.merk}
             model={vehicle.model}
@@ -72,21 +72,23 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
             containerClassName="absolute inset-0 bg-transparent"
             iconClassName="w-16 h-16"
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-sidebar/90 to-transparent p-5">
-            <div className="flex items-end justify-between">
-              <div>
-                <h2 className="font-bold text-xl text-foreground">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-sidebar/90 to-transparent p-4 sm:p-5 pr-12">
+            <div className="flex items-end justify-between gap-2">
+              <div className="min-w-0">
+                <h2 className="font-bold text-lg sm:text-xl text-foreground truncate">
                   {vehicle.merk} {vehicle.model}
                 </h2>
                 <p className="font-mono text-sm text-sidebar-foreground">{vehicle.kenteken}</p>
               </div>
-              <StatusBadge status={vehicle.status} variant={getStatusColor(vehicle.status)} />
+              <div className="shrink-0">
+                <StatusBadge status={vehicle.status} variant={getStatusColor(vehicle.status)} />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="p-5 space-y-5">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="p-4 sm:p-5 space-y-4 sm:space-y-5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             <QuickInfo icon={Calendar} label="Bouwjaar" value={String(vehicle.bouwjaar)} />
             <QuickInfo icon={Fuel} label="Brandstof" value={vehicle.brandstof} />
             <QuickInfo icon={Gauge} label="Kilometerstand" value={`${vehicle.kilometerstand.toLocaleString('nl-NL')} km`} />
