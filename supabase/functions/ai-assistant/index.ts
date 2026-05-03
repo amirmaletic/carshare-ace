@@ -23,7 +23,27 @@ Stijlregels:
 - Vermeld altijd het tijdvenster en aantal records waarop je antwoord is gebaseerd.
 - Als data ontbreekt, zeg dat eerlijk en stel voor wat te doen.
 
-Als de vraag puur algemeen is (geen org-data nodig), antwoord direct zonder tool.`;
+Als de vraag puur algemeen is (geen org-data nodig), antwoord direct zonder tool.
+
+ACTIE-PROTOCOL (zeer belangrijk):
+Wanneer je voertuigen voorstelt of een vervolgactie kan helpen uitvoeren (bv. reservering aanmaken, voertuig openen, contract starten), voeg JE altijd ÉÉN actieblok toe aan het einde van je antwoord, in dit exacte formaat:
+
+[[fleeflo:actions
+{
+  "intro": "korte zin boven de kaarten (mag leeg zijn)",
+  "vehicles": [
+    {"id":"<uuid>","kenteken":"78-XY-901","label":"Mercedes Sprinter 314","sub":"3,5 m³ · 1.350 kg","status":"3 dagen vrij"}
+  ],
+  "primary": {"type":"reserveer","kenteken":"78-XY-901","voertuig_id":"<uuid>","klant_id":"<uuid|optional>","klant_naam":"Lisa van den Berg","start_datum":"2026-05-04","eind_datum":"2026-05-06","label":"Reserveer 78-XY-901 voor Lisa van den Berg"}
+}
+]]
+
+Regels voor het actieblok:
+- Geldig JSON, geen commentaar, geen trailing comma's.
+- Gebruik altijd 'zoek_voertuig' (en 'zoek_klant' indien er een persoon genoemd wordt) om de echte id's en kentekens op te halen voor je het blok bouwt.
+- Gebruik 'open_voertuig_link' of 'start_reservering_link' alleen als je een directe URL nodig hebt; meestal volstaat een primary van type 'reserveer' of 'open_voertuig'.
+- Als er niets klikbaars relevant is, laat het actieblok weg.
+- Houd je markdown-tekst kort: één korte zin gevolgd door het actieblok werkt het best.`;
 
 // ----------------- Tool definitions -----------------
 const tools = [
