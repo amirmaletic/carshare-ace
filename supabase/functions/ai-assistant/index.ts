@@ -612,7 +612,8 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const body = await req.json();
+    const { messages, context, voorstel } = body || {};
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_ANON = Deno.env.get("SUPABASE_ANON_KEY") || Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!;
@@ -623,9 +624,50 @@ serve(async (req) => {
       global: { headers: { Authorization: authHeader } },
     });
 
+    // Resolve user + org for memory & write actions
+    const { data: userData } = await sb.auth.getUser();
+    const userId = userData?.user?.id;
+    let orgId: string | undefined;
+    if (userId) {
+      const { data: prof } = await sb.from("profiles").select("organisatie_id").eq("id", userId).maybeSingle();
+      orgId = prof?.organisatie_id ?? undefined;
+    }
+
+    // Voorstel uitvoeren (1-klik bevestiging vanuit client)
+    if (voorstel && voorstel.kind && voorstel.payload) {
+      try {
+        const result = await executeVoorstel(voorstel, sb, { userId, orgId });
+        return new Response(JSON.stringify(result), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      } catch (e: any) {
+        return new Response(JSON.stringify({ error: e?.message || "Kon voorstel niet uitvoeren" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+    }
+
+    // Geheugen ophalen (max 20 recente feiten)
+    let memorySnippet = "";
+    if (userId) {
+      const { data: feiten } = await sb.from("copilot_geheugen").select("id,feit,created_at").eq("user_id", userId).order("created_at", { ascending: false }).limit(20);
+      if (feiten && feiten.length > 0) {
+        memorySnippet = "\n\nONTHOUDEN FEITEN (gebruik wanneer relevant, anders negeren):\n" + feiten.map((f: any) => `- [${f.id}] ${f.feit}`).join("\n");
+      }
+    }
+
+    // Pagina context
+    let contextSnippet = "";
+    if (context) {
+      const parts: string[] = [];
+      if (context.path) parts.push(`Huidige pagina: ${context.path}`);
+      if (context.kenteken) parts.push(`Geopend voertuig: ${context.kenteken}`);
+      if (context.klant) parts.push(`Geopende klant: ${context.klant}`);
+      if (context.now) parts.push(`Lokale tijd: ${context.now}`);
+      if (parts.length) contextSnippet = "\n\nCONTEXT:\n" + parts.map(p => `- ${p}`).join("\n");
+    }
+
+    const SYSTEM_PROMPT = BASE_SYSTEM_PROMPT + contextSnippet + memorySnippet;
+
     // Agentic loop: tot N tool-rondes, dan stream final answer
     const convo: any[] = [{ role: "system", content: SYSTEM_PROMPT }, ...messages];
-    const MAX_ROUNDS = 4;
+    const MAX_ROUNDS = 6;
 
     for (let round = 0; round < MAX_ROUNDS; round++) {
       const resp = await callGateway(convo, LOVABLE_API_KEY, true);
@@ -647,7 +689,7 @@ serve(async (req) => {
           let parsedArgs: any = {};
           try { parsedArgs = JSON.parse(call.function.arguments || "{}"); } catch {}
           console.log("[copilot] tool", call.function.name, parsedArgs);
-          const result = await runTool(call.function.name, parsedArgs, sb);
+          const result = await runTool(call.function.name, parsedArgs, sb, { userId, orgId });
           convo.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(result).slice(0, 12000) });
         }
         continue; // volgende ronde
@@ -689,3 +731,74 @@ serve(async (req) => {
     });
   }
 });
+
+// ----------------- Voorstel uitvoeren -----------------
+async function executeVoorstel(voorstel: any, sb: any, ctx: { userId?: string; orgId?: string }): Promise<any> {
+  const { kind, payload } = voorstel;
+  if (!ctx.userId) throw new Error("Niet ingelogd");
+  if (!ctx.orgId) throw new Error("Geen organisatie gevonden");
+  if (kind === "reservering") {
+    const required = ["voertuig_id", "klant_id", "start_datum", "eind_datum"];
+    for (const r of required) if (!payload[r]) throw new Error(`Veld ontbreekt: ${r}`);
+    const { data, error } = await sb.from("reserveringen").insert({
+      voertuig_id: payload.voertuig_id,
+      klant_id: payload.klant_id,
+      start_datum: payload.start_datum,
+      eind_datum: payload.eind_datum,
+      dagprijs: Number(payload.dagprijs || 0),
+      totaalprijs: Number(payload.totaalprijs || 0),
+      status: payload.status || "bevestigd",
+      notities: payload.notities || "Aangemaakt via Copilot",
+    }).select("id").maybeSingle();
+    if (error) throw new Error(error.message);
+    return { ok: true, kind, id: data?.id, href: voorstel.open_after || `/reserveringen` };
+  }
+  if (kind === "rit") {
+    const { data, error } = await sb.from("ritten").insert({
+      organisatie_id: ctx.orgId,
+      user_id: ctx.userId,
+      datum: payload.datum,
+      van_locatie: payload.van_locatie,
+      naar_locatie: payload.naar_locatie,
+      voertuig_id: payload.voertuig_id || null,
+      chauffeur_id: payload.chauffeur_id || null,
+      afstand_km: Number(payload.afstand_km || 0),
+      kosten: Number(payload.kosten || 0),
+      type: payload.type || "transport",
+      status: payload.status || "gepland",
+      notitie: payload.notitie || "Aangemaakt via Copilot",
+    }).select("id").maybeSingle();
+    if (error) throw new Error(error.message);
+    return { ok: true, kind, id: data?.id, href: voorstel.open_after || `/ritten` };
+  }
+  if (kind === "onderhoud") {
+    const { data, error } = await sb.from("service_historie").insert({
+      organisatie_id: ctx.orgId,
+      user_id: ctx.userId,
+      voertuig_id: payload.voertuig_id,
+      datum: payload.datum,
+      omschrijving: payload.omschrijving,
+      type: payload.type || "onderhoud",
+      kosten: Number(payload.kosten || 0),
+      garage: payload.garage || null,
+      kilometerstand: payload.kilometerstand || null,
+      notitie: payload.notitie || "Aangemaakt via Copilot",
+    }).select("id").maybeSingle();
+    if (error) throw new Error(error.message);
+    return { ok: true, kind, id: data?.id, href: voorstel.open_after || `/onderhoud` };
+  }
+  if (kind === "klant") {
+    const { data, error } = await sb.from("klanten").insert({
+      organisatie_id: ctx.orgId,
+      voornaam: payload.voornaam,
+      achternaam: payload.achternaam,
+      email: payload.email,
+      telefoon: payload.telefoon || null,
+      type: payload.type || "particulier",
+      bedrijfsnaam: payload.bedrijfsnaam || null,
+    }).select("id").maybeSingle();
+    if (error) throw new Error(error.message);
+    return { ok: true, kind, id: data?.id, href: voorstel.open_after || `/klanten` };
+  }
+  throw new Error(`Onbekend voorstel-type: ${kind}`);
+}
