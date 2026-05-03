@@ -629,8 +629,8 @@ serve(async (req) => {
     const userId = userData?.user?.id;
     let orgId: string | undefined;
     if (userId) {
-      const { data: prof } = await sb.from("profiles").select("organisatie_id").eq("id", userId).maybeSingle();
-      orgId = prof?.organisatie_id ?? undefined;
+      const { data: orgRes } = await sb.rpc("get_user_organisatie_id", { _user_id: userId });
+      orgId = (orgRes as string) || undefined;
     }
 
     // Voorstel uitvoeren (1-klik bevestiging vanuit client)
