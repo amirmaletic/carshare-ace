@@ -129,6 +129,24 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
     },
   });
 
+  // Handtekening klant uit ophaal-overdracht
+  const { data: klantHandtekening = null } = useQuery<string | null>({
+    queryKey: ["contract-handtekening", contract.id],
+    enabled: open && !!contract.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("overdrachten")
+        .select("handtekening, ondertekend_op")
+        .eq("contract_id", contract.id)
+        .eq("type", "ophalen")
+        .eq("status", "ondertekend")
+        .order("ondertekend_op", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data?.handtekening ?? null;
+    },
+  });
+
   const today = new Date().toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
   const formatDate = (d?: string | null) =>
     d ? new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" }) : "-";
@@ -359,9 +377,10 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
             </div>
             <div class="sig">
               <div class="role">Huurder | Leasenemer</div>
+              ${klantHandtekening ? `<img src="${klantHandtekening}" alt="Handtekening" style="max-height:60px;display:block;margin-bottom:4px;" />` : ""}
               <div class="line"></div>
               <div class="name">${escapeHtml(contract.klant_naam)}</div>
-              <div class="meta">Datum: _____________________</div>
+              <div class="meta">Datum: ${klantHandtekening ? today : "_____________________"}</div>
             </div>
           </section>
 
@@ -534,7 +553,11 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">Leasenemer / Huurder</p>
-              <div className="border-b border-foreground h-16 mb-2" />
+              <div className="border-b border-foreground h-16 mb-2 flex items-end justify-center">
+                {klantHandtekening && (
+                  <img src={klantHandtekening} alt="Handtekening klant" className="max-h-14 object-contain" />
+                )}
+              </div>
               <p className="text-sm font-medium">{contract.klant_naam}</p>
               <p className="text-xs text-muted-foreground">Datum: _______________</p>
             </div>

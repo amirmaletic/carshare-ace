@@ -54,12 +54,12 @@ export function OverdrachtenCenter() {
     enabled: !!user,
   });
 
-  const { data: morgen = [] } = useQuery({
-    queryKey: ["overdrachten", tomorrow],
+  const { data: aankomend = [] } = useQuery({
+    queryKey: ["overdrachten-aankomend", today],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("overdrachten").select("*").eq("datum", tomorrow)
-        .order("created_at", { ascending: true });
+        .from("overdrachten").select("*").gt("datum", today).eq("type", "ophalen")
+        .order("datum", { ascending: true });
       if (error) throw error;
       return data as Overdracht[];
     },
@@ -78,14 +78,14 @@ export function OverdrachtenCenter() {
     enabled: !!user,
   });
 
-  // Contracts die vandaag/morgen starten of eindigen
+  // Alle aankomende ophalingen (vanaf vandaag) + terugbrengen vandaag/morgen
   const { data: contractEvents = [] } = useQuery({
     queryKey: ["contract-overdracht-events", today, tomorrow],
     queryFn: async () => {
       const { data: starts } = await supabase
         .from("contracts")
         .select("id, voertuig_id, klant_naam, klant_email, start_datum, eind_datum, status")
-        .in("start_datum", [today, tomorrow])
+        .gte("start_datum", today)
         .in("status", ["actief", "concept"]);
       const { data: ends } = await supabase
         .from("contracts")
@@ -125,7 +125,7 @@ export function OverdrachtenCenter() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["overdrachten", today] });
-      queryClient.invalidateQueries({ queryKey: ["overdrachten", tomorrow] });
+      queryClient.invalidateQueries({ queryKey: ["overdrachten-aankomend", today] });
       queryClient.invalidateQueries({ queryKey: ["overdrachten-recent"] });
     },
   });
@@ -152,11 +152,36 @@ export function OverdrachtenCenter() {
         })
         .eq("id", selectedOverdracht.id);
       if (error) throw error;
+
+      // Stuur kopie naar klant
+      if (selectedOverdracht.klant_email) {
+        try {
+          await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "contract-ondertekend",
+              recipientEmail: selectedOverdracht.klant_email,
+              templateData: {
+                klant_naam: selectedOverdracht.klant_naam,
+                voertuig_naam: selectedOverdracht.voertuig_naam,
+                voertuig_kenteken: selectedOverdracht.voertuig_kenteken,
+                type: selectedOverdracht.type,
+                datum: format(new Date(), "d MMMM yyyy", { locale: nl }),
+                kilometerstand: kilometerstand || null,
+                opmerkingen: opmerkingen || null,
+                bevestiging: getConfirmationText(selectedOverdracht),
+                handtekening: signature,
+              },
+            },
+          });
+        } catch (e) {
+          console.warn("Kon e-mail niet versturen:", e);
+        }
+      }
     },
     onSuccess: () => {
-      toast.success("Overdracht ondertekend!");
+      toast.success("Overdracht ondertekend en kopie verstuurd!");
       queryClient.invalidateQueries({ queryKey: ["overdrachten", today] });
-      queryClient.invalidateQueries({ queryKey: ["overdrachten", tomorrow] });
+      queryClient.invalidateQueries({ queryKey: ["overdrachten-aankomend", today] });
       queryClient.invalidateQueries({ queryKey: ["overdrachten-recent"] });
       setSelectedOverdracht(null);
       setSignature(null);
@@ -240,16 +265,16 @@ export function OverdrachtenCenter() {
             <TabsTrigger value="vandaag">
               Vandaag {vandaag.length > 0 && <span className="ml-1.5 text-xs opacity-70">({vandaag.length})</span>}
             </TabsTrigger>
-            <TabsTrigger value="morgen">
-              Morgen {morgen.length > 0 && <span className="ml-1.5 text-xs opacity-70">({morgen.length})</span>}
+            <TabsTrigger value="aankomend">
+              Aankomend {aankomend.length > 0 && <span className="ml-1.5 text-xs opacity-70">({aankomend.length})</span>}
             </TabsTrigger>
             <TabsTrigger value="recent">Recent</TabsTrigger>
           </TabsList>
           <TabsContent value="vandaag" className="mt-4">
             {renderList(vandaag, "Geen overdrachten vandaag", true)}
           </TabsContent>
-          <TabsContent value="morgen" className="mt-4">
-            {renderList(morgen, "Geen geplande overdrachten morgen", false)}
+          <TabsContent value="aankomend" className="mt-4">
+            {renderList(aankomend, "Geen aankomende ophalingen", true)}
           </TabsContent>
           <TabsContent value="recent" className="mt-4">
             {renderList(recent, "Nog geen overdrachten", false)}
