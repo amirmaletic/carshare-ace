@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
-import { Car, ExternalLink, Loader2, RotateCcw, Search, Trash2, User } from "lucide-react";
+import { Car, ExternalLink, Loader2, RotateCcw, Search, Trash2, User, Fuel, Euro } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -16,6 +16,9 @@ interface Terugmelding {
   notitie: string | null;
   created_at: string;
   medewerker_email?: string | null;
+  bon_bedrag?: number | null;
+  bon_liters?: number | null;
+  bon_brandstof?: string | null;
 }
 
 interface ReturnHistoryProps {
@@ -87,6 +90,20 @@ export default function ReturnHistory({ terugmeldingen, isLoading, onDelete }: R
                     <User className="w-3 h-3" />
                     {t.medewerker_email}
                   </p>
+                )}
+                {(t.bon_bedrag != null || t.bon_liters != null || t.bon_brandstof) && (
+                  <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-muted-foreground">
+                    {t.bon_liters != null && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted">
+                        <Fuel className="w-3 h-3" /> {t.bon_liters}L {t.bon_brandstof || ""}
+                      </span>
+                    )}
+                    {t.bon_bedrag != null && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted">
+                        <Euro className="w-3 h-3" /> {t.bon_bedrag.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
               <div className="text-right shrink-0">
