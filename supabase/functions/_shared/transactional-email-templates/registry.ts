@@ -12,9 +12,11 @@ export interface TemplateEntry {
 import { template as teamInvite } from './team-invite.tsx'
 import { template as rijbewijsVerzoek } from './rijbewijs-verzoek.tsx'
 import { template as borgVerificatie } from './borg-verificatie.tsx'
+import { template as contractOndertekend } from './contract-ondertekend.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'team-invite': teamInvite,
   'rijbewijs-verzoek': rijbewijsVerzoek,
   'borg-verificatie': borgVerificatie,
+  'contract-ondertekend': contractOndertekend,
 }
