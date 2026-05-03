@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from "sonner";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { useAuth } from "@/hooks/useAuth";
+import { KentekenScanner } from "@/components/KentekenScanner";
 
 interface RDWVehicleData {
   kenteken: string;
@@ -69,8 +70,8 @@ export function KentekenSearch() {
   const { addVoertuig } = useVoertuigen();
   const { user } = useAuth();
 
-  const handleSearch = async () => {
-    const kenteken = formatKenteken(query);
+  const handleSearch = async (override?: string) => {
+    const kenteken = formatKenteken(override ?? query);
     if (kenteken.length < 4) {
       toast.error("Voer een geldig kenteken in");
       return;
@@ -139,7 +140,11 @@ export function KentekenSearch() {
               className="uppercase font-mono tracking-wider"
             />
           </div>
-          <Button onClick={handleSearch} disabled={loading}>
+          <KentekenScanner
+            iconOnly
+            onDetected={(k) => { setQuery(k); handleSearch(k); }}
+          />
+          <Button onClick={() => handleSearch()} disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           </Button>
         </div>
