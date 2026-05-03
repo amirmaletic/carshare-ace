@@ -34,7 +34,7 @@ import { Link } from "react-router-dom";
 import productDashboard from "@/assets/product-dashboard.png";
 import productVoertuigen from "@/assets/product-voertuigen.png";
 import productContracten from "@/assets/product-contracten.png";
-import productCopilot from "@/assets/screenshot-copilot.png";
+import { CopilotShowcase } from "@/components/marketing/CopilotShowcase";
 import productTerugmelden from "@/assets/screenshot-terugmelden.png";
 import FaqSection from "@/components/marketing/FaqSection";
 import BlogPreviewSection from "@/components/marketing/BlogPreviewSection";
@@ -525,15 +525,7 @@ export default function MarketingHome() {
             </ul>
           </div>
           <div className="lg:col-span-2">
-            <img
-              src={productCopilot}
-              alt="AI Vloot Copilot in FleeFlo met live data uit voertuigen, contracten en facturen"
-              className="w-full rounded-2xl border border-primary/20 shadow-xl"
-              loading="lazy"
-              decoding="async"
-              width={1536}
-              height={864}
-            />
+            <CopilotShowcase />
           </div>
         </div>
       </section>
