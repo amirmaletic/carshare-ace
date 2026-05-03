@@ -377,9 +377,10 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
             </div>
             <div class="sig">
               <div class="role">Huurder | Leasenemer</div>
+              ${klantHandtekening ? `<img src="${klantHandtekening}" alt="Handtekening" style="max-height:60px;display:block;margin-bottom:4px;" />` : ""}
               <div class="line"></div>
               <div class="name">${escapeHtml(contract.klant_naam)}</div>
-              <div class="meta">Datum: _____________________</div>
+              <div class="meta">Datum: ${klantHandtekening ? today : "_____________________"}</div>
             </div>
           </section>
 
