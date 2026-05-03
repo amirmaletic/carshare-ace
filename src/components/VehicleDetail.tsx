@@ -61,9 +61,9 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl w-full max-w-full h-[100dvh] sm:h-auto sm:max-h-[90vh] overflow-y-auto p-0 rounded-none sm:rounded-lg gap-0">
+      <DialogContent className="sm:max-w-2xl w-screen max-w-none h-[100dvh] sm:h-auto sm:w-full sm:max-w-2xl sm:max-h-[90vh] overflow-y-auto p-0 rounded-none sm:rounded-lg gap-0 border-0 sm:border top-0 left-0 translate-x-0 translate-y-0 sm:top-[50%] sm:left-[50%] sm:translate-x-[-50%] sm:translate-y-[-50%]">
         {/* Hero image */}
-        <div className="relative h-40 sm:h-48 bg-gradient-to-br from-sidebar to-sidebar-accent overflow-hidden">
+        <div className="relative h-44 sm:h-48 bg-gradient-to-br from-sidebar to-sidebar-accent overflow-hidden">
           <VehicleImage
             merk={vehicle.merk}
             model={vehicle.model}
@@ -72,15 +72,15 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
             containerClassName="absolute inset-0 bg-transparent"
             iconClassName="w-16 h-16"
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-sidebar/90 to-transparent p-4 sm:p-5 pr-12">
-            <div className="flex items-end justify-between gap-2">
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-sidebar/95 via-sidebar/60 to-transparent p-4 sm:p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div className="min-w-0">
                 <h2 className="font-bold text-lg sm:text-xl text-foreground truncate">
                   {vehicle.merk} {vehicle.model}
                 </h2>
                 <p className="font-mono text-sm text-sidebar-foreground">{vehicle.kenteken}</p>
               </div>
-              <div className="shrink-0">
+              <div className="shrink-0 self-start sm:self-end">
                 <StatusBadge status={vehicle.status} variant={getStatusColor(vehicle.status)} />
               </div>
             </div>
@@ -104,21 +104,21 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
           <Separator />
 
           <Tabs defaultValue="beschikbaarheid" className="w-full">
-            <div className="-mx-1 overflow-x-auto scrollbar-none">
-              <TabsList className="inline-flex sm:grid sm:grid-cols-7 w-max sm:w-full h-auto p-1 bg-muted/50 rounded-full sm:rounded-xl gap-1 border border-border/40">
+            <div className="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto scrollbar-none">
+              <TabsList className="inline-flex sm:grid sm:grid-cols-7 w-max sm:w-full h-auto p-1 bg-muted/60 rounded-full sm:rounded-xl gap-1">
                 {[
                   { value: "beschikbaarheid", icon: CalendarCheck, label: "Beschikbaar" },
                   { value: "tijdlijn", icon: Clock, label: "Tijdlijn" },
                   { value: "onderhoud", icon: Wrench, label: "Onderhoud" },
                   { value: "terugmeldingen", icon: RotateCcw, label: "Retouren" },
-                  { value: "reserveringen", icon: CalendarRange, label: "Reserv." },
-                  { value: "rapporten", icon: FileText, label: "Rapport" },
+                  { value: "reserveringen", icon: CalendarRange, label: "Reserveringen" },
+                  { value: "rapporten", icon: FileText, label: "Rapporten" },
                   { value: "fotos", icon: ImageIcon, label: "Foto's" },
                 ].map(({ value, icon: Icon, label }) => (
                   <TabsTrigger
                     key={value}
                     value={value}
-                    className="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-1 sm:py-2 sm:flex-col sm:gap-1 h-auto rounded-full sm:rounded-lg text-xs sm:text-[10px] font-medium text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-colors whitespace-nowrap"
+                    className="flex items-center justify-center gap-1.5 px-3.5 py-2 sm:px-1 sm:py-2 sm:flex-col sm:gap-1 h-auto rounded-full sm:rounded-lg text-xs sm:text-[10px] font-medium text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-colors whitespace-nowrap"
                   >
                     <Icon className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
                     <span className="leading-none">{label}</span>
