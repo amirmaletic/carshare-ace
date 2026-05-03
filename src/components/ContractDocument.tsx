@@ -12,6 +12,7 @@ import { useOrganisatie } from "@/hooks/useOrganisatie";
 import logoUrl from "@/assets/fleeflo-logo-blue.png";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { VehicleDamageSketch, type DamagePoint } from "@/components/VehicleDamageSketch";
 
 interface ContractDocumentProps {
   contract: ContractWithInvoices | null;
@@ -98,6 +99,36 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
   if (!contract) return null;
 
   const vehicle = contract.voertuig_id ? voertuigen.find(v => v.id === contract.voertuig_id) : null;
+
+  // Schadepunten van gekoppeld voertuig (uit terugmeldingen + overdrachten + rapporten)
+  const { data: schadePunten = [] } = useQuery({
+    queryKey: ["contract-schade", contract.id, contract.voertuig_id, vehicle?.kenteken],
+    enabled: open && !!contract.voertuig_id,
+    queryFn: async () => {
+      const vid = contract.voertuig_id!;
+      const kenteken = vehicle?.kenteken ?? "";
+      const orFilter = kenteken
+        ? `voertuig_id.eq.${vid},voertuig_kenteken.eq.${kenteken}`
+        : `voertuig_id.eq.${vid}`;
+      const [tm, ov, sr] = await Promise.all([
+        supabase.from("terugmeldingen").select("schade_punten").or(orFilter),
+        supabase.from("overdrachten").select("schade_punten").or(orFilter),
+        supabase.from("schade_rapporten").select("schade_punten").eq("voertuig_id", vid),
+      ]);
+      const all: DamagePoint[] = [];
+      const collect = (rows: any[] | null) => {
+        (rows ?? []).forEach((r) => {
+          const pts = Array.isArray(r.schade_punten) ? r.schade_punten : [];
+          pts.forEach((p: DamagePoint, i: number) => {
+            all.push({ ...p, id: p.id || `${all.length}-${i}` });
+          });
+        });
+      };
+      collect(tm.data); collect(ov.data); collect(sr.data);
+      return all;
+    },
+  });
+
   const today = new Date().toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
   const formatDate = (d?: string | null) =>
     d ? new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" }) : "-";
@@ -136,6 +167,53 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
       contract.kvk_nummer ? field("KVK-nummer", contract.kvk_nummer) : "",
       contract.bedrijf_adres ? field("Bedrijfsadres", contract.bedrijf_adres) : "",
     ].join("");
+
+    const ernstColor = (e: string) => e === "zwaar" ? "#ef4444" : e === "middel" ? "#f97316" : "#eab308";
+    const damagePointsSvg = schadePunten.map((p, i) => `
+      <g>
+        <circle cx="${(p.x / 100) * 440}" cy="${(p.y / 100) * 200}" r="9" fill="${ernstColor(p.ernst)}" stroke="#fff" stroke-width="2" />
+        <text x="${(p.x / 100) * 440}" y="${(p.y / 100) * 200 + 3}" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">${i + 1}</text>
+      </g>`).join("");
+    const damageList = schadePunten.length === 0 ? "" : schadePunten.map((p, i) =>
+      `<tr>
+        <td style="padding:4px 8px;font-size:10px;color:#475569;">${i + 1}</td>
+        <td style="padding:4px 8px;font-size:10px;color:#0F172A;">${escapeHtml(p.label || "Geen beschrijving")}</td>
+        <td style="padding:4px 8px;font-size:10px;color:${ernstColor(p.ernst)};font-weight:600;text-transform:capitalize;">${escapeHtml(p.ernst)}</td>
+        <td style="padding:4px 8px;font-size:10px;color:#64748B;text-transform:capitalize;">${escapeHtml(p.grootte || "klein")}</td>
+      </tr>`
+    ).join("");
+    const damageBlock = vehicle ? `
+      <section class="block">
+        <h3>Schade-overzicht voertuig</h3>
+        <div style="border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--soft);">
+          <svg viewBox="0 0 440 200" style="width:100%;height:auto;max-height:180px;color:#94A3B8;" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M80,40 Q60,40 50,60 L40,80 Q35,100 40,120 L50,140 Q60,160 80,160 L360,160 Q380,160 390,140 L400,120 Q405,100 400,80 L390,60 Q380,40 360,40 Z" stroke-width="2" />
+            <path d="M130,45 L130,155" stroke-dasharray="4 4" />
+            <path d="M330,45 L330,155" stroke-dasharray="4 4" />
+            <ellipse cx="110" cy="35" rx="25" ry="8" stroke-width="2" />
+            <ellipse cx="110" cy="165" rx="25" ry="8" stroke-width="2" />
+            <ellipse cx="330" cy="35" rx="25" ry="8" stroke-width="2" />
+            <ellipse cx="330" cy="165" rx="25" ry="8" stroke-width="2" />
+            <text x="60" y="103" font-size="10" fill="#94A3B8" text-anchor="middle">VOOR</text>
+            <text x="380" y="103" font-size="10" fill="#94A3B8" text-anchor="middle">ACHTER</text>
+            <text x="220" y="30" font-size="10" fill="#94A3B8" text-anchor="middle">LINKS</text>
+            <text x="220" y="185" font-size="10" fill="#94A3B8" text-anchor="middle">RECHTS</text>
+            ${damagePointsSvg}
+          </svg>
+          ${schadePunten.length === 0
+            ? `<p style="margin-top:8px;font-size:10.5px;color:#16A34A;text-align:center;">✓ Geen schade geregistreerd op het voertuig bij contractondertekening.</p>`
+            : `<table style="width:100%;margin-top:10px;border-collapse:collapse;">
+                 <thead><tr style="background:#F1F5F9;">
+                   <th style="padding:5px 8px;font-size:9px;text-align:left;color:#64748B;text-transform:uppercase;letter-spacing:.5px;">#</th>
+                   <th style="padding:5px 8px;font-size:9px;text-align:left;color:#64748B;text-transform:uppercase;letter-spacing:.5px;">Beschrijving</th>
+                   <th style="padding:5px 8px;font-size:9px;text-align:left;color:#64748B;text-transform:uppercase;letter-spacing:.5px;">Ernst</th>
+                   <th style="padding:5px 8px;font-size:9px;text-align:left;color:#64748B;text-transform:uppercase;letter-spacing:.5px;">Grootte</th>
+                 </tr></thead>
+                 <tbody>${damageList}</tbody>
+               </table>
+               <p style="margin-top:8px;font-size:9.5px;color:#64748B;font-style:italic;">Bovenstaande ${schadePunten.length} schadepunt${schadePunten.length === 1 ? "" : "en"} ${schadePunten.length === 1 ? "is" : "zijn"} bij contractondertekening vastgelegd. Nieuwe schade na deze datum is voor rekening van de huurder, tenzij anders bewezen.</p>`}
+        </div>
+      </section>` : "";
 
     const contractRows = [
       field("Type", getContractTypeLabel(contract.type)),
@@ -264,6 +342,8 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
 
           ${vehicleBlock}
 
+          ${damageBlock}
+
           ${services ? `<section class="block"><h3>Inbegrepen services</h3><div class="tags">${services}</div></section>` : ""}
 
           ${contract.notities ? `<section class="block"><h3>Bijzonderheden</h3><div class="note">${escapeHtml(contract.notities)}</div></section>` : ""}
@@ -391,6 +471,21 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
                 <Field label="Brandstof" value={vehicle.brandstof} />
                 <Field label="Categorie" value={vehicle.categorie} />
               </div>
+            </div>
+          )}
+
+          {/* Schade-overzicht */}
+          {vehicle && (
+            <div className="mb-6">
+              <h3 className="text-xs uppercase tracking-wider text-primary font-semibold mb-3 pb-1.5 border-b border-border">
+                Schade-overzicht voertuig
+              </h3>
+              <VehicleDamageSketch points={schadePunten} onChange={() => {}} readOnly />
+              <p className="text-[11px] text-muted-foreground italic mt-2">
+                {schadePunten.length === 0
+                  ? "Geen schade geregistreerd bij contractondertekening."
+                  : `${schadePunten.length} schadepunt${schadePunten.length === 1 ? "" : "en"} vastgelegd bij contractondertekening. Nieuwe schade is voor rekening van de huurder.`}
+              </p>
             </div>
           )}
 
