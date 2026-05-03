@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { RotateCcw } from "lucide-react";
 import TerugmeldStats from "@/components/terugmelden/TerugmeldStats";
 import RecentReturns from "@/components/terugmelden/RecentReturns";
-import ReturnForm from "@/components/terugmelden/ReturnForm";
+import ReturnForm, { type BonAnalyse } from "@/components/terugmelden/ReturnForm";
 import ReturnHistory from "@/components/terugmelden/ReturnHistory";
 import { SchadeVergelijkingDialog } from "@/components/SchadeVergelijkingDialog";
 import { useStartVergelijking, type SchadeVergelijking } from "@/hooks/useSchadeVergelijking";
@@ -46,6 +46,7 @@ export default function Terugmelden() {
   const [kmError, setKmError] = useState("");
   const [notitie, setNotitie] = useState("");
   const [file, setFile] = useState<File | null>(null);
+  const [bonAnalyse, setBonAnalyse] = useState<BonAnalyse | null>(null);
   const [fotos, setFotos] = useState<File[]>([]);
   const [schadePunten, setSchadePunten] = useState<import("@/components/VehicleDamageSketch").DamagePoint[]>([]);
   const [schadevrij, setSchadevrij] = useState(false);
@@ -181,6 +182,9 @@ export default function Terugmelden() {
         medewerker_email: user.email || null,
         fotos: fotoUrls.length > 0 ? fotoUrls : [],
         schade_punten: schadePunten as any,
+        bon_bedrag: bonAnalyse?.bedrag ?? null,
+        bon_liters: bonAnalyse?.liters ?? null,
+        bon_brandstof: bonAnalyse?.brandstof ?? null,
       }).select().single();
       if (error) throw error;
 
@@ -214,6 +218,7 @@ export default function Terugmelden() {
       setKilometerstand("");
       setNotitie("");
       setFile(null);
+      setBonAnalyse(null);
       setFotos([]);
       setSchadePunten([]);
       setSchadevrij(false);
@@ -249,6 +254,8 @@ export default function Terugmelden() {
         setNotitie={setNotitie}
         file={file}
         setFile={setFile}
+        bonAnalyse={bonAnalyse}
+        setBonAnalyse={setBonAnalyse}
         fotos={fotos}
         setFotos={setFotos}
         schadePunten={schadePunten}
