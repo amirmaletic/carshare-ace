@@ -185,6 +185,7 @@ export default function Terugmelden() {
         bon_bedrag: bonAnalyse?.bedrag ?? null,
         bon_liters: bonAnalyse?.liters ?? null,
         bon_brandstof: bonAnalyse?.brandstof ?? null,
+        bon_btw: bonAnalyse?.btw ?? null,
       }).select().single();
       if (error) throw error;
 
@@ -193,8 +194,55 @@ export default function Terugmelden() {
         .update({ kilometerstand: kmNum, status: "beschikbaar" })
         .eq("id", matchedVehicle.id);
 
+      // Maak automatisch een brandstof-/aftank-factuur aan en verreken met borg
+      if (bonAnalyse?.bedrag && bonAnalyse.bedrag > 0) {
+        try {
+          const { data: contract } = await supabase
+            .from("contracts")
+            .select("id, borg")
+            .eq("voertuig_id", matchedVehicle.id)
+            .eq("status", "actief")
+            .order("eind_datum", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+          if (contract) {
+            const { data: bestaande } = await supabase
+              .from("invoices")
+              .select("borg_verrekend")
+              .eq("contract_id", contract.id);
+            const reedsVerrekend = (bestaande || []).reduce((s, i: any) => s + Number(i.borg_verrekend || 0), 0);
+            const borgBeschikbaar = Math.max(Number(contract.borg || 0) - reedsVerrekend, 0);
+            const totaal = Number(bonAnalyse.bedrag) + 7.5;
+            const borgAftrek = Math.min(borgBeschikbaar, totaal);
+            const teFactureren = Math.max(totaal - borgAftrek, 0);
+
+            await supabase.from("invoices").insert({
+              contract_id: contract.id,
+              user_id: user.id,
+              organisatie_id: organisatieId!,
+              datum: new Date().toISOString().slice(0, 10),
+              bedrag: teFactureren,
+              status: "openstaand",
+              type: "brandstof",
+              borg_verrekend: borgAftrek,
+              omschrijving: `Brandstof € ${Number(bonAnalyse.bedrag).toFixed(2)}${bonAnalyse.liters ? ` (${bonAnalyse.liters} L ${bonAnalyse.brandstof || ""})` : ""} + aftankkosten € 7,50${borgAftrek > 0 ? ` · borg verrekend € ${borgAftrek.toFixed(2)}` : ""}`,
+            });
+            toast.success(borgAftrek >= totaal
+              ? `Volledig verrekend met borg (€ ${borgAftrek.toFixed(2)})`
+              : `Factuur € ${teFactureren.toFixed(2)} aangemaakt (borg € ${borgAftrek.toFixed(2)} verrekend)`
+            );
+          } else {
+            toast.info("Geen actief contract gevonden — bon-bedrag niet verrekend");
+          }
+        } catch (factErr: any) {
+          toast.error("Bon opgeslagen maar factuur mislukt: " + factErr.message);
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: ["terugmeldingen"] });
       queryClient.invalidateQueries({ queryKey: ["voertuigen"] });
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
       toast.success("Voertuig succesvol teruggemeld");
 
       // Start AI-vergelijking als er punten zijn

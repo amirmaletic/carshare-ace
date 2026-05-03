@@ -17,6 +17,7 @@ export interface BonAnalyse {
   liters: number | null;
   brandstof: string | null;
   bedrag: number | null;
+  btw: number | null;
 }
 
 function fileToBase64(file: File): Promise<string> {
@@ -116,6 +117,7 @@ export default function ReturnForm({
           liters: typeof r.liters === "number" ? r.liters : null,
           brandstof: r.brandstof || null,
           bedrag: typeof r.bedrag === "number" ? r.bedrag : null,
+          btw: typeof r.btw === "number" ? r.btw : null,
         });
         toast.success("Bon geanalyseerd");
       }
@@ -255,7 +257,7 @@ export default function ReturnForm({
                   {analyzing ? "Bon wordt gelezen..." : "Automatisch herkend (pas aan indien nodig)"}
                 </div>
                 {bonAnalyse && (
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <div>
                       <Label className="text-[11px] flex items-center gap-1 mb-1">
                         <Fuel className="w-3 h-3" /> Liters
@@ -286,7 +288,7 @@ export default function ReturnForm({
                     </div>
                     <div>
                       <Label className="text-[11px] flex items-center gap-1 mb-1">
-                        <Euro className="w-3 h-3" /> Bedrag
+                        <Euro className="w-3 h-3" /> Totaal
                       </Label>
                       <Input
                         type="number"
@@ -297,6 +299,26 @@ export default function ReturnForm({
                         className="h-8 text-sm"
                       />
                     </div>
+                    <div>
+                      <Label className="text-[11px] flex items-center gap-1 mb-1">
+                        <Euro className="w-3 h-3" /> BTW
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={bonAnalyse.btw ?? ""}
+                        onChange={(e) => setBonAnalyse({ ...bonAnalyse, btw: e.target.value ? parseFloat(e.target.value) : null })}
+                        placeholder="0,00"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+                {bonAnalyse?.bedrag != null && (
+                  <div className="rounded-md border border-border bg-background/60 p-2 text-xs space-y-1">
+                    <div className="flex justify-between"><span className="text-muted-foreground">Brandstof (incl. BTW)</span><span className="font-mono">€ {bonAnalyse.bedrag.toFixed(2)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Aftankkosten</span><span className="font-mono">€ 7,50</span></div>
+                    <div className="flex justify-between font-medium border-t border-border pt-1"><span>Te verrekenen met borg</span><span className="font-mono text-primary">€ {(bonAnalyse.bedrag + 7.5).toFixed(2)}</span></div>
                   </div>
                 )}
               </div>

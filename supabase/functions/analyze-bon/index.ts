@@ -8,15 +8,17 @@ const corsHeaders = {
 
 const SYSTEM = `Je analyseert een tankbon of brandstofbon. Geef ALLEEN geldige JSON terug, geen uitleg.
 Velden:
-- liters (number of null): aantal getankte liters
-- brandstof (string of null): genormaliseerd, één van: "Benzine", "Diesel", "LPG", "Elektrisch", "AdBlue", "Onbekend"
-- bedrag (number of null): totaalbedrag in EUR
+- liters (number of null): aantal getankte liters. Op bonnen kan dit ook "Volume", "Vol", "L", "Ltr", "Liter" of "Aantal" heten - tel die altijd mee als liters.
+- brandstof (string of null): genormaliseerd, één van: "Benzine", "Diesel", "LPG", "Elektrisch", "AdBlue", "Onbekend". Herken ook synoniemen zoals "Euro 95", "E10", "E5", "Super", "Premium" als Benzine en "Gasoil" als Diesel.
+- bedrag (number of null): totaalbedrag in EUR (incl. BTW)
+- btw (number of null): BTW-bedrag in EUR (zoek naar "BTW", "VAT", "21%", "BTW 21")
+- btw_percentage (number of null): meestal 21
 - prijs_per_liter (number of null)
 - station (string of null): naam tankstation indien zichtbaar
 - datum (string of null): YYYY-MM-DD indien leesbaar
 - confidence (number 0-1): hoe zeker je bent
 
-Geef bedragen als numerieke waarden zonder valutateken. Als iets niet leesbaar is, gebruik null.`;
+Gebruik . als decimaal scheidingsteken. Geef bedragen als numerieke waarden zonder valutateken of duizendtal-scheidingen. Als iets niet leesbaar is, gebruik null.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
