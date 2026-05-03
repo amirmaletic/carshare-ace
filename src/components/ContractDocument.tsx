@@ -270,18 +270,6 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
 
           ${contract.boeteclausule ? `<section class="block"><h3>Boeteclausule</h3><div class="note">${escapeHtml(contract.boeteclausule)}</div></section>` : ""}
 
-          <section class="block">
-            <h3>Algemene voorwaarden</h3>
-            <ol class="terms">
-              <li>Dit contract is geldig voor de bovengenoemde looptijd en wordt automatisch beëindigd op de einddatum.</li>
-              <li>Maandelijkse betalingen dienen vóór de 1e van elke maand te worden voldaan.</li>
-              <li>Het voertuig dient in goede staat te worden geretourneerd aan het einde van het contract.</li>
-              <li>Bij vroegtijdige beëindiging zijn de resterende termijnen verschuldigd, tenzij anders overeengekomen.</li>
-              <li>De leasenemer is verantwoordelijk voor schade die niet onder de verzekering valt.</li>
-              <li>Kilometrage boven het afgesproken aantal wordt in rekening gebracht tegen het geldende tarief.</li>
-            </ol>
-          </section>
-
           <section class="sigs">
             <div class="sig">
               <div class="role">Verhuurder</div>
@@ -440,21 +428,6 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
               <p className="text-sm">{contract.boeteclausule}</p>
             </div>
           )}
-
-          {/* Voorwaarden */}
-          <div className="mb-6">
-            <h3 className="text-xs uppercase tracking-wider text-primary font-semibold mb-3 pb-1.5 border-b border-border">
-              Algemene voorwaarden
-            </h3>
-            <ul className="text-xs text-muted-foreground space-y-1.5 list-disc pl-4">
-              <li>Dit contract is geldig voor de bovengenoemde looptijd en wordt automatisch beëindigd op de einddatum.</li>
-              <li>Maandelijkse betalingen dienen vóór de 1e van elke maand te worden voldaan.</li>
-              <li>Het voertuig dient in goede staat te worden geretourneerd aan het einde van het contract.</li>
-              <li>Bij vroegtijdige beëindiging zijn de resterende termijnen verschuldigd, tenzij anders overeengekomen.</li>
-              <li>De leasenemer is verantwoordelijk voor eventuele schade die niet onder de verzekering valt.</li>
-              <li>Kilometrage boven het afgesproken aantal wordt in rekening gebracht tegen het geldende tarief.</li>
-            </ul>
-          </div>
 
           {/* Signatures */}
           <div className="grid grid-cols-2 gap-16 mt-12 pt-4">
