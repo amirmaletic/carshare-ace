@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
 import {
-  RotateCcw, Gauge, Calendar, User, ExternalLink, FileText, TrendingUp, Loader2,
+  RotateCcw, Gauge, User, ExternalLink, FileText, TrendingUp, Loader2, Receipt, Fuel, Euro,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -21,6 +21,10 @@ interface Terugmelding {
   created_at: string;
   medewerker_email: string | null;
   fotos: string[] | null;
+  bon_bedrag?: number | null;
+  bon_liters?: number | null;
+  bon_brandstof?: string | null;
+  bon_btw?: number | null;
 }
 
 interface VehicleTerugmeldingenProps {
@@ -72,6 +76,11 @@ export function VehicleTerugmeldingen({ voertuigId, kenteken }: VehicleTerugmeld
   // Unique medewerkers
   const medewerkers = [...new Set(terugmeldingen.map(t => t.medewerker_email).filter(Boolean))];
 
+  // Brandstof/bon stats
+  const bonnen = terugmeldingen.filter(t => t.bon_url || t.bon_bedrag != null);
+  const totaalLiters = terugmeldingen.reduce((s, t) => s + (Number(t.bon_liters) || 0), 0);
+  const totaalBedrag = terugmeldingen.reduce((s, t) => s + (Number(t.bon_bedrag) || 0), 0);
+
   // Km per melding trend
   const sorted = [...terugmeldingen].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
@@ -92,8 +101,54 @@ export function VehicleTerugmeldingen({ voertuigId, kenteken }: VehicleTerugmeld
         <StatBlock icon={RotateCcw} label="Totaal meldingen" value={String(totaalRitten)} color="text-primary" />
         <StatBlock icon={Gauge} label="Hoogste km" value={`${hoogsteKm.toLocaleString("nl-NL")} km`} color="text-success" />
         <StatBlock icon={TrendingUp} label="Gem. km/rit" value={gemiddeldKmPerRit > 0 ? `${gemiddeldKmPerRit.toLocaleString("nl-NL")} km` : "-"} color="text-warning" />
-        <StatBlock icon={User} label="Medewerkers" value={String(medewerkers.length)} color="text-info" />
+        <StatBlock
+          icon={Fuel}
+          label={totaalLiters > 0 ? "Brandstof totaal" : "Medewerkers"}
+          value={totaalLiters > 0 ? `${totaalLiters.toFixed(0)}L · €${totaalBedrag.toFixed(0)}` : String(medewerkers.length)}
+          color="text-info"
+        />
       </div>
+
+      {/* Bonnetjes galerij */}
+      {bonnen.length > 0 && (
+        <div className="rounded-xl border border-border bg-muted/30 p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-1.5">
+              <Receipt className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-medium text-foreground">Bonnetjes ({bonnen.length})</span>
+            </div>
+            <span className="text-[10px] text-muted-foreground">Totaal € {totaalBedrag.toFixed(2)}</span>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+            {bonnen.map((t) => (
+              <a
+                key={t.id}
+                href={t.bon_url || undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group relative block rounded-lg overflow-hidden border border-border bg-background hover:border-primary/40 transition-all"
+                title={t.bon_url ? "Bon openen" : "Geen bestand"}
+              >
+                {t.bon_url && /\.(jpe?g|png|webp|gif)(\?|$)/i.test(t.bon_url) ? (
+                  <img src={t.bon_url} alt="Bon" className="w-full h-20 object-cover" />
+                ) : (
+                  <div className="w-full h-20 flex items-center justify-center bg-muted/60">
+                    <Receipt className="w-5 h-5 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
+                  <p className="text-[10px] font-mono text-white leading-none">
+                    {t.bon_bedrag != null ? `€ ${Number(t.bon_bedrag).toFixed(2)}` : "—"}
+                  </p>
+                  {t.bon_liters != null && (
+                    <p className="text-[9px] text-white/80 leading-none mt-0.5">{t.bon_liters}L</p>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Separator />
 
@@ -159,6 +214,23 @@ export function VehicleTerugmeldingen({ voertuigId, kenteken }: VehicleTerugmeld
                   <div className="flex items-center gap-1.5 mt-1.5">
                     <User className="w-3 h-3 text-muted-foreground" />
                     <span className="text-xs text-muted-foreground">{t.medewerker_email}</span>
+                  </div>
+                )}
+
+                {/* Bon details */}
+                {(t.bon_bedrag != null || t.bon_liters != null || t.bon_brandstof) && (
+                  <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                    {t.bon_liters != null && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-300 text-[10px] font-medium">
+                        <Fuel className="w-3 h-3" /> {t.bon_liters}L {t.bon_brandstof || ""}
+                      </span>
+                    )}
+                    {t.bon_bedrag != null && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-[10px] font-medium">
+                        <Euro className="w-3 h-3" /> {Number(t.bon_bedrag).toFixed(2)}
+                        {t.bon_btw != null && <span className="opacity-70">· btw € {Number(t.bon_btw).toFixed(2)}</span>}
+                      </span>
+                    )}
                   </div>
                 )}
 
