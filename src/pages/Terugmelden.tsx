@@ -11,6 +11,8 @@ import TerugmeldStats from "@/components/terugmelden/TerugmeldStats";
 import RecentReturns from "@/components/terugmelden/RecentReturns";
 import ReturnForm from "@/components/terugmelden/ReturnForm";
 import ReturnHistory from "@/components/terugmelden/ReturnHistory";
+import { SchadeVergelijkingDialog } from "@/components/SchadeVergelijkingDialog";
+import { useStartVergelijking, type SchadeVergelijking } from "@/hooks/useSchadeVergelijking";
 
 interface Terugmelding {
   id: string;
@@ -48,6 +50,10 @@ export default function Terugmelden() {
   const [schadePunten, setSchadePunten] = useState<import("@/components/VehicleDamageSketch").DamagePoint[]>([]);
   const [schadevrij, setSchadevrij] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [vergelijkingOpen, setVergelijkingOpen] = useState(false);
+  const [vergelijking, setVergelijking] = useState<SchadeVergelijking | null>(null);
+  const [ophaalAanwezig, setOphaalAanwezig] = useState(true);
+  const startVergelijking = useStartVergelijking();
 
   const allVehicles = [
     ...dbVoertuigen.map(v => ({ id: v.id, label: `${v.merk} ${v.model}`, kenteken: v.kenteken, km: v.kilometerstand })),
@@ -174,7 +180,8 @@ export default function Terugmelden() {
         notitie: notitie.trim() || null,
         medewerker_email: user.email || null,
         fotos: fotoUrls.length > 0 ? fotoUrls : [],
-      });
+        schade_punten: schadePunten as any,
+      }).select().single();
       if (error) throw error;
 
       await supabase
@@ -185,12 +192,37 @@ export default function Terugmelden() {
       queryClient.invalidateQueries({ queryKey: ["terugmeldingen"] });
       queryClient.invalidateQueries({ queryKey: ["voertuigen"] });
       toast.success("Voertuig succesvol teruggemeld");
+
+      // Start AI-vergelijking als er punten zijn
+      const insertedRow = (await supabase
+        .from("terugmeldingen")
+        .select("id")
+        .eq("voertuig_id", matchedVehicle.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single()).data;
+      if (insertedRow && !schadevrij) {
+        setVergelijkingOpen(true);
+        setVergelijking(null);
+        startVergelijking.mutate(insertedRow.id, {
+          onSuccess: ({ vergelijking, ophaal_aanwezig }) => {
+            setVergelijking(vergelijking);
+            setOphaalAanwezig(ophaal_aanwezig);
+          },
+          onError: (err: any) => {
+            toast.error("AI-vergelijking mislukt: " + err.message);
+            setVergelijkingOpen(false);
+          },
+        });
+      }
+
       setMatchedVehicle(null);
       setKentekenQuery("");
       setKilometerstand("");
       setNotitie("");
       setFile(null);
       setFotos([]);
+      setSchadePunten([]);
       setSchadevrij(false);
       setKmError("");
     } catch (err: any) {
@@ -245,6 +277,15 @@ export default function Terugmelden() {
         terugmeldingen={terugmeldingen}
         isLoading={isLoading}
         onDelete={(id) => deleteMutation.mutate(id)}
+      />
+
+      <SchadeVergelijkingDialog
+        open={vergelijkingOpen}
+        onOpenChange={setVergelijkingOpen}
+        vergelijking={vergelijking}
+        isLoading={startVergelijking.isPending}
+        ophaalAanwezig={ophaalAanwezig}
+        onClose={() => setVergelijkingOpen(false)}
       />
     </div>
   );
