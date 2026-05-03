@@ -129,6 +129,24 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
     },
   });
 
+  // Handtekening klant uit ophaal-overdracht
+  const { data: klantHandtekening = null } = useQuery<string | null>({
+    queryKey: ["contract-handtekening", contract.id],
+    enabled: open && !!contract.id,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("overdrachten")
+        .select("handtekening, ondertekend_op")
+        .eq("contract_id", contract.id)
+        .eq("type", "ophalen")
+        .eq("status", "ondertekend")
+        .order("ondertekend_op", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data?.handtekening ?? null;
+    },
+  });
+
   const today = new Date().toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
   const formatDate = (d?: string | null) =>
     d ? new Date(d).toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" }) : "-";
