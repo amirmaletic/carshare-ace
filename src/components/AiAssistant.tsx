@@ -1,16 +1,24 @@
 import { useState, useRef, useEffect } from "react";
 import { MessageSquare, X, Send, Trash2, Sparkles, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAiChat } from "@/hooks/useAiChat";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import {
+  CopilotActions,
+  parseCopilotMessage,
+  type CopilotActionPrimary,
+  type CopilotActionVehicle,
+} from "./CopilotActions";
 
 export function AiAssistant() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const { messages, isLoading, send, clearMessages } = useAiChat();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -26,11 +34,38 @@ export function AiAssistant() {
 
   const suggesties = [
     "Welke voertuigen zijn morgen vrij?",
+    "Welke bestelbus is komende week 3 dagen vrij?",
     "Toon contracten die binnen 30 dagen aflopen",
     "Wat was mijn omzet vorige maand?",
     "Welke APK's verlopen binnenkort?",
     "Geef me de vlootstatistieken",
   ];
+
+  const handleOpenVehicle = (v: CopilotActionVehicle) => {
+    setOpen(false);
+    navigate(`/voertuigen?kenteken=${encodeURIComponent(v.kenteken)}`);
+  };
+
+  const handlePrimary = (p: CopilotActionPrimary) => {
+    setOpen(false);
+    if (p.href) {
+      navigate(p.href);
+      return;
+    }
+    if (p.type === "reserveer") {
+      const params = new URLSearchParams();
+      params.set("nieuw", "1");
+      if (p.voertuig_id) params.set("voertuig", p.voertuig_id);
+      if (p.klant_id) params.set("klant", p.klant_id);
+      if (p.start_datum) params.set("start", p.start_datum);
+      if (p.eind_datum) params.set("eind", p.eind_datum);
+      navigate(`/reserveringen?${params.toString()}`);
+      return;
+    }
+    if (p.type === "open_voertuig" && p.kenteken) {
+      navigate(`/voertuigen?kenteken=${encodeURIComponent(p.kenteken)}`);
+    }
+  };
 
   return (
     <>
@@ -92,34 +127,48 @@ export function AiAssistant() {
                 </div>
               </div>
             )}
-            {messages.map((msg, i) => (
-              <div key={i} className={cn("flex gap-2", msg.role === "user" ? "justify-end" : "justify-start")}>
-                {msg.role === "assistant" && (
-                  <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
-                    <Sparkles className="w-3 h-3 text-primary" />
-                  </div>
-                )}
-                <div className={cn(
-                  "max-w-[85%] rounded-xl px-3 py-2 text-sm",
-                  msg.role === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground"
-                )}>
-                  {msg.role === "assistant" ? (
-                    <div className="prose prose-sm max-w-none dark:prose-invert [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0">
-                      <ReactMarkdown>{msg.content}</ReactMarkdown>
+            {messages.map((msg, i) => {
+              const parsed = msg.role === "assistant" ? parseCopilotMessage(msg.content) : null;
+              return (
+                <div key={i} className={cn("flex gap-2", msg.role === "user" ? "justify-end" : "justify-start")}>
+                  {msg.role === "assistant" && (
+                    <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
+                      <Sparkles className="w-3 h-3 text-primary" />
                     </div>
-                  ) : (
-                    msg.content
+                  )}
+                  <div className={cn(
+                    "max-w-[90%] rounded-xl px-3 py-2 text-sm",
+                    msg.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground"
+                  )}>
+                    {msg.role === "assistant" && parsed ? (
+                      <>
+                        {parsed.text && (
+                          <div className="prose prose-sm max-w-none dark:prose-invert [&_p]:my-1 [&_ul]:my-1 [&_li]:my-0">
+                            <ReactMarkdown>{parsed.text}</ReactMarkdown>
+                          </div>
+                        )}
+                        {parsed.actions && (
+                          <CopilotActions
+                            data={parsed.actions}
+                            onOpenVehicle={handleOpenVehicle}
+                            onPrimary={handlePrimary}
+                          />
+                        )}
+                      </>
+                    ) : (
+                      msg.content
+                    )}
+                  </div>
+                  {msg.role === "user" && (
+                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 mt-1">
+                      <User className="w-3 h-3 text-secondary-foreground" />
+                    </div>
                   )}
                 </div>
-                {msg.role === "user" && (
-                  <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 mt-1">
-                    <User className="w-3 h-3 text-secondary-foreground" />
-                  </div>
-                )}
-              </div>
-            ))}
+              );
+            })}
             {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
               <div className="flex gap-2">
                 <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">

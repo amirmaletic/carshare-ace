@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Search, Plus, Car, Fuel, Gauge, CalendarRange, X, List, MapPin, GanttChart, Upload } from "lucide-react";
 import { format } from "date-fns";
 import { nl } from "date-fns/locale";
@@ -27,6 +27,7 @@ type ViewMode = "lijst" | "locaties" | "tijdlijn";
 
 export default function Vehicles() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("Alle");
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -57,6 +58,24 @@ export default function Vehicles() {
     kleur: v.kleur,
     image: v.image_url || undefined,
   }));
+
+  // Diepe link vanuit Copilot: /voertuigen?kenteken=XX-YY-ZZ
+  useEffect(() => {
+    const k = searchParams.get("kenteken");
+    if (!k || allVehicles.length === 0) return;
+    const norm = k.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const match = allVehicles.find(
+      (v) => v.kenteken.toUpperCase().replace(/[^A-Z0-9]/g, "") === norm
+    );
+    if (match) {
+      setSelectedVehicle(match);
+      setDetailOpen(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("kenteken");
+      setSearchParams(next, { replace: true });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, dbVoertuigen.length]);
 
   const filtered = allVehicles.filter(v => {
     const matchesSearch =

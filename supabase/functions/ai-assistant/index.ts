@@ -23,7 +23,27 @@ Stijlregels:
 - Vermeld altijd het tijdvenster en aantal records waarop je antwoord is gebaseerd.
 - Als data ontbreekt, zeg dat eerlijk en stel voor wat te doen.
 
-Als de vraag puur algemeen is (geen org-data nodig), antwoord direct zonder tool.`;
+Als de vraag puur algemeen is (geen org-data nodig), antwoord direct zonder tool.
+
+ACTIE-PROTOCOL (zeer belangrijk):
+Wanneer je voertuigen voorstelt of een vervolgactie kan helpen uitvoeren (bv. reservering aanmaken, voertuig openen, contract starten), voeg JE altijd ÉÉN actieblok toe aan het einde van je antwoord, in dit exacte formaat:
+
+[[fleeflo:actions
+{
+  "intro": "korte zin boven de kaarten (mag leeg zijn)",
+  "vehicles": [
+    {"id":"<uuid>","kenteken":"78-XY-901","label":"Mercedes Sprinter 314","sub":"3,5 m³ · 1.350 kg","status":"3 dagen vrij"}
+  ],
+  "primary": {"type":"reserveer","kenteken":"78-XY-901","voertuig_id":"<uuid>","klant_id":"<uuid|optional>","klant_naam":"Lisa van den Berg","start_datum":"2026-05-04","eind_datum":"2026-05-06","label":"Reserveer 78-XY-901 voor Lisa van den Berg"}
+}
+]]
+
+Regels voor het actieblok:
+- Geldig JSON, geen commentaar, geen trailing comma's.
+- Gebruik altijd 'zoek_voertuig' (en 'zoek_klant' indien er een persoon genoemd wordt) om de echte id's en kentekens op te halen voor je het blok bouwt.
+- Gebruik 'open_voertuig_link' of 'start_reservering_link' alleen als je een directe URL nodig hebt; meestal volstaat een primary van type 'reserveer' of 'open_voertuig'.
+- Als er niets klikbaars relevant is, laat het actieblok weg.
+- Houd je markdown-tekst kort: één korte zin gevolgd door het actieblok werkt het best.`;
 
 // ----------------- Tool definitions -----------------
 const tools = [
@@ -129,6 +149,67 @@ const tools = [
       parameters: { type: "object", properties: {} },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "zoek_voertuig",
+      description: "Zoek voertuigen op (deel van) kenteken, merk of model. Geeft id, kenteken en samenvatting terug, voor gebruik in actieblokken.",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string", description: "Vrije tekst, bv. 'sprinter' of '78-XY'" },
+          limit: { type: "number", description: "Max aantal (1-20)" },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "zoek_klant",
+      description: "Zoek klanten op naam, bedrijf of email. Geeft id en naam terug voor gebruik in actieblokken (bv. reservering).",
+      parameters: {
+        type: "object",
+        properties: {
+          query: { type: "string" },
+          limit: { type: "number" },
+        },
+        required: ["query"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "start_reservering_link",
+      description: "Bouw een diepe link naar het reserveringsformulier met voorgevulde waarden.",
+      parameters: {
+        type: "object",
+        properties: {
+          voertuig_id: { type: "string" },
+          klant_id: { type: "string" },
+          start_datum: { type: "string" },
+          eind_datum: { type: "string" },
+        },
+        required: ["voertuig_id"],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "open_voertuig_link",
+      description: "Bouw een diepe link naar de voertuigpagina met dat voertuig direct geopend.",
+      parameters: {
+        type: "object",
+        properties: {
+          kenteken: { type: "string" },
+        },
+        required: ["kenteken"],
+      },
+    },
+  },
 ];
 
 // ----------------- Tool executor -----------------
@@ -223,6 +304,46 @@ async function runTool(name: string, args: any, sb: any): Promise<any> {
           bezettingsgraad_procent: bezetting,
           peildatum: today,
         };
+      }
+      case "zoek_voertuig": {
+        const q = String(args.query ?? "").trim();
+        const lim = Math.min(args.limit ?? 8, 20);
+        if (!q) return { count: 0, voertuigen: [] };
+        const pattern = `%${q}%`;
+        const { data, error } = await sb
+          .from("voertuigen")
+          .select("id,kenteken,merk,model,bouwjaar,brandstof,categorie,status,dagprijs")
+          .or(`kenteken.ilike.${pattern},merk.ilike.${pattern},model.ilike.${pattern}`)
+          .limit(lim);
+        if (error) throw error;
+        return { count: data?.length ?? 0, voertuigen: data };
+      }
+      case "zoek_klant": {
+        const q = String(args.query ?? "").trim();
+        const lim = Math.min(args.limit ?? 8, 20);
+        if (!q) return { count: 0, klanten: [] };
+        const pattern = `%${q}%`;
+        const { data, error } = await sb
+          .from("klanten")
+          .select("id,voornaam,achternaam,bedrijfsnaam,email")
+          .or(`voornaam.ilike.${pattern},achternaam.ilike.${pattern},bedrijfsnaam.ilike.${pattern},email.ilike.${pattern}`)
+          .limit(lim);
+        if (error) throw error;
+        return { count: data?.length ?? 0, klanten: data };
+      }
+      case "start_reservering_link": {
+        const params = new URLSearchParams();
+        params.set("nieuw", "1");
+        if (args.voertuig_id) params.set("voertuig", String(args.voertuig_id));
+        if (args.klant_id) params.set("klant", String(args.klant_id));
+        if (args.start_datum) params.set("start", String(args.start_datum));
+        if (args.eind_datum) params.set("eind", String(args.eind_datum));
+        return { href: `/reserveringen?${params.toString()}` };
+      }
+      case "open_voertuig_link": {
+        const k = String(args.kenteken ?? "").trim();
+        if (!k) return { error: "kenteken vereist" };
+        return { href: `/voertuigen?kenteken=${encodeURIComponent(k)}` };
       }
       default:
         return { error: `Onbekende tool: ${name}` };
