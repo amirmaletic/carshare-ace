@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { VehicleDamageSketch, type DamagePoint } from "@/components/VehicleDamageSketch";
+import { KentekenScanner } from "@/components/KentekenScanner";
 
 interface MatchedVehicle {
   id: string;
@@ -92,6 +93,10 @@ export default function ReturnForm({
           onChange={e => setKentekenQuery(e.target.value)}
           onKeyDown={e => e.key === "Enter" && (e.preventDefault(), onSearch())}
           className="uppercase font-mono tracking-wider"
+        />
+        <KentekenScanner
+          iconOnly
+          onDetected={(k) => { setKentekenQuery(k); setTimeout(onSearch, 50); }}
         />
         <Button type="button" onClick={onSearch}>
           <Search className="w-4 h-4" />
