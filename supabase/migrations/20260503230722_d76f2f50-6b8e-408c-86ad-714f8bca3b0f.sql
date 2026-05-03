@@ -1,0 +1,1 @@
+ALTER TABLE public.terugmeldingen ADD COLUMN IF NOT EXISTS bon_btw numeric;

@@ -1777,6 +1777,7 @@ export type Database = {
           bon_ai_data: Json | null
           bon_bedrag: number | null
           bon_brandstof: string | null
+          bon_btw: number | null
           bon_liters: number | null
           bon_url: string | null
           created_at: string
@@ -1797,6 +1798,7 @@ export type Database = {
           bon_ai_data?: Json | null
           bon_bedrag?: number | null
           bon_brandstof?: string | null
+          bon_btw?: number | null
           bon_liters?: number | null
           bon_url?: string | null
           created_at?: string
@@ -1817,6 +1819,7 @@ export type Database = {
           bon_ai_data?: Json | null
           bon_bedrag?: number | null
           bon_brandstof?: string | null
+          bon_btw?: number | null
           bon_liters?: number | null
           bon_url?: string | null
           created_at?: string
