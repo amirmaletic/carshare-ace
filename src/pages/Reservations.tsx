@@ -132,7 +132,14 @@ export default function Reservations() {
           )}
         </div>
       )}
-      <ReservationForm open={formOpen} onOpenChange={setFormOpen} />
+      <ReservationForm
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        prefilledVehicleId={prefill.voertuig}
+        prefilledKlantId={prefill.klant}
+        prefilledStartDatum={prefill.start}
+        prefilledEindDatum={prefill.eind}
+      />
     </div>
   );
 }
