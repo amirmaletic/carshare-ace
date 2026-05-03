@@ -12,9 +12,12 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { useCreateContract, useUpdateContract, type ContractWithInvoices, type CreateContractInput } from "@/hooks/useContracts";
 import { useVoertuigen, type DbVoertuig } from "@/hooks/useVoertuigen";
+import { useKlanten } from "@/hooks/useKlanten";
 import { RdwLookup, type RdwVehicleInfo } from "@/components/RdwLookup";
 import { KvkSearch } from "@/components/KvkSearch";
-import { FileText, User, Car, Euro, Shield, ScrollText } from "lucide-react";
+import { FileText, User, Car, Euro, Shield, ScrollText, Zap, Settings2, Sparkles, Search } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 const contractSchema = z.object({
   contract_nummer: z.string().min(1).max(50),
@@ -71,13 +74,16 @@ export function ContractForm({ open, onOpenChange, editContract, prefilledVehicl
   const createMutation = useCreateContract();
   const updateMutation = useUpdateContract();
   const { voertuigen: vehicles } = useVoertuigen();
+  const { data: klanten = [] } = useKlanten();
 
+  const [mode, setMode] = useState<"snel" | "geavanceerd">(isEdit ? "geavanceerd" : "snel");
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(() => getInitialForm(editContract));
   const [freeKmPerDay, setFreeKmPerDay] = useState(0);
   const [rdwInfo, setRdwInfo] = useState<RdwVehicleInfo | null>(null);
   const [kvkNummer, setKvkNummer] = useState(editContract?.kvk_nummer ?? "");
   const [bedrijfAdres, setBedrijfAdres] = useState(editContract?.bedrijf_adres ?? "");
+  const [klantPickerOpen, setKlantPickerOpen] = useState(false);
 
   function getInitialForm(c?: ContractWithInvoices | null) {
     return {
@@ -126,7 +132,42 @@ export function ContractForm({ open, onOpenChange, editContract, prefilledVehicl
     }
   }, [form.voertuig_id, form.type]);
 
+  // Auto-fill maandprijs based on selected vehicle when empty
+  useEffect(() => {
+    if (isEdit) return;
+    const vehicle = vehicles.find((v) => v.id === form.voertuig_id);
+    if (!vehicle || form.maandprijs > 0) return;
+    const suggested = form.type === "verhuur"
+      ? Math.round(vehicle.dagprijs)
+      : Math.round(vehicle.dagprijs * 22);
+    setForm((f) => ({ ...f, maandprijs: suggested }));
+  }, [form.voertuig_id, form.type, vehicles, isEdit]);
+
+  // Auto-fill end date based on type when start changes
+  useEffect(() => {
+    if (isEdit || !form.start_datum || form.eind_datum) return;
+    const start = new Date(form.start_datum);
+    if (isNaN(start.getTime())) return;
+    const end = new Date(start);
+    if (form.type === "verhuur") end.setDate(end.getDate() + 7);
+    else end.setMonth(end.getMonth() + 12);
+    setForm((f) => ({ ...f, eind_datum: end.toISOString().slice(0, 10) }));
+  }, [form.start_datum, form.type, isEdit]);
+
   const update = (key: string, value: unknown) => setForm((f) => ({ ...f, [key]: value }));
+
+  const pickKlant = (k: typeof klanten[number]) => {
+    setForm((f) => ({
+      ...f,
+      klant_naam: `${k.voornaam} ${k.achternaam}`.trim(),
+      klant_email: k.email,
+      klant_telefoon: k.telefoon ?? "",
+      klant_adres: [k.adres, k.postcode, k.plaats].filter(Boolean).join(", "),
+      bedrijf: k.bedrijfsnaam ?? f.bedrijf,
+    }));
+    if (k.kvk_nummer) setKvkNummer(k.kvk_nummer);
+    setKlantPickerOpen(false);
+  };
 
   const toggleService = (service: string) => {
     setForm((f) => ({
@@ -202,16 +243,48 @@ export function ContractForm({ open, onOpenChange, editContract, prefilledVehicl
     { label: "Voorwaarden", icon: <ScrollText className="w-4 h-4" /> },
   ];
 
+  const canQuickSubmit = !!form.klant_naam.trim() && !!form.klant_email.trim() && !!form.start_datum && !!form.eind_datum && form.maandprijs > 0;
+
   return (
     <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) setStep(0); }}>
       <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5 text-primary" />
-            {isEdit ? "Contract bewerken" : "Nieuw contract"}
-          </DialogTitle>
+          <div className="flex items-center justify-between gap-3">
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="w-5 h-5 text-primary" />
+              {isEdit ? "Contract bewerken" : "Nieuw contract"}
+            </DialogTitle>
+            {!isEdit && (
+              <button
+                type="button"
+                onClick={() => setMode(mode === "snel" ? "geavanceerd" : "snel")}
+                className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1 rounded-md border border-border bg-muted/40"
+                title="Wissel modus"
+              >
+                {mode === "snel" ? <Settings2 className="w-3.5 h-3.5" /> : <Zap className="w-3.5 h-3.5" />}
+                {mode === "snel" ? "Alle opties" : "Snel mode"}
+              </button>
+            )}
+          </div>
         </DialogHeader>
 
+        {mode === "snel" && !isEdit ? (
+          <QuickContractForm
+            form={form}
+            update={update}
+            klanten={klanten}
+            vehicles={vehicles}
+            klantPickerOpen={klantPickerOpen}
+            setKlantPickerOpen={setKlantPickerOpen}
+            pickKlant={pickKlant}
+            selectedVehicle={selectedVehicle}
+            onCancel={() => onOpenChange(false)}
+            onSubmit={handleSubmit}
+            canSubmit={canQuickSubmit}
+            isPending={isPending}
+          />
+        ) : (
+        <>
         {/* Step indicator */}
         <div className="flex items-center gap-1 mb-2">
           {steps.map((s, i) => (
@@ -459,7 +532,191 @@ export function ContractForm({ open, onOpenChange, editContract, prefilledVehicl
             </Button>
           )}
         </div>
+        </>
+        )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+interface QuickProps {
+  form: any;
+  update: (k: string, v: unknown) => void;
+  klanten: any[];
+  vehicles: DbVoertuig[];
+  klantPickerOpen: boolean;
+  setKlantPickerOpen: (b: boolean) => void;
+  pickKlant: (k: any) => void;
+  selectedVehicle: DbVoertuig | undefined;
+  onCancel: () => void;
+  onSubmit: () => void;
+  canSubmit: boolean;
+  isPending: boolean;
+}
+
+function QuickContractForm({
+  form, update, klanten, vehicles, klantPickerOpen, setKlantPickerOpen, pickKlant,
+  selectedVehicle, onCancel, onSubmit, canSubmit, isPending,
+}: QuickProps) {
+  const days = form.start_datum && form.eind_datum
+    ? Math.max(1, Math.round((new Date(form.eind_datum).getTime() - new Date(form.start_datum).getTime()) / 86400000))
+    : 0;
+  const maanden = days > 0 ? (days / 30).toFixed(1) : "0";
+  const totaal = form.type === "verhuur"
+    ? days * Number(form.maandprijs || 0)
+    : Number(maanden) * Number(form.maandprijs || 0);
+
+  return (
+    <div className="space-y-4 animate-fade-in">
+      <div className="rounded-xl border border-primary/20 bg-primary/5 p-3 flex items-start gap-2.5">
+        <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+        <div className="text-xs text-muted-foreground">
+          <span className="font-medium text-foreground">Snel mode</span> · vul alleen het hoognodige in. Standaard waarden vullen automatisch in.
+        </div>
+      </div>
+
+      {/* Type chips */}
+      <div className="space-y-1.5">
+        <Label className="text-xs">Type contract</Label>
+        <div className="grid grid-cols-4 gap-1.5">
+          {[
+            { v: "lease", l: "Lease" },
+            { v: "verhuur", l: "Verhuur" },
+            { v: "fietslease", l: "Fiets" },
+            { v: "ev-lease", l: "EV" },
+          ].map((t) => (
+            <button
+              key={t.v}
+              type="button"
+              onClick={() => update("type", t.v)}
+              className={`px-2 py-2 rounded-lg text-xs font-medium border transition-all ${
+                form.type === t.v
+                  ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                  : "bg-background border-border text-muted-foreground hover:border-primary/40"
+              }`}
+            >
+              {t.l}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Klant picker */}
+      <div className="space-y-1.5">
+        <Label className="text-xs">Klant *</Label>
+        <div className="grid grid-cols-[auto_1fr] gap-2">
+          <Popover open={klantPickerOpen} onOpenChange={setKlantPickerOpen}>
+            <PopoverTrigger asChild>
+              <Button type="button" variant="outline" size="icon" className="h-10 w-10 shrink-0">
+                <Search className="w-4 h-4" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[320px] p-0" align="start">
+              <Command>
+                <CommandInput placeholder="Zoek bestaande klant..." />
+                <CommandList>
+                  <CommandEmpty>Geen klant gevonden</CommandEmpty>
+                  <CommandGroup>
+                    {klanten.slice(0, 50).map((k) => (
+                      <CommandItem
+                        key={k.id}
+                        value={`${k.voornaam} ${k.achternaam} ${k.email}`}
+                        onSelect={() => pickKlant(k)}
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium">{k.voornaam} {k.achternaam}</span>
+                          <span className="text-xs text-muted-foreground">{k.email}</span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          <Input
+            value={form.klant_naam}
+            onChange={(e) => update("klant_naam", e.target.value)}
+            placeholder="Naam klant"
+            className="h-10"
+          />
+        </div>
+        <Input
+          type="email"
+          value={form.klant_email}
+          onChange={(e) => update("klant_email", e.target.value)}
+          placeholder="email@klant.nl *"
+          className="h-10"
+        />
+      </div>
+
+      {/* Voertuig */}
+      <div className="space-y-1.5">
+        <Label className="text-xs">Voertuig</Label>
+        <Select value={form.voertuig_id || ""} onValueChange={(v) => update("voertuig_id", v)}>
+          <SelectTrigger className="h-10"><SelectValue placeholder="Selecteer voertuig" /></SelectTrigger>
+          <SelectContent>
+            {vehicles.map((v) => (
+              <SelectItem key={v.id} value={v.id}>
+                {v.merk} {v.model} · {v.kenteken} · €{v.dagprijs}/dag
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Datums */}
+      <div className="grid grid-cols-2 gap-2">
+        <div className="space-y-1.5">
+          <Label className="text-xs">Startdatum *</Label>
+          <Input type="date" value={form.start_datum} onChange={(e) => update("start_datum", e.target.value)} className="h-10" />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Einddatum *</Label>
+          <Input type="date" value={form.eind_datum} onChange={(e) => update("eind_datum", e.target.value)} className="h-10" />
+        </div>
+      </div>
+
+      {/* Prijs */}
+      <div className="space-y-1.5">
+        <Label className="text-xs">{form.type === "verhuur" ? "Dagprijs (€) *" : "Maandprijs (€) *"}</Label>
+        <Input
+          type="number"
+          min={0}
+          value={form.maandprijs}
+          onChange={(e) => update("maandprijs", Number(e.target.value))}
+          className="h-10 text-base"
+        />
+        {selectedVehicle && (
+          <p className="text-[11px] text-muted-foreground">
+            Voorgesteld op basis van €{selectedVehicle.dagprijs}/dag
+          </p>
+        )}
+      </div>
+
+      {/* Samenvatting */}
+      {totaal > 0 && (
+        <div className="rounded-xl bg-muted/50 border border-border p-3">
+          <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+            <span>Looptijd</span>
+            <span>{form.type === "verhuur" ? `${days} dagen` : `${maanden} maanden`}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-foreground">Geschatte totaalwaarde</span>
+            <span className="text-lg font-bold text-primary">€{totaal.toFixed(0)}</span>
+          </div>
+        </div>
+      )}
+
+      <Separator />
+
+      <div className="flex justify-between gap-2">
+        <Button type="button" variant="outline" onClick={onCancel}>Annuleren</Button>
+        <Button onClick={onSubmit} disabled={!canSubmit || isPending} className="gap-1.5">
+          <Zap className="w-4 h-4" />
+          {isPending ? "Aanmaken..." : "Contract aanmaken"}
+        </Button>
+      </div>
+    </div>
   );
 }
