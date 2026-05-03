@@ -104,28 +104,29 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
           <Separator />
 
           <Tabs defaultValue="beschikbaarheid" className="w-full">
-            <div className="-mx-4 sm:mx-0 px-4 sm:px-0 overflow-x-auto scrollbar-none">
-              <TabsList className="inline-flex sm:grid sm:grid-cols-7 w-max sm:w-full h-auto p-1 bg-muted/60 rounded-full sm:rounded-xl gap-1">
-                {[
-                  { value: "beschikbaarheid", icon: CalendarCheck, label: "Beschikbaar" },
-                  { value: "tijdlijn", icon: Clock, label: "Tijdlijn" },
-                  { value: "onderhoud", icon: Wrench, label: "Onderhoud" },
-                  { value: "terugmeldingen", icon: RotateCcw, label: "Retouren" },
-                  { value: "reserveringen", icon: CalendarRange, label: "Reserveringen" },
-                  { value: "rapporten", icon: FileText, label: "Rapporten" },
-                  { value: "fotos", icon: ImageIcon, label: "Foto's" },
-                ].map(({ value, icon: Icon, label }) => (
-                  <TabsTrigger
-                    key={value}
-                    value={value}
-                    className="flex items-center justify-center gap-1.5 px-3.5 py-2 sm:px-1 sm:py-2 sm:flex-col sm:gap-1 h-auto rounded-full sm:rounded-lg text-xs sm:text-[10px] font-medium text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-colors whitespace-nowrap"
-                  >
-                    <Icon className="w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0" />
-                    <span className="leading-none">{label}</span>
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            </div>
+            <TabsList className="grid grid-cols-7 w-full h-auto p-1 bg-muted/60 rounded-xl gap-0.5">
+              {[
+                { value: "beschikbaarheid", icon: CalendarCheck, label: "Beschikbaar", short: "Vrij" },
+                { value: "tijdlijn", icon: Clock, label: "Tijdlijn", short: "Tijd" },
+                { value: "onderhoud", icon: Wrench, label: "Onderhoud", short: "Service" },
+                { value: "terugmeldingen", icon: RotateCcw, label: "Retouren", short: "Retour" },
+                { value: "reserveringen", icon: CalendarRange, label: "Reserveringen", short: "Boek" },
+                { value: "rapporten", icon: FileText, label: "Rapporten", short: "Doc" },
+                { value: "fotos", icon: ImageIcon, label: "Foto's", short: "Foto" },
+              ].map(({ value, icon: Icon, label, short }) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  className="flex flex-col items-center justify-center gap-1 px-0.5 py-2 h-auto rounded-lg text-[9px] sm:text-[10px] font-medium text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm transition-colors"
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="leading-none truncate max-w-full">
+                    <span className="sm:hidden">{short}</span>
+                    <span className="hidden sm:inline">{label}</span>
+                  </span>
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
             <TabsContent value="beschikbaarheid" className="mt-4">
               <VehicleAvailability voertuigId={vehicle.id} />
