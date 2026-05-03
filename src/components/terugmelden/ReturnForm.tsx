@@ -1,6 +1,6 @@
 import { useState } from "react";
 import {
-  Car, Upload, Gauge, FileText, Loader2, RotateCcw, Search, Image as ImageIcon, X, AlertTriangle, ShieldCheck,
+  Car, Upload, Gauge, FileText, Loader2, RotateCcw, Search, Image as ImageIcon, X, AlertTriangle, ShieldCheck, Fuel, Sparkles, Euro,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,14 @@ import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { VehicleDamageSketch, type DamagePoint } from "@/components/VehicleDamageSketch";
 import { KentekenScanner } from "@/components/KentekenScanner";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+export interface BonAnalyse {
+  liters: number | null;
+  brandstof: string | null;
+  bedrag: number | null;
+}
 
 interface MatchedVehicle {
   id: string;
@@ -30,6 +38,8 @@ interface ReturnFormProps {
   setNotitie: (v: string) => void;
   file: File | null;
   setFile: (f: File | null) => void;
+  bonAnalyse: BonAnalyse | null;
+  setBonAnalyse: (b: BonAnalyse | null) => void;
   fotos: File[];
   setFotos: (f: File[]) => void;
   schadePunten: DamagePoint[];
@@ -52,6 +62,8 @@ export default function ReturnForm({
   setNotitie,
   file,
   setFile,
+  bonAnalyse,
+  setBonAnalyse,
   fotos,
   setFotos,
   schadePunten,
@@ -62,19 +74,47 @@ export default function ReturnForm({
   onSubmit,
 }: ReturnFormProps) {
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [analyzing, setAnalyzing] = useState(false);
 
-  const handleFileChange = (f: File | null) => {
+  const handleFileChange = async (f: File | null) => {
     setFile(f);
+    setBonAnalyse(null);
     if (f && f.type.startsWith("image/")) {
       const url = URL.createObjectURL(f);
       setFilePreview(url);
+      analyzeBon(f);
     } else {
       setFilePreview(null);
     }
   };
 
+  const analyzeBon = async (f: File) => {
+    try {
+      setAnalyzing(true);
+      const base64 = await fileToBase64(f);
+      const { data, error } = await supabase.functions.invoke("analyze-bon", {
+        body: { image_base64: base64 },
+      });
+      if (error) throw error;
+      if (data?.result) {
+        const r = data.result;
+        setBonAnalyse({
+          liters: typeof r.liters === "number" ? r.liters : null,
+          brandstof: r.brandstof || null,
+          bedrag: typeof r.bedrag === "number" ? r.bedrag : null,
+        });
+        toast.success("Bon geanalyseerd");
+      }
+    } catch (err: any) {
+      toast.error("Kon bon niet automatisch lezen", { description: err.message });
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
   const clearFile = () => {
     setFile(null);
+    setBonAnalyse(null);
     if (filePreview) URL.revokeObjectURL(filePreview);
     setFilePreview(null);
   };
@@ -180,6 +220,9 @@ export default function ReturnForm({
                 <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
                 <p className="text-sm text-muted-foreground">Klik om een bon te uploaden</p>
                 <p className="text-xs text-muted-foreground mt-1">Afbeelding of PDF · max 10 MB</p>
+                <p className="text-[11px] text-primary mt-1 flex items-center justify-center gap-1">
+                  <Sparkles className="w-3 h-3" /> AI leest liters, brandstof en bedrag automatisch
+                </p>
               </div>
             )}
             <input
@@ -189,6 +232,61 @@ export default function ReturnForm({
               className="hidden"
               onChange={e => handleFileChange(e.target.files?.[0] || null)}
             />
+
+            {/* Bon analyse */}
+            {(analyzing || bonAnalyse) && (
+              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 animate-fade-in space-y-3">
+                <div className="flex items-center gap-2 text-xs font-medium text-primary">
+                  {analyzing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5" />}
+                  {analyzing ? "Bon wordt gelezen..." : "Automatisch herkend (pas aan indien nodig)"}
+                </div>
+                {bonAnalyse && (
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <Label className="text-[11px] flex items-center gap-1 mb-1">
+                        <Fuel className="w-3 h-3" /> Liters
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={bonAnalyse.liters ?? ""}
+                        onChange={(e) => setBonAnalyse({ ...bonAnalyse, liters: e.target.value ? parseFloat(e.target.value) : null })}
+                        placeholder="0"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-[11px] mb-1 block">Brandstof</Label>
+                      <select
+                        value={bonAnalyse.brandstof ?? ""}
+                        onChange={(e) => setBonAnalyse({ ...bonAnalyse, brandstof: e.target.value || null })}
+                        className="w-full h-8 rounded-md border border-input bg-background px-2 text-sm"
+                      >
+                        <option value="">Onbekend</option>
+                        <option value="Benzine">Benzine</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="LPG">LPG</option>
+                        <option value="Elektrisch">Elektrisch</option>
+                        <option value="AdBlue">AdBlue</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label className="text-[11px] flex items-center gap-1 mb-1">
+                        <Euro className="w-3 h-3" /> Bedrag
+                      </Label>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        value={bonAnalyse.bedrag ?? ""}
+                        onChange={(e) => setBonAnalyse({ ...bonAnalyse, bedrag: e.target.value ? parseFloat(e.target.value) : null })}
+                        placeholder="0,00"
+                        className="h-8 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Schadefoto's upload */}
