@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ContractDocument } from "@/components/ContractDocument";
 import { InvoicePdfButton } from "@/components/InvoicePdfExport";
 import { KilometerTab } from "@/components/KilometerTab";
-import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle, Printer, Gauge, RotateCcw, Shield, CalendarCheck, Phone, Mail, Building2, MapPin } from "lucide-react";
+import { Search, Plus, FileText, Euro, AlertCircle, Bike, Zap, Car, Eye, Edit, XCircle, CheckCircle, Printer, Gauge, RotateCcw, Shield, CalendarCheck, Phone, Mail, Building2, MapPin, AlertTriangle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,6 +21,7 @@ import { getContractStatusColor, getContractTypeLabel, getContractTypeIcon, getI
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
 import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
+import { VehicleSchadeOverzicht } from "@/components/VehicleSchadeOverzicht";
 
 const typeFilters: { value: string; label: string; icon: React.ReactNode }[] = [
   { value: "Alle", label: "Alle", icon: <FileText className="w-3.5 h-3.5" /> },
@@ -409,7 +410,7 @@ function ContractDetail({
             <Separator />
 
             <Tabs defaultValue="facturen">
-              <TabsList className="w-full grid grid-cols-3">
+              <TabsList className="w-full grid grid-cols-4">
                 <TabsTrigger value="facturen" className="gap-1.5 text-xs">
                   <Euro className="w-3.5 h-3.5" />
                   Facturen
@@ -421,6 +422,10 @@ function ContractDetail({
                 <TabsTrigger value="retouren" className="gap-1.5 text-xs">
                   <RotateCcw className="w-3.5 h-3.5" />
                   Retouren
+                </TabsTrigger>
+                <TabsTrigger value="schade" className="gap-1.5 text-xs">
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  Schade
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="facturen" className="mt-4 space-y-2">
@@ -474,6 +479,13 @@ function ContractDetail({
               <TabsContent value="retouren" className="mt-4">
                 {vehicle ? (
                   <VehicleTerugmeldingen voertuigId={contract.voertuig_id || ""} kenteken={vehicle.kenteken} />
+                ) : (
+                  <div className="text-center py-6 text-muted-foreground text-sm">Geen voertuig gekoppeld</div>
+                )}
+              </TabsContent>
+              <TabsContent value="schade" className="mt-4">
+                {vehicle ? (
+                  <VehicleSchadeOverzicht voertuigId={contract.voertuig_id || ""} kenteken={vehicle.kenteken} />
                 ) : (
                   <div className="text-center py-6 text-muted-foreground text-sm">Geen voertuig gekoppeld</div>
                 )}
