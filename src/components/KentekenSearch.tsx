@@ -70,8 +70,8 @@ export function KentekenSearch() {
   const { addVoertuig } = useVoertuigen();
   const { user } = useAuth();
 
-  const handleSearch = async () => {
-    const kenteken = formatKenteken(query);
+  const handleSearch = async (override?: string) => {
+    const kenteken = formatKenteken(override ?? query);
     if (kenteken.length < 4) {
       toast.error("Voer een geldig kenteken in");
       return;
@@ -142,9 +142,9 @@ export function KentekenSearch() {
           </div>
           <KentekenScanner
             iconOnly
-            onDetected={(k) => { setQuery(k); setTimeout(() => handleSearch(), 50); }}
+            onDetected={(k) => { setQuery(k); handleSearch(k); }}
           />
-          <Button onClick={handleSearch} disabled={loading}>
+          <Button onClick={() => handleSearch()} disabled={loading}>
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
           </Button>
         </div>
