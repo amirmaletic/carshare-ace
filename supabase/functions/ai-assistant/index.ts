@@ -305,6 +305,46 @@ async function runTool(name: string, args: any, sb: any): Promise<any> {
           peildatum: today,
         };
       }
+      case "zoek_voertuig": {
+        const q = String(args.query ?? "").trim();
+        const lim = Math.min(args.limit ?? 8, 20);
+        if (!q) return { count: 0, voertuigen: [] };
+        const pattern = `%${q}%`;
+        const { data, error } = await sb
+          .from("voertuigen")
+          .select("id,kenteken,merk,model,bouwjaar,brandstof,categorie,status,dagprijs")
+          .or(`kenteken.ilike.${pattern},merk.ilike.${pattern},model.ilike.${pattern}`)
+          .limit(lim);
+        if (error) throw error;
+        return { count: data?.length ?? 0, voertuigen: data };
+      }
+      case "zoek_klant": {
+        const q = String(args.query ?? "").trim();
+        const lim = Math.min(args.limit ?? 8, 20);
+        if (!q) return { count: 0, klanten: [] };
+        const pattern = `%${q}%`;
+        const { data, error } = await sb
+          .from("klanten")
+          .select("id,voornaam,achternaam,bedrijfsnaam,email")
+          .or(`voornaam.ilike.${pattern},achternaam.ilike.${pattern},bedrijfsnaam.ilike.${pattern},email.ilike.${pattern}`)
+          .limit(lim);
+        if (error) throw error;
+        return { count: data?.length ?? 0, klanten: data };
+      }
+      case "start_reservering_link": {
+        const params = new URLSearchParams();
+        params.set("nieuw", "1");
+        if (args.voertuig_id) params.set("voertuig", String(args.voertuig_id));
+        if (args.klant_id) params.set("klant", String(args.klant_id));
+        if (args.start_datum) params.set("start", String(args.start_datum));
+        if (args.eind_datum) params.set("eind", String(args.eind_datum));
+        return { href: `/reserveringen?${params.toString()}` };
+      }
+      case "open_voertuig_link": {
+        const k = String(args.kenteken ?? "").trim();
+        if (!k) return { error: "kenteken vereist" };
+        return { href: `/voertuigen?kenteken=${encodeURIComponent(k)}` };
+      }
       default:
         return { error: `Onbekende tool: ${name}` };
     }
