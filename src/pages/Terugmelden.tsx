@@ -201,7 +201,7 @@ export default function Terugmelden() {
             .from("contracts")
             .select("id, borg")
             .eq("voertuig_id", matchedVehicle.id)
-            .in("status", ["actief", "afgerond"])
+            .eq("status", "actief")
             .order("eind_datum", { ascending: false })
             .limit(1)
             .maybeSingle();
