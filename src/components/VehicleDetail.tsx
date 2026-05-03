@@ -4,7 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw, Clock, CalendarCheck,
-  Image as ImageIcon,
+  Image as ImageIcon, AlertTriangle,
 } from "lucide-react";
 import {
   Vehicle, getStatusColor, getReservationStatusColor,
@@ -15,6 +15,7 @@ import { VehicleTimeline } from "@/components/VehicleTimeline";
 import { VehicleImage } from "@/components/VehicleImage";
 import { VehicleAvailability } from "@/components/VehicleAvailability";
 import { VehicleFotoGalerij } from "@/components/VehicleFotoGalerij";
+import { VehicleSchadeOverzicht } from "@/components/VehicleSchadeOverzicht";
 import { useServiceHistorie } from "@/hooks/useVehicleReports";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -104,12 +105,13 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
           <Separator />
 
           <Tabs defaultValue="beschikbaarheid" className="w-full">
-            <TabsList className="grid grid-cols-7 w-full h-auto p-1 bg-muted/60 rounded-xl gap-0.5">
+            <TabsList className="grid grid-cols-8 w-full h-auto p-1 bg-muted/60 rounded-xl gap-0.5">
               {[
                 { value: "beschikbaarheid", icon: CalendarCheck, label: "Beschikbaar", short: "Vrij" },
                 { value: "tijdlijn", icon: Clock, label: "Tijdlijn", short: "Tijd" },
                 { value: "onderhoud", icon: Wrench, label: "Onderhoud", short: "Service" },
                 { value: "terugmeldingen", icon: RotateCcw, label: "Retouren", short: "Retour" },
+                { value: "schade", icon: AlertTriangle, label: "Schade", short: "Schade" },
                 { value: "reserveringen", icon: CalendarRange, label: "Reserveringen", short: "Boek" },
                 { value: "rapporten", icon: FileText, label: "Rapporten", short: "Doc" },
                 { value: "fotos", icon: ImageIcon, label: "Foto's", short: "Foto" },
@@ -160,6 +162,10 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
             <TabsContent value="terugmeldingen" className="mt-4">
               <VehicleTerugmeldingen voertuigId={vehicle.id} kenteken={vehicle.kenteken} />
+            </TabsContent>
+
+            <TabsContent value="schade" className="mt-4">
+              <VehicleSchadeOverzicht voertuigId={vehicle.id} kenteken={vehicle.kenteken} />
             </TabsContent>
 
             <TabsContent value="reserveringen" className="mt-4 space-y-3">
