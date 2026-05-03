@@ -1,4 +1,5 @@
-import { ChevronRight, Car } from "lucide-react";
+import { ChevronRight, Car, Check, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
 export interface CopilotActionVehicle {
@@ -7,6 +8,7 @@ export interface CopilotActionVehicle {
   label?: string;
   sub?: string;
   status?: string;
+  href?: string;
 }
 
 export interface CopilotActionPrimary {
@@ -21,19 +23,46 @@ export interface CopilotActionPrimary {
   eind_datum?: string;
 }
 
+export interface CopilotVoorstel {
+  kind: "reservering" | "rit" | "onderhoud" | "klant";
+  summary: string;
+  payload: Record<string, any>;
+  confirm_label?: string;
+  open_after?: string;
+}
+
 export interface CopilotActionsData {
   intro?: string;
   vehicles?: CopilotActionVehicle[];
   primary?: CopilotActionPrimary;
+  voorstel?: CopilotVoorstel;
 }
 
 interface Props {
   data: CopilotActionsData;
   onOpenVehicle: (v: CopilotActionVehicle) => void;
   onPrimary: (p: CopilotActionPrimary) => void;
+  onConfirmVoorstel?: (v: CopilotVoorstel) => Promise<{ ok?: boolean; href?: string; error?: string }>;
 }
 
-export function CopilotActions({ data, onOpenVehicle, onPrimary }: Props) {
+export function CopilotActions({ data, onOpenVehicle, onPrimary, onConfirmVoorstel }: Props) {
+  const [voorstelStatus, setVoorstelStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [voorstelError, setVoorstelError] = useState<string | null>(null);
+
+  const handleConfirm = async () => {
+    if (!data.voorstel || !onConfirmVoorstel) return;
+    setVoorstelStatus("loading");
+    setVoorstelError(null);
+    try {
+      const res = await onConfirmVoorstel(data.voorstel);
+      if (res?.error) throw new Error(res.error);
+      setVoorstelStatus("done");
+    } catch (e: any) {
+      setVoorstelStatus("error");
+      setVoorstelError(e?.message || "Mislukt");
+    }
+  };
+
   return (
     <div className="space-y-2 mt-2">
       {data.intro && (
@@ -72,11 +101,43 @@ export function CopilotActions({ data, onOpenVehicle, onPrimary }: Props) {
           ))}
         </div>
       )}
+      {data.voorstel && (
+        <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
+          <div className="flex items-start gap-2">
+            <span className="text-[10px] uppercase tracking-wider font-semibold text-primary bg-primary/10 px-1.5 py-0.5 rounded">
+              Voorstel · {data.voorstel.kind}
+            </span>
+          </div>
+          <p className="text-sm text-foreground">{data.voorstel.summary}</p>
+          {voorstelStatus === "done" ? (
+            <div className="flex items-center gap-2 text-sm text-emerald-600 font-medium">
+              <Check className="w-4 h-4" /> Aangemaakt
+            </div>
+          ) : (
+            <Button
+              onClick={handleConfirm}
+              disabled={voorstelStatus === "loading"}
+              className="w-full"
+              size="sm"
+            >
+              {voorstelStatus === "loading" ? (
+                <><Loader2 className="w-3 h-3 mr-2 animate-spin" /> Bezig...</>
+              ) : (
+                data.voorstel.confirm_label || "Bevestig en maak aan"
+              )}
+            </Button>
+          )}
+          {voorstelError && (
+            <p className="text-xs text-destructive">{voorstelError}</p>
+          )}
+        </div>
+      )}
       {data.primary && (
         <div className="pt-1">
           <Button
             onClick={() => onPrimary(data.primary!)}
             className="w-full"
+            variant={data.voorstel ? "outline" : "default"}
             size="sm"
           >
             {data.primary.label}
