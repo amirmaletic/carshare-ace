@@ -1774,6 +1774,10 @@ export type Database = {
       }
       terugmeldingen: {
         Row: {
+          bon_ai_data: Json | null
+          bon_bedrag: number | null
+          bon_brandstof: string | null
+          bon_liters: number | null
           bon_url: string | null
           created_at: string
           datum: string
@@ -1790,6 +1794,10 @@ export type Database = {
           voertuig_naam: string
         }
         Insert: {
+          bon_ai_data?: Json | null
+          bon_bedrag?: number | null
+          bon_brandstof?: string | null
+          bon_liters?: number | null
           bon_url?: string | null
           created_at?: string
           datum?: string
@@ -1806,6 +1814,10 @@ export type Database = {
           voertuig_naam: string
         }
         Update: {
+          bon_ai_data?: Json | null
+          bon_bedrag?: number | null
+          bon_brandstof?: string | null
+          bon_liters?: number | null
           bon_url?: string | null
           created_at?: string
           datum?: string
