@@ -552,7 +552,11 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">Leasenemer / Huurder</p>
-              <div className="border-b border-foreground h-16 mb-2" />
+              <div className="border-b border-foreground h-16 mb-2 flex items-end justify-center">
+                {klantHandtekening && (
+                  <img src={klantHandtekening} alt="Handtekening klant" className="max-h-14 object-contain" />
+                )}
+              </div>
               <p className="text-sm font-medium">{contract.klant_naam}</p>
               <p className="text-xs text-muted-foreground">Datum: _______________</p>
             </div>
