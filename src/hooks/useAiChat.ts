@@ -10,6 +10,17 @@ export function useAiChat() {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  const buildContext = () => {
+    if (typeof window === "undefined") return undefined;
+    const url = new URL(window.location.href);
+    return {
+      path: url.pathname,
+      kenteken: url.searchParams.get("kenteken") || undefined,
+      klant: url.searchParams.get("klant") || undefined,
+      now: new Date().toISOString(),
+    };
+  };
+
   const send = useCallback(async (input: string) => {
     const userMsg: Msg = { role: "user", content: input };
     const allMessages = [...messages, userMsg];
@@ -39,7 +50,7 @@ export function useAiChat() {
           Authorization: `Bearer ${token}`,
           apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
         },
-        body: JSON.stringify({ messages: allMessages }),
+        body: JSON.stringify({ messages: allMessages, context: buildContext() }),
       });
 
       if (!resp.ok) {
@@ -110,5 +121,24 @@ export function useAiChat() {
 
   const clearMessages = useCallback(() => setMessages([]), []);
 
-  return { messages, isLoading, send, clearMessages };
+  const executeVoorstel = useCallback(async (voorstel: any) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+    const resp = await fetch(CHAT_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+      },
+      body: JSON.stringify({ voorstel }),
+    });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: "Voorstel mislukt" }));
+      throw new Error(err.error || "Voorstel mislukt");
+    }
+    return await resp.json();
+  }, []);
+
+  return { messages, isLoading, send, clearMessages, executeVoorstel };
 }
