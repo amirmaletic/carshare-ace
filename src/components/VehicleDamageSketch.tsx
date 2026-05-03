@@ -1,8 +1,10 @@
 import { useState, useRef } from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, Camera, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export interface DamagePoint {
   id: string;
@@ -11,12 +13,15 @@ export interface DamagePoint {
   label: string;
   ernst: "licht" | "middel" | "zwaar";
   grootte: "klein" | "middel" | "groot";
+  fotos?: string[]; // public URLs in schade-fotos bucket
 }
 
 interface VehicleDamageSketchProps {
   points: DamagePoint[];
   onChange: (points: DamagePoint[]) => void;
   readOnly?: boolean;
+  /** Map waar foto's in storage worden opgeslagen, bv "terugmelding" of "overdracht". */
+  uploadFolder?: string;
 }
 
 const ernstColors = {
@@ -31,11 +36,12 @@ const ernstBorderColors = {
   zwaar: "border-red-500",
 };
 
-export function VehicleDamageSketch({ points, onChange, readOnly = false }: VehicleDamageSketchProps) {
+export function VehicleDamageSketch({ points, onChange, readOnly = false, uploadFolder = "schade" }: VehicleDamageSketchProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedPoint, setSelectedPoint] = useState<string | null>(null);
   const [newLabel, setNewLabel] = useState("");
   const [newErnst, setNewErnst] = useState<"licht" | "middel" | "zwaar">("licht");
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null);
 
   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (readOnly) return;
@@ -61,6 +67,41 @@ export function VehicleDamageSketch({ points, onChange, readOnly = false }: Vehi
 
   const updatePoint = (id: string, updates: Partial<DamagePoint>) => {
     onChange(points.map(p => p.id === id ? { ...p, ...updates } : p));
+  };
+
+  const handleFotoUpload = async (pointId: string, files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("Niet ingelogd");
+      return;
+    }
+    setUploadingFor(pointId);
+    try {
+      const newUrls: string[] = [];
+      for (const file of Array.from(files).slice(0, 3)) {
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `${user.id}/${uploadFolder}/${pointId}-${Date.now()}-${Math.random().toString(36).slice(2, 6)}.${ext}`;
+        const { error: uploadError } = await supabase.storage.from("schade-fotos").upload(path, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabase.storage.from("schade-fotos").getPublicUrl(path);
+        newUrls.push(urlData.publicUrl);
+      }
+      const point = points.find(p => p.id === pointId);
+      const existing = point?.fotos ?? [];
+      updatePoint(pointId, { fotos: [...existing, ...newUrls].slice(0, 5) });
+      toast.success(`${newUrls.length} foto('s) toegevoegd`);
+    } catch (err: any) {
+      toast.error("Fout bij uploaden: " + err.message);
+    } finally {
+      setUploadingFor(null);
+    }
+  };
+
+  const removeFoto = (pointId: string, url: string) => {
+    const point = points.find(p => p.id === pointId);
+    if (!point) return;
+    updatePoint(pointId, { fotos: (point.fotos ?? []).filter(u => u !== url) });
   };
 
   const removePoint = (id: string) => {
@@ -220,6 +261,52 @@ export function VehicleDamageSketch({ points, onChange, readOnly = false }: Vehi
                   <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium text-white flex-shrink-0 ml-auto", ernstColors[point.ernst])}>
                     {point.ernst}
                   </span>
+                </div>
+
+                {/* Foto-strip per punt */}
+                <div className="pl-8 space-y-1.5" onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {(point.fotos ?? []).map(url => (
+                      <div key={url} className="relative group">
+                        <img
+                          src={url}
+                          alt="Schadefoto"
+                          className="w-14 h-14 object-cover rounded-md border border-border"
+                        />
+                        {!readOnly && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); removeFoto(point.id, url); }}
+                            className="absolute -top-1.5 -right-1.5 p-0.5 rounded-full bg-background border border-border shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    {!readOnly && (point.fotos?.length ?? 0) < 5 && (
+                      <label className={cn(
+                        "w-14 h-14 rounded-md border-2 border-dashed border-border hover:border-primary/40 hover:bg-muted cursor-pointer flex items-center justify-center transition-colors",
+                        uploadingFor === point.id && "opacity-60 pointer-events-none"
+                      )}>
+                        {uploadingFor === point.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Camera className="w-4 h-4 text-muted-foreground" />
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          className="hidden"
+                          onChange={(e) => handleFotoUpload(point.id, e.target.files)}
+                        />
+                      </label>
+                    )}
+                  </div>
+                  {(point.fotos?.length ?? 0) === 0 && !readOnly && (
+                    <p className="text-[11px] text-muted-foreground">Voeg foto's toe van deze schade</p>
+                  )}
                 </div>
               </div>
             ))}

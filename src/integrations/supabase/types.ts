@@ -1182,6 +1182,7 @@ export type Database = {
           ondertekend_op: string | null
           opmerkingen: string | null
           organisatie_id: string | null
+          schade_punten: Json
           status: string
           type: string
           user_id: string
@@ -1201,6 +1202,7 @@ export type Database = {
           ondertekend_op?: string | null
           opmerkingen?: string | null
           organisatie_id?: string | null
+          schade_punten?: Json
           status?: string
           type?: string
           user_id: string
@@ -1220,6 +1222,7 @@ export type Database = {
           ondertekend_op?: string | null
           opmerkingen?: string | null
           organisatie_id?: string | null
+          schade_punten?: Json
           status?: string
           type?: string
           user_id?: string
@@ -1641,6 +1644,57 @@ export type Database = {
           },
         ]
       }
+      schade_vergelijkingen: {
+        Row: {
+          ai_model: string | null
+          ai_resultaat: Json
+          beoordeeld_door: string | null
+          beoordeeld_op: string | null
+          created_at: string
+          id: string
+          notitie: string | null
+          ophaal_overdracht_id: string | null
+          organisatie_id: string
+          status: string
+          terugmelding_id: string
+          updated_at: string
+          user_id: string
+          voertuig_id: string
+        }
+        Insert: {
+          ai_model?: string | null
+          ai_resultaat?: Json
+          beoordeeld_door?: string | null
+          beoordeeld_op?: string | null
+          created_at?: string
+          id?: string
+          notitie?: string | null
+          ophaal_overdracht_id?: string | null
+          organisatie_id: string
+          status?: string
+          terugmelding_id: string
+          updated_at?: string
+          user_id: string
+          voertuig_id: string
+        }
+        Update: {
+          ai_model?: string | null
+          ai_resultaat?: Json
+          beoordeeld_door?: string | null
+          beoordeeld_op?: string | null
+          created_at?: string
+          id?: string
+          notitie?: string | null
+          ophaal_overdracht_id?: string | null
+          organisatie_id?: string
+          status?: string
+          terugmelding_id?: string
+          updated_at?: string
+          user_id?: string
+          voertuig_id?: string
+        }
+        Relationships: []
+      }
       service_historie: {
         Row: {
           created_at: string
@@ -1729,6 +1783,7 @@ export type Database = {
           medewerker_email: string | null
           notitie: string | null
           organisatie_id: string | null
+          schade_punten: Json
           user_id: string
           voertuig_id: string
           voertuig_kenteken: string
@@ -1744,6 +1799,7 @@ export type Database = {
           medewerker_email?: string | null
           notitie?: string | null
           organisatie_id?: string | null
+          schade_punten?: Json
           user_id: string
           voertuig_id: string
           voertuig_kenteken: string
@@ -1759,6 +1815,7 @@ export type Database = {
           medewerker_email?: string | null
           notitie?: string | null
           organisatie_id?: string | null
+          schade_punten?: Json
           user_id?: string
           voertuig_id?: string
           voertuig_kenteken?: string

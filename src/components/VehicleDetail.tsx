@@ -4,6 +4,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Car, Fuel, Gauge, Calendar, Shield, Wrench, Euro, MapPin, CalendarRange, FileText, RotateCcw, Clock, CalendarCheck,
+  Image as ImageIcon,
 } from "lucide-react";
 import {
   Vehicle, getStatusColor, getReservationStatusColor,
@@ -13,6 +14,7 @@ import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
 import { VehicleTimeline } from "@/components/VehicleTimeline";
 import { VehicleImage } from "@/components/VehicleImage";
 import { VehicleAvailability } from "@/components/VehicleAvailability";
+import { VehicleFotoGalerij } from "@/components/VehicleFotoGalerij";
 import { useServiceHistorie } from "@/hooks/useVehicleReports";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,7 +102,7 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
           <Separator />
 
           <Tabs defaultValue="beschikbaarheid" className="w-full">
-            <TabsList className="w-full grid grid-cols-6 h-auto p-1.5 bg-gradient-to-b from-muted/80 to-muted/40 rounded-2xl gap-1 border border-border/50 shadow-inner">
+            <TabsList className="w-full grid grid-cols-7 h-auto p-1.5 bg-gradient-to-b from-muted/80 to-muted/40 rounded-2xl gap-1 border border-border/50 shadow-inner">
               {[
                 { value: "beschikbaarheid", icon: CalendarCheck, label: "Beschikbaar" },
                 { value: "tijdlijn", icon: Clock, label: "Tijdlijn" },
@@ -108,6 +110,7 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
                 { value: "terugmeldingen", icon: RotateCcw, label: "Retouren" },
                 { value: "reserveringen", icon: CalendarRange, label: "Reserv." },
                 { value: "rapporten", icon: FileText, label: "Rapport" },
+                { value: "fotos", icon: ImageIcon, label: "Foto's" },
               ].map(({ value, icon: Icon, label }) => (
                 <TabsTrigger
                   key={value}
@@ -187,6 +190,10 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
 
             <TabsContent value="rapporten" className="mt-4">
               <VehicleReportTabs voertuigId={vehicle.id} />
+            </TabsContent>
+
+            <TabsContent value="fotos" className="mt-4">
+              <VehicleFotoGalerij voertuigId={vehicle.id} kenteken={vehicle.kenteken} />
             </TabsContent>
           </Tabs>
         </div>
