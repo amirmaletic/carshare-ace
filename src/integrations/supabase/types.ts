@@ -564,6 +564,30 @@ export type Database = {
           },
         ]
       }
+      copilot_geheugen: {
+        Row: {
+          created_at: string
+          feit: string
+          id: string
+          organisatie_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          feit: string
+          id?: string
+          organisatie_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          feit?: string
+          id?: string
+          organisatie_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       eigendom_historie: {
         Row: {
           created_at: string
