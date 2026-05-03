@@ -169,7 +169,7 @@ export default function Terugmelden() {
         fotoUrls.push(urlData.publicUrl);
       }
 
-      const { error } = await supabase.from("terugmeldingen").insert({
+      const { data: inserted, error } = await supabase.from("terugmeldingen").insert({
         user_id: user.id,
         organisatie_id: organisatieId!,
         voertuig_id: matchedVehicle.id,
@@ -194,17 +194,10 @@ export default function Terugmelden() {
       toast.success("Voertuig succesvol teruggemeld");
 
       // Start AI-vergelijking als er punten zijn
-      const insertedRow = (await supabase
-        .from("terugmeldingen")
-        .select("id")
-        .eq("voertuig_id", matchedVehicle.id)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single()).data;
-      if (insertedRow && !schadevrij) {
+      if (inserted && !schadevrij && schadePunten.length > 0) {
         setVergelijkingOpen(true);
         setVergelijking(null);
-        startVergelijking.mutate(insertedRow.id, {
+        startVergelijking.mutate(inserted.id, {
           onSuccess: ({ vergelijking, ophaal_aanwezig }) => {
             setVergelijking(vergelijking);
             setOphaalAanwezig(ophaal_aanwezig);
