@@ -78,14 +78,14 @@ export function OverdrachtenCenter() {
     enabled: !!user,
   });
 
-  // Contracts die vandaag/morgen starten of eindigen
+  // Alle aankomende ophalingen (vanaf vandaag) + terugbrengen vandaag/morgen
   const { data: contractEvents = [] } = useQuery({
     queryKey: ["contract-overdracht-events", today, tomorrow],
     queryFn: async () => {
       const { data: starts } = await supabase
         .from("contracts")
         .select("id, voertuig_id, klant_naam, klant_email, start_datum, eind_datum, status")
-        .in("start_datum", [today, tomorrow])
+        .gte("start_datum", today)
         .in("status", ["actief", "concept"]);
       const { data: ends } = await supabase
         .from("contracts")
@@ -152,9 +152,34 @@ export function OverdrachtenCenter() {
         })
         .eq("id", selectedOverdracht.id);
       if (error) throw error;
+
+      // Stuur kopie naar klant
+      if (selectedOverdracht.klant_email) {
+        try {
+          await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "contract-ondertekend",
+              recipientEmail: selectedOverdracht.klant_email,
+              templateData: {
+                klant_naam: selectedOverdracht.klant_naam,
+                voertuig_naam: selectedOverdracht.voertuig_naam,
+                voertuig_kenteken: selectedOverdracht.voertuig_kenteken,
+                type: selectedOverdracht.type,
+                datum: format(new Date(), "d MMMM yyyy", { locale: nl }),
+                kilometerstand: kilometerstand || null,
+                opmerkingen: opmerkingen || null,
+                bevestiging: getConfirmationText(selectedOverdracht),
+                handtekening: signature,
+              },
+            },
+          });
+        } catch (e) {
+          console.warn("Kon e-mail niet versturen:", e);
+        }
+      }
     },
     onSuccess: () => {
-      toast.success("Overdracht ondertekend!");
+      toast.success("Overdracht ondertekend en kopie verstuurd!");
       queryClient.invalidateQueries({ queryKey: ["overdrachten", today] });
       queryClient.invalidateQueries({ queryKey: ["overdrachten", tomorrow] });
       queryClient.invalidateQueries({ queryKey: ["overdrachten-recent"] });
