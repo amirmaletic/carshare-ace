@@ -18,7 +18,7 @@ export function SignaturePad({ onSignatureChange, width = 360, height = 180 }: S
     if (!canvas) return null;
     const ctx = canvas.getContext("2d");
     if (ctx) {
-      ctx.strokeStyle = "hsl(var(--foreground))";
+      ctx.strokeStyle = "#0F172A";
       ctx.lineWidth = 2.5;
       ctx.lineCap = "round";
       ctx.lineJoin = "round";
