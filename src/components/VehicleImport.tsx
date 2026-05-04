@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, X, Download, Search, Loader2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -139,6 +141,7 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
   const [lookupProgress, setLookupProgress] = useState({ done: 0, total: 0 });
   const [importProgress, setImportProgress] = useState({ done: 0, total: 0 });
   const [importErrors, setImportErrors] = useState<{ kenteken: string; message: string }[]>([]);
+  const [bulkDagprijs, setBulkDagprijs] = useState<string>("");
 
   const handleKentekenLookup = async () => {
     const lines = kentekenInput
@@ -172,6 +175,11 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
     }
     setParsed({ valid, errors });
     setLookingUp(false);
+    if (bulkDagprijs && !isNaN(parseFloat(bulkDagprijs))) {
+      const prijs = parseFloat(bulkDagprijs);
+      valid.forEach((r) => { r.dagprijs = prijs; });
+      setParsed({ valid: [...valid], errors });
+    }
     if (valid.length > 0) {
       toast.success(`${valid.length} kenteken${valid.length !== 1 ? "s" : ""} opgehaald via RDW`);
     }
@@ -298,6 +306,23 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
               rows={6}
               className="font-mono uppercase tracking-wider text-sm"
             />
+            <div className="space-y-1.5">
+              <Label htmlFor="bulk-dagprijs" className="text-xs">Standaard dagprijs (optioneel)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">€</span>
+                <Input
+                  id="bulk-dagprijs"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="bijv. 45"
+                  value={bulkDagprijs}
+                  onChange={(e) => setBulkDagprijs(e.target.value)}
+                  className="pl-7"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Wordt toegepast op alle opgehaalde voertuigen. Per voertuig nog aanpasbaar in de preview.</p>
+            </div>
             <Button
               onClick={handleKentekenLookup}
               disabled={lookingUp || importing || kentekenInput.trim().length === 0}
@@ -385,6 +410,7 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
                         <th className="p-2 text-left font-medium text-muted-foreground">Merk</th>
                         <th className="p-2 text-left font-medium text-muted-foreground">Model</th>
                         <th className="p-2 text-left font-medium text-muted-foreground">Bouwjaar</th>
+                        <th className="p-2 text-left font-medium text-muted-foreground">Dagprijs</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -394,10 +420,31 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
                           <td className="p-2">{r.merk}</td>
                           <td className="p-2">{r.model}</td>
                           <td className="p-2">{r.bouwjaar}</td>
+                          <td className="p-2">
+                            <div className="relative w-24">
+                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">€</span>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={r.dagprijs ?? 0}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  setParsed((prev) => {
+                                    if (!prev) return prev;
+                                    const next = [...prev.valid];
+                                    next[i] = { ...next[i], dagprijs: val };
+                                    return { ...prev, valid: next };
+                                  });
+                                }}
+                                className="h-7 pl-5 text-xs"
+                              />
+                            </div>
+                          </td>
                         </tr>
                       ))}
                       {parsed.valid.length > 10 && (
-                        <tr><td colSpan={4} className="p-2 text-center text-muted-foreground">+ {parsed.valid.length - 10} meer...</td></tr>
+                        <tr><td colSpan={5} className="p-2 text-center text-muted-foreground">+ {parsed.valid.length - 10} meer...</td></tr>
                       )}
                     </tbody>
                   </table>
