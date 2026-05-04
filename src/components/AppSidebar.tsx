@@ -119,7 +119,11 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
         {visibleNavItems.map((item) => {
-          const isActive = location.pathname === item.path;
+          const isActive =
+            location.pathname === item.path ||
+            (item.path.startsWith("/dashboarding") &&
+              (location.pathname.startsWith("/dashboarding") ||
+                location.pathname.startsWith("/dashboards")));
           const showBadge = item.path === "/instellingen" && openCount > 0;
           return (
             <Link
