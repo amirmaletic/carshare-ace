@@ -410,6 +410,7 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
                         <th className="p-2 text-left font-medium text-muted-foreground">Merk</th>
                         <th className="p-2 text-left font-medium text-muted-foreground">Model</th>
                         <th className="p-2 text-left font-medium text-muted-foreground">Bouwjaar</th>
+                        <th className="p-2 text-left font-medium text-muted-foreground">Dagprijs</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -419,10 +420,31 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
                           <td className="p-2">{r.merk}</td>
                           <td className="p-2">{r.model}</td>
                           <td className="p-2">{r.bouwjaar}</td>
+                          <td className="p-2">
+                            <div className="relative w-24">
+                              <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">€</span>
+                              <Input
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={r.dagprijs ?? 0}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  setParsed((prev) => {
+                                    if (!prev) return prev;
+                                    const next = [...prev.valid];
+                                    next[i] = { ...next[i], dagprijs: val };
+                                    return { ...prev, valid: next };
+                                  });
+                                }}
+                                className="h-7 pl-5 text-xs"
+                              />
+                            </div>
+                          </td>
                         </tr>
                       ))}
                       {parsed.valid.length > 10 && (
-                        <tr><td colSpan={4} className="p-2 text-center text-muted-foreground">+ {parsed.valid.length - 10} meer...</td></tr>
+                        <tr><td colSpan={5} className="p-2 text-center text-muted-foreground">+ {parsed.valid.length - 10} meer...</td></tr>
                       )}
                     </tbody>
                   </table>
