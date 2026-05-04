@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet-async";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -132,17 +132,21 @@ const typeStyles: Record<UpdateType, string> = {
 };
 
 export default function Updates() {
+  useEffect(() => {
+    document.title = "Updates en changelog | FleeFlo";
+    let meta = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.setAttribute("name", "description");
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute(
+      "content",
+      "Alle nieuwe functies, verbeteringen en updates van het FleeFlo wagenparkbeheer platform."
+    );
+  }, []);
   return (
     <div className="bg-background">
-      <Helmet>
-        <title>Updates en changelog | FleeFlo</title>
-        <meta
-          name="description"
-          content="Alle nieuwe functies, verbeteringen en updates van het FleeFlo wagenparkbeheer platform."
-        />
-        <link rel="canonical" href="https://www.fleeflo.nl/updates" />
-      </Helmet>
-
       {/* Hero */}
       <section className="border-b border-border bg-muted/30">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
