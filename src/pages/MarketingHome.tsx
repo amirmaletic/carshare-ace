@@ -38,6 +38,19 @@ import { CopilotShowcase } from "@/components/marketing/CopilotShowcase";
 import productTerugmelden from "@/assets/screenshot-terugmelden.png";
 import FaqSection from "@/components/marketing/FaqSection";
 import BlogPreviewSection from "@/components/marketing/BlogPreviewSection";
+import vwGolf from "@/assets/vehicles/volkswagen-golf.png";
+import vwTiguan from "@/assets/vehicles/volkswagen-tiguan.png";
+import vwId4 from "@/assets/vehicles/volkswagen-id4.png";
+import vwTransporter from "@/assets/vehicles/volkswagen-transporter.png";
+import audiA4 from "@/assets/vehicles/audi-a4.png";
+import audiQ5 from "@/assets/vehicles/audi-q5.png";
+import audiEtron from "@/assets/vehicles/audi-etron.png";
+import skodaOctavia from "@/assets/vehicles/skoda-octavia.png";
+import skodaEnyaq from "@/assets/vehicles/skoda-enyaq.png";
+import cupraFormentor from "@/assets/vehicles/cupra-formentor.png";
+import porscheTaycan from "@/assets/vehicles/porsche-taycan.png";
+import porscheMacan from "@/assets/vehicles/porsche-macan.png";
+import { Database, FileSpreadsheet, ArrowRightLeft, HeadphonesIcon } from "lucide-react";
 
 const features = [
   {
