@@ -35,6 +35,7 @@ const DashboardOperationeel = lazy(() => import("./pages/dashboards/DashboardOpe
 const DashboardFinancieel = lazy(() => import("./pages/dashboards/DashboardFinancieel"));
 const DashboardVloot = lazy(() => import("./pages/dashboards/DashboardVloot"));
 const DashboardKlanten = lazy(() => import("./pages/dashboards/DashboardKlanten"));
+const Dashboarding = lazy(() => import("./pages/dashboards/Dashboarding"));
 const MijnReserveringen = lazy(() => import("./pages/portaal/MijnReserveringen"));
 const ReserveerVoertuig = lazy(() => import("./pages/portaal/ReserveerVoertuig"));
 const MijnFacturen = lazy(() => import("./pages/portaal/MijnFacturen"));
@@ -188,10 +189,13 @@ const App = () => (
           <Route path="/reserveringen" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><Reservations /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />
           <Route path="/onderhoud" element={<ProtectedRoute><PermissionGuard><AppLayout><Maintenance /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/rapportages" element={<ProtectedRoute><PermissionGuard><AppLayout><Reports /></AppLayout></PermissionGuard></ProtectedRoute>} />
-          <Route path="/dashboards/operationeel" element={<ProtectedRoute><PermissionGuard><AppLayout><DashboardOperationeel /></AppLayout></PermissionGuard></ProtectedRoute>} />
-          <Route path="/dashboards/financieel" element={<ProtectedRoute><PermissionGuard><AppLayout><DashboardFinancieel /></AppLayout></PermissionGuard></ProtectedRoute>} />
-          <Route path="/dashboards/vloot" element={<ProtectedRoute><PermissionGuard><AppLayout><DashboardVloot /></AppLayout></PermissionGuard></ProtectedRoute>} />
-          <Route path="/dashboards/klanten" element={<ProtectedRoute><PermissionGuard><AppLayout><DashboardKlanten /></AppLayout></PermissionGuard></ProtectedRoute>} />
+          <Route path="/dashboarding" element={<Navigate to="/dashboarding/operationeel" replace />} />
+          <Route path="/dashboarding/:tab" element={<ProtectedRoute><PermissionGuard><AppLayout><Dashboarding /></AppLayout></PermissionGuard></ProtectedRoute>} />
+          {/* Legacy redirects */}
+          <Route path="/dashboards/operationeel" element={<Navigate to="/dashboarding/operationeel" replace />} />
+          <Route path="/dashboards/financieel" element={<Navigate to="/dashboarding/financieel" replace />} />
+          <Route path="/dashboards/vloot" element={<Navigate to="/dashboarding/vloot" replace />} />
+          <Route path="/dashboards/klanten" element={<Navigate to="/dashboarding/klanten" replace />} />
           <Route path="/kosten" element={<ProtectedRoute><PermissionGuard><AppLayout><Kosten /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/chauffeurs" element={<ProtectedRoute><PermissionGuard><AppLayout><Chauffeurs /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/ritten" element={<ProtectedRoute><PermissionGuard><AppLayout><Ritten /></AppLayout></PermissionGuard></ProtectedRoute>} />
