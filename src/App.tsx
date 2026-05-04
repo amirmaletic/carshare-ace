@@ -25,7 +25,6 @@ const Terugmelden = lazy(() => import("./pages/Terugmelden"));
 const Contracts = lazy(() => import("./pages/Contracts"));
 const Reservations = lazy(() => import("./pages/Reservations"));
 const Maintenance = lazy(() => import("./pages/Maintenance"));
-const Reports = lazy(() => import("./pages/Reports"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const Kosten = lazy(() => import("./pages/Kosten"));
 const Chauffeurs = lazy(() => import("./pages/Chauffeurs"));
@@ -188,7 +187,7 @@ const App = () => (
           <Route path="/contracten" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><Contracts /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />
           <Route path="/reserveringen" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><Reservations /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />
           <Route path="/onderhoud" element={<ProtectedRoute><PermissionGuard><AppLayout><Maintenance /></AppLayout></PermissionGuard></ProtectedRoute>} />
-          <Route path="/rapportages" element={<ProtectedRoute><PermissionGuard><AppLayout><Reports /></AppLayout></PermissionGuard></ProtectedRoute>} />
+          <Route path="/rapportages" element={<Navigate to="/dashboarding/rapportages" replace />} />
           <Route path="/dashboarding" element={<Navigate to="/dashboarding/operationeel" replace />} />
           <Route path="/dashboarding/:tab" element={<ProtectedRoute><PermissionGuard><AppLayout><Dashboarding /></AppLayout></PermissionGuard></ProtectedRoute>} />
           {/* Legacy redirects */}
