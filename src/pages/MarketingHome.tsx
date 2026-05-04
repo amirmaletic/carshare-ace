@@ -32,6 +32,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import productDashboard from "@/assets/product-dashboard.png";
+import productDashboarding from "@/assets/product-dashboarding.png";
 import productVoertuigen from "@/assets/product-voertuigen.png";
 import productContracten from "@/assets/product-contracten.png";
 import { CopilotShowcase } from "@/components/marketing/CopilotShowcase";
@@ -339,7 +340,7 @@ export default function MarketingHome() {
           <div className="max-w-5xl mx-auto">
             <img
               src={productDashboard}
-              alt="FleeFlo dashboard met overzicht van voertuigen, actieve contracten, planning en openstaande taken voor wagenparkbeheer"
+              alt="FleeFlo overzicht met snelacties, overdrachten, openstaande taken en agenda voor de medewerker"
               className="w-full rounded-xl shadow-2xl shadow-primary/10"
               loading="eager"
               fetchPriority="high"
@@ -539,6 +540,51 @@ export default function MarketingHome() {
           </div>
           <div className="lg:col-span-2">
             <CopilotShowcase />
+          </div>
+        </div>
+      </section>
+
+      {/* Dashboarding screenshot */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8" id="dashboarding">
+        <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+          <div className="order-2 lg:order-1">
+            <img
+              src={productDashboarding}
+              alt="Dashboarding pagina met operationeel, financieel, vlootprestatie, klant, rapportages en kosten en TCO tabs in FleeFlo"
+              className="w-full rounded-xl shadow-xl"
+              loading="lazy"
+              decoding="async"
+              width={1400}
+              height={900}
+            />
+          </div>
+          <div className="order-1 lg:order-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
+              <BarChart3 className="w-3.5 h-3.5" /> Nieuw · Dashboarding
+            </div>
+            <h2 className="text-3xl font-bold text-foreground mb-4">
+              Alle inzichten op één plek
+            </h2>
+            <p className="text-muted-foreground mb-6 leading-relaxed">
+              Operationeel, financieel, vlootprestatie, klant en verhuur, rapportages en kosten en
+              TCO. Zes dashboards in één tabbladen overzicht, met heatmaps, top en flop ranglijsten,
+              KPI tegels met trend en grafieken. Filter op deze maand, kwartaal, jaar of een eigen
+              periode en exporteer alles naar CSV.
+            </p>
+            <ul className="space-y-3">
+              {[
+                "Zes dashboards onder één tabbladen overzicht",
+                "Heatmaps, ranglijsten en grafieken op live data",
+                "Periodefilters: maand, kwartaal, jaar of custom",
+                "Trendvergelijking met de vorige periode",
+                "Exporteer elk dashboard naar CSV",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-3 text-sm text-foreground">
+                  <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
