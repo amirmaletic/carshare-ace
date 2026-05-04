@@ -31,6 +31,10 @@ const Kosten = lazy(() => import("./pages/Kosten"));
 const Chauffeurs = lazy(() => import("./pages/Chauffeurs"));
 const Ritten = lazy(() => import("./pages/Ritten"));
 const Klanten = lazy(() => import("./pages/Klanten"));
+const DashboardOperationeel = lazy(() => import("./pages/dashboards/DashboardOperationeel"));
+const DashboardFinancieel = lazy(() => import("./pages/dashboards/DashboardFinancieel"));
+const DashboardVloot = lazy(() => import("./pages/dashboards/DashboardVloot"));
+const DashboardKlanten = lazy(() => import("./pages/dashboards/DashboardKlanten"));
 const MijnReserveringen = lazy(() => import("./pages/portaal/MijnReserveringen"));
 const ReserveerVoertuig = lazy(() => import("./pages/portaal/ReserveerVoertuig"));
 const MijnFacturen = lazy(() => import("./pages/portaal/MijnFacturen"));
@@ -182,6 +186,10 @@ const App = () => (
           <Route path="/reserveringen" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><Reservations /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />
           <Route path="/onderhoud" element={<ProtectedRoute><PermissionGuard><AppLayout><Maintenance /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/rapportages" element={<ProtectedRoute><PermissionGuard><AppLayout><Reports /></AppLayout></PermissionGuard></ProtectedRoute>} />
+          <Route path="/dashboards/operationeel" element={<ProtectedRoute><PermissionGuard><AppLayout><DashboardOperationeel /></AppLayout></PermissionGuard></ProtectedRoute>} />
+          <Route path="/dashboards/financieel" element={<ProtectedRoute><PermissionGuard><AppLayout><DashboardFinancieel /></AppLayout></PermissionGuard></ProtectedRoute>} />
+          <Route path="/dashboards/vloot" element={<ProtectedRoute><PermissionGuard><AppLayout><DashboardVloot /></AppLayout></PermissionGuard></ProtectedRoute>} />
+          <Route path="/dashboards/klanten" element={<ProtectedRoute><PermissionGuard><AppLayout><DashboardKlanten /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/kosten" element={<ProtectedRoute><PermissionGuard><AppLayout><Kosten /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/chauffeurs" element={<ProtectedRoute><PermissionGuard><AppLayout><Chauffeurs /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/ritten" element={<ProtectedRoute><PermissionGuard><AppLayout><Ritten /></AppLayout></PermissionGuard></ProtectedRoute>} />

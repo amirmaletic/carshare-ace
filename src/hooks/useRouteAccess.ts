@@ -3,6 +3,10 @@ import { usePermissions } from "./usePermissions";
 /** Mapping van app-paden naar module-keys uit usePermissions/APP_MODULES. */
 export const PATH_TO_MODULE: Record<string, string> = {
   "/dashboard": "dashboard",
+  "/dashboards/operationeel": "rapportages",
+  "/dashboards/financieel": "rapportages",
+  "/dashboards/vloot": "rapportages",
+  "/dashboards/klanten": "rapportages",
   "/voertuigen": "voertuigen",
   "/terugmelden": "terugmelden",
   "/contracten": "contracten",

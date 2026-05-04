@@ -18,6 +18,10 @@ import {
   IdCard,
   Building2,
   Briefcase,
+  Activity,
+  PiggyBank,
+  Gauge,
+  UsersRound,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -29,6 +33,10 @@ import { PATH_TO_MODULE } from "@/hooks/useRouteAccess";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: Activity, label: "Operationeel", path: "/dashboards/operationeel" },
+  { icon: PiggyBank, label: "Financieel", path: "/dashboards/financieel" },
+  { icon: Gauge, label: "Vlootprestatie", path: "/dashboards/vloot" },
+  { icon: UsersRound, label: "Klant en verhuur", path: "/dashboards/klanten" },
   { icon: Car, label: "Voertuigen", path: "/voertuigen" },
   { icon: Users, label: "Chauffeurs", path: "/chauffeurs" },
   { icon: Route, label: "Ritten", path: "/ritten" },
