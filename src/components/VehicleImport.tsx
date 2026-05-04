@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, X, Download, Search, Loader2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -139,6 +141,7 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
   const [lookupProgress, setLookupProgress] = useState({ done: 0, total: 0 });
   const [importProgress, setImportProgress] = useState({ done: 0, total: 0 });
   const [importErrors, setImportErrors] = useState<{ kenteken: string; message: string }[]>([]);
+  const [bulkDagprijs, setBulkDagprijs] = useState<string>("");
 
   const handleKentekenLookup = async () => {
     const lines = kentekenInput
@@ -172,6 +175,11 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
     }
     setParsed({ valid, errors });
     setLookingUp(false);
+    if (bulkDagprijs && !isNaN(parseFloat(bulkDagprijs))) {
+      const prijs = parseFloat(bulkDagprijs);
+      valid.forEach((r) => { r.dagprijs = prijs; });
+      setParsed({ valid: [...valid], errors });
+    }
     if (valid.length > 0) {
       toast.success(`${valid.length} kenteken${valid.length !== 1 ? "s" : ""} opgehaald via RDW`);
     }
