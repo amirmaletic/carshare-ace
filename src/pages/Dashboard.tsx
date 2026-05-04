@@ -1,28 +1,19 @@
 import { useState, useEffect } from "react";
-import { Car, CalendarRange, Wrench, Euro, FileText } from "lucide-react";
-import { StatCard } from "@/components/StatCard";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { ActionableTasks } from "@/components/dashboard/ActionableTasks";
-import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { UpcomingAgenda } from "@/components/dashboard/UpcomingAgenda";
 import { OverdrachtenCenter } from "@/components/dashboard/OverdrachtenCenter";
 import { VervaldatumWaarschuwingen } from "@/components/dashboard/VervaldatumWaarschuwingen";
-import { OnderhoudsAdviseur } from "@/components/dashboard/OnderhoudsAdviseur";
-import { ContractRadar } from "@/components/dashboard/ContractRadar";
-import { ActiviteitenLog } from "@/components/ActiviteitenLog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import OnboardingWizard from "@/components/OnboardingWizard";
-import { useModuleModus } from "@/hooks/useModuleModus";
 import { useOrganisatie } from "@/hooks/useOrganisatie";
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
-  const { data: modus } = useModuleModus();
   const { organisatieId, isLoading: organisatieLoading } = useOrganisatie();
-  const isWagenpark = modus === "wagenpark";
 
   // Check if onboarding is needed — purely database-driven per organisation
   const { data: needsOnboarding } = useQuery({
@@ -46,35 +37,13 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (authLoading || organisatieLoading) return;
-    // Geen organisatie gekoppeld → geen onboarding-check, gewoon dashboard tonen
+    // Geen organisatie gekoppeld → geen onboarding-check, gewoon overzicht tonen
     if (!organisatieId) {
       setShowOnboarding(false);
       return;
     }
     if (needsOnboarding !== undefined) setShowOnboarding(needsOnboarding);
   }, [authLoading, organisatieLoading, organisatieId, needsOnboarding]);
-
-  const { data: stats } = useQuery({
-    queryKey: ["dashboard-stats", organisatieId],
-    queryFn: async () => {
-      const [vehRes, conRes, invRes] = await Promise.all([
-        supabase.from("voertuigen").select("id, status"),
-        supabase.from("contracts").select("id, status, maandprijs").eq("status", "actief"),
-        supabase.from("invoices").select("id, status").in("status", ["openstaand", "te_laat", "herinnering_verstuurd"]),
-      ]);
-      const vehicles = vehRes.data ?? [];
-      const contracts = conRes.data ?? [];
-      const invoices = invRes.data ?? [];
-      return {
-        totalVehicles: vehicles.length,
-        available: vehicles.filter(v => v.status === "beschikbaar").length,
-        activeContracts: contracts.length,
-        monthlyRevenue: contracts.reduce((s, c) => s + c.maandprijs, 0),
-        openInvoices: invoices.length,
-      };
-    },
-    enabled: !!user && !!organisatieId && showOnboarding === false,
-  });
 
   if (showOnboarding === null) {
     return (
@@ -91,44 +60,24 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-1">Overzicht van je wagenpark en verhuuractiviteiten</p>
+        <h1 className="text-2xl font-bold text-foreground">Overzicht</h1>
+        <p className="text-muted-foreground mt-1">Jouw werk voor vandaag: overdrachten, taken en agenda</p>
       </div>
 
       {/* Quick actions */}
       <QuickActions />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <StatCard icon={Car} title="Voertuigen" value={stats?.totalVehicles ?? 0} subtitle={`${stats?.available ?? 0} beschikbaar`} />
-        <StatCard icon={FileText} title="Actieve contracten" value={stats?.activeContracts ?? 0} subtitle={`€${(stats?.monthlyRevenue ?? 0).toLocaleString("nl-NL")}/mnd`} />
-        <StatCard icon={Euro} title="Open facturen" value={stats?.openInvoices ?? 0} subtitle="Actie vereist" />
-        <StatCard icon={Wrench} title="Bezettingsgraad" value={stats ? `${Math.round(((stats.totalVehicles - stats.available) / Math.max(stats.totalVehicles, 1)) * 100)}%` : "-"} subtitle="Van de vloot" />
-      </div>
-
       {/* Overdrachten (vandaag, morgen, recent) */}
       <OverdrachtenCenter />
 
-      {/* Tasks + Activity */}
+      {/* Taken + Agenda */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ActionableTasks />
-        <RecentActivity />
-      </div>
-
-      {/* Vervaldatum waarschuwingen + Agenda */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <VervaldatumWaarschuwingen />
         <UpcomingAgenda />
       </div>
 
-      {/* AI Onderhoudsadviseur + Contract Radar */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <OnderhoudsAdviseur />
-        {!isWagenpark && <ContractRadar />}
-      </div>
-
-      {/* Activiteitenlog */}
-      <ActiviteitenLog />
+      {/* Vervaldatum-waarschuwingen */}
+      <VervaldatumWaarschuwingen />
     </div>
   );
 }
