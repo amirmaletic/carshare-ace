@@ -306,6 +306,23 @@ export function VehicleImport({ open, onOpenChange }: VehicleImportProps) {
               rows={6}
               className="font-mono uppercase tracking-wider text-sm"
             />
+            <div className="space-y-1.5">
+              <Label htmlFor="bulk-dagprijs" className="text-xs">Standaard dagprijs (optioneel)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">€</span>
+                <Input
+                  id="bulk-dagprijs"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="bijv. 45"
+                  value={bulkDagprijs}
+                  onChange={(e) => setBulkDagprijs(e.target.value)}
+                  className="pl-7"
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Wordt toegepast op alle opgehaalde voertuigen. Per voertuig nog aanpasbaar in de preview.</p>
+            </div>
             <Button
               onClick={handleKentekenLookup}
               disabled={lookingUp || importing || kentekenInput.trim().length === 0}
