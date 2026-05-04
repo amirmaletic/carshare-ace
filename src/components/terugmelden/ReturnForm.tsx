@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { VehicleDamageSketch, type DamagePoint } from "@/components/VehicleDamageSketch";
 import { KentekenScanner } from "@/components/KentekenScanner";
+import { VehicleSchadeOverzicht } from "@/components/VehicleSchadeOverzicht";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -372,6 +373,17 @@ export default function ReturnForm({
 
           {/* Schade sectie */}
           <div className="space-y-3">
+            <div className="rounded-xl border border-border bg-muted/30 p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle className="w-4 h-4 text-warning" />
+                <Label className="font-medium">Reeds bekende schade</Label>
+              </div>
+              <VehicleSchadeOverzicht
+                voertuigId={matchedVehicle.id}
+                kenteken={matchedVehicle.kenteken}
+              />
+            </div>
+
             <div className={cn(
               "flex items-start gap-3 p-4 rounded-xl border transition-colors",
               schadevrij ? "border-green-500/30 bg-green-50/50 dark:bg-green-950/20" : "border-border bg-muted/30"
