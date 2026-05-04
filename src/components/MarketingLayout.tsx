@@ -5,6 +5,7 @@ import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
+import maletickLogo from "@/assets/maletick-logo.png";
 
 function MarketingHeader() {
   const location = useLocation();
@@ -154,8 +155,24 @@ function MarketingFooter() {
             </ul>
           </div>
         </div>
-        <div className="border-t border-border pt-6 text-center text-sm text-muted-foreground">
+        <div className="border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-muted-foreground">
           <p>© {new Date().getFullYear()} FleeFlo. Alle rechten voorbehouden.</p>
+          <a
+            href="https://maletick.nl"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity"
+            aria-label="Een product van Maletick"
+          >
+            <span className="text-xs">Een product van</span>
+            <img
+              src={maletickLogo}
+              alt="Maletick"
+              className="h-5 w-auto object-contain"
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
         </div>
       </div>
     </footer>
