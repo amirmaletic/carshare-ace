@@ -6,7 +6,6 @@ import {
   CalendarRange,
   FileText,
   Wrench,
-  BarChart3,
   Euro,
   Settings,
   ChevronLeft,
