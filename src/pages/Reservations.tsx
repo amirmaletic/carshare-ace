@@ -1,23 +1,31 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, Plus, CalendarRange } from "lucide-react";
+import { Search, Plus, CalendarRange, Sparkles, Inbox, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/StatusBadge";
 import { getReservationStatusColor } from "@/data/mockData";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ReservationForm } from "@/components/ReservationForm";
+import { useAanvragen } from "@/hooks/useAanvragen";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { nl } from "date-fns/locale";
+import { toast } from "sonner";
 
 const statusFilters = ['Alle', 'aangevraagd', 'bevestigd', 'actief', 'voltooid', 'geannuleerd'] as const;
 
 export default function Reservations() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Alle");
   const [formOpen, setFormOpen] = useState(false);
+  const [convertingId, setConvertingId] = useState<string | null>(null);
   const [prefill, setPrefill] = useState<{
     voertuig?: string;
     klant?: string;
@@ -53,6 +61,43 @@ export default function Reservations() {
     },
   });
 
+  const { aanvragen, isLoading: aanvragenLoading, deleteAanvraag } = useAanvragen();
+  const openAanvragen = aanvragen.filter((a) => a.status !== "omgezet" && a.status !== "geannuleerd");
+
+  const { data: voertuigenLookup = [] } = useQuery({
+    queryKey: ["voertuigen-lookup"],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("voertuigen").select("id, merk, model, kenteken");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const handleConvertNaarKlant = async (aanvraagId: string) => {
+    setConvertingId(aanvraagId);
+    try {
+      const { error } = await supabase.rpc("convert_aanvraag_naar_klant", { _aanvraag_id: aanvraagId });
+      if (error) throw error;
+      toast.success("Aanvraag omgezet naar klant");
+      queryClient.invalidateQueries({ queryKey: ["aanvragen"] });
+      queryClient.invalidateQueries({ queryKey: ["klanten"] });
+    } catch (e: any) {
+      toast.error("Fout bij omzetten: " + e.message);
+    } finally {
+      setConvertingId(null);
+    }
+  };
+
+  const handleAanvraagNaarReservering = (aanvraag: any) => {
+    setPrefill({
+      voertuig: aanvraag.gekoppeld_voertuig_id ?? undefined,
+      start: aanvraag.gewenste_periode_start ?? undefined,
+      eind: aanvraag.gewenste_periode_eind ?? undefined,
+    });
+    setFormOpen(true);
+  };
+
   const filtered = reserveringen.filter((r: any) => {
     const klantNaam = `${r.klanten?.voornaam ?? ""} ${r.klanten?.achternaam ?? ""}`.trim();
     const kenteken = r.voertuigen?.kenteken ?? "";
@@ -68,14 +113,29 @@ export default function Reservations() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Reserveringen</h1>
-          <p className="text-muted-foreground mt-1">{reserveringen.length} totale reserveringen</p>
+          <p className="text-muted-foreground mt-1">
+            {reserveringen.length} reserveringen · {openAanvragen.length} open aanvragen
+          </p>
         </div>
         <Button className="gap-2" onClick={() => setFormOpen(true)}>
           <Plus className="w-4 h-4" />Nieuwe reservering
         </Button>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      <Tabs defaultValue={openAanvragen.length > 0 ? "aanvragen" : "reserveringen"} className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="reserveringen" className="gap-2">
+            <CalendarRange className="w-4 h-4" />
+            Reserveringen ({reserveringen.length})
+          </TabsTrigger>
+          <TabsTrigger value="aanvragen" className="gap-2">
+            <Sparkles className="w-4 h-4" />
+            Aanvragen {openAanvragen.length > 0 && `(${openAanvragen.length})`}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="reserveringen" className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input placeholder="Zoek op klant of kenteken..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
@@ -132,6 +192,69 @@ export default function Reservations() {
           )}
         </div>
       )}
+        </TabsContent>
+
+        <TabsContent value="aanvragen" className="space-y-3">
+          {aanvragenLoading ? (
+            <div className="flex items-center justify-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>
+          ) : openAanvragen.length === 0 ? (
+            <div className="clean-card text-center py-12">
+              <Inbox className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-muted-foreground">Geen open aanvragen</p>
+              <p className="text-xs text-muted-foreground mt-1">Aanvragen vanuit het klantportaal verschijnen hier automatisch.</p>
+            </div>
+          ) : (
+            openAanvragen.map((a) => {
+              const v = voertuigenLookup.find((x: any) => x.id === a.gekoppeld_voertuig_id);
+              return (
+                <div key={a.id} className="clean-card p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-foreground">{a.klant_naam}</span>
+                        <Badge variant={a.status === "gekoppeld" ? "default" : "secondary"}>{a.status}</Badge>
+                      </div>
+                      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground mt-1">
+                        {a.klant_email && <span>{a.klant_email}</span>}
+                        {a.klant_telefoon && <span>{a.klant_telefoon}</span>}
+                        <span>{format(new Date(a.created_at), "d MMM yyyy HH:mm", { locale: nl })}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" onClick={() => handleConvertNaarKlant(a.id)} disabled={convertingId === a.id}>
+                        {convertingId === a.id ? "Bezig..." : "Maak klant"}
+                      </Button>
+                      <Button size="sm" className="gap-1" onClick={() => handleAanvraagNaarReservering(a)}>
+                        Reservering <ArrowRight className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {a.gewenst_type && <Badge variant="outline">{a.gewenst_type}</Badge>}
+                    {a.gewenste_categorie && <Badge variant="outline">{a.gewenste_categorie}</Badge>}
+                    {a.gewenste_brandstof && <Badge variant="outline">{a.gewenste_brandstof}</Badge>}
+                    {a.budget_max && <Badge variant="outline">Max €{a.budget_max}/dag</Badge>}
+                    {a.gewenste_periode_start && (
+                      <Badge variant="outline">
+                        {a.gewenste_periode_start} t/m {a.gewenste_periode_eind ?? "?"}
+                      </Badge>
+                    )}
+                  </div>
+                  {v && (
+                    <div className="text-sm bg-muted/50 rounded-lg p-3">
+                      <span className="text-muted-foreground">Voorgesteld voertuig: </span>
+                      <span className="font-medium text-foreground">{v.merk} {v.model}</span>
+                      <span className="font-mono text-xs text-muted-foreground ml-2">{v.kenteken}</span>
+                    </div>
+                  )}
+                  {a.notitie && <p className="text-sm text-muted-foreground italic">"{a.notitie}"</p>}
+                </div>
+              );
+            })
+          )}
+        </TabsContent>
+      </Tabs>
+
       <ReservationForm
         open={formOpen}
         onOpenChange={setFormOpen}
