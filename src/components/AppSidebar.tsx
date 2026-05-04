@@ -28,7 +28,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { PATH_TO_MODULE } from "@/hooks/useRouteAccess";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: LayoutDashboard, label: "Overzicht", path: "/dashboard" },
   { icon: BarChartBig, label: "Dashboarding", path: "/dashboarding/operationeel" },
   { icon: Car, label: "Voertuigen", path: "/voertuigen" },
   { icon: Users, label: "Chauffeurs", path: "/chauffeurs" },
