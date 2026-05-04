@@ -1,17 +1,21 @@
 import { useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Activity, PiggyBank, Gauge, UsersRound } from "lucide-react";
+import { Activity, PiggyBank, Gauge, UsersRound, BarChart3, Calculator } from "lucide-react";
 import DashboardOperationeel from "./DashboardOperationeel";
 import DashboardFinancieel from "./DashboardFinancieel";
 import DashboardVloot from "./DashboardVloot";
 import DashboardKlanten from "./DashboardKlanten";
+import DashboardRapportages from "./DashboardRapportages";
+import DashboardKosten from "./DashboardKosten";
 
 const TABS = [
   { value: "operationeel", label: "Operationeel", icon: Activity },
   { value: "financieel", label: "Financieel", icon: PiggyBank },
   { value: "vloot", label: "Vlootprestatie", icon: Gauge },
   { value: "klanten", label: "Klant en verhuur", icon: UsersRound },
+  { value: "rapportages", label: "Rapportages", icon: BarChart3 },
+  { value: "kosten", label: "Kosten en TCO", icon: Calculator },
 ] as const;
 
 type TabValue = typeof TABS[number]["value"];
@@ -60,6 +64,12 @@ export default function Dashboarding() {
         </TabsContent>
         <TabsContent value="klanten" className="mt-6">
           <DashboardKlanten />
+        </TabsContent>
+        <TabsContent value="rapportages" className="mt-6">
+          <DashboardRapportages />
+        </TabsContent>
+        <TabsContent value="kosten" className="mt-6">
+          <DashboardKosten />
         </TabsContent>
       </Tabs>
     </div>
