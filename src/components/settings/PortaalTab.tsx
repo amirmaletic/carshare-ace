@@ -71,7 +71,7 @@ export default function PortaalTab() {
       qc.invalidateQueries({ queryKey: ["org-portaal-settings"] });
       qc.invalidateQueries({ queryKey: ["tenant-portaal"] });
     },
-    onError: (e: any) => toast({ title: "Fout", description: e.message, variant: "destructive" }),
+    onError: (e: Error) => toast({ title: "Fout", description: e.message, variant: "destructive" }),
   });
 
   const onLogoUpload = async (file: File) => {
