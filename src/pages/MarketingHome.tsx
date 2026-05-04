@@ -50,7 +50,7 @@ import skodaEnyaq from "@/assets/vehicles/skoda-enyaq.png";
 import cupraFormentor from "@/assets/vehicles/cupra-formentor.png";
 import porscheTaycan from "@/assets/vehicles/porsche-taycan.png";
 import porscheMacan from "@/assets/vehicles/porsche-macan.png";
-import { Database, FileSpreadsheet, ArrowRightLeft, HeadphonesIcon } from "lucide-react";
+import { Database, FileSpreadsheet, ArrowRightLeft, Headphones } from "lucide-react";
 
 const features = [
   {
