@@ -161,17 +161,19 @@ function MarketingFooter() {
             href="https://maletick.nl"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 opacity-70 hover:opacity-100 transition-opacity"
+            className="flex items-center gap-2 opacity-80 hover:opacity-100 transition-opacity"
             aria-label="Een product van Maletick"
           >
             <span className="text-xs">Een product van</span>
-            <img
-              src={maletickLogo}
-              alt="Maletick"
-              className="h-5 w-auto object-contain"
-              loading="lazy"
-              decoding="async"
-            />
+            <span className="inline-flex items-center rounded-md bg-foreground px-2 py-1">
+              <img
+                src={maletickLogo}
+                alt="Maletick"
+                className="h-4 w-auto object-contain"
+                loading="lazy"
+                decoding="async"
+              />
+            </span>
           </a>
         </div>
       </div>
