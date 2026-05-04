@@ -17,6 +17,7 @@ function MarketingHeader() {
     { to: "/#voertuigen", label: "Voertuigen" },
     { to: "/#contracten", label: "Contracten" },
     { to: "/prijzen", label: "Prijzen" },
+    { to: "/updates", label: "Updates" },
   ];
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -139,6 +140,7 @@ function MarketingFooter() {
               <li><a href="/#contracten" className="text-muted-foreground hover:text-foreground transition-colors">Contractbeheer</a></li>
               <li><a href="/#voordelen" className="text-muted-foreground hover:text-foreground transition-colors">Voordelen</a></li>
               <li><Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
+              <li><Link to="/updates" className="text-muted-foreground hover:text-foreground transition-colors">Updates</Link></li>
             </ul>
           </div>
           <div>
