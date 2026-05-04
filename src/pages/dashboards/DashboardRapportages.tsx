@@ -1,10 +1,9 @@
-import { Download, Inbox } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useMemo } from "react";
+import { Inbox } from "lucide-react";
 import { format, subMonths, startOfMonth, endOfMonth, parseISO, differenceInDays, max as dMax, min as dMin } from "date-fns";
 import { nl } from "date-fns/locale";
 
@@ -16,7 +15,7 @@ function buildLast6Months() {
   });
 }
 
-export default function Reports() {
+export default function DashboardRapportages() {
   const { user } = useAuth();
 
   const { data, isLoading } = useQuery({
@@ -114,15 +113,9 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Rapportages</h1>
-          <p className="text-muted-foreground mt-1">Inzicht in kosten, opbrengsten en bezettingsgraad</p>
-        </div>
-        <Button variant="outline" className="gap-2">
-          <Download className="w-4 h-4" />
-          Exporteer rapport
-        </Button>
+      <div>
+        <h2 className="text-lg font-semibold text-foreground">Rapportages</h2>
+        <p className="text-sm text-muted-foreground mt-1">Inzicht in kosten, opbrengsten en bezettingsgraad over 6 maanden</p>
       </div>
 
       {!isLoading && !heeftData && (
@@ -140,13 +133,13 @@ export default function Reports() {
           <h3 className="font-semibold text-foreground mb-4">Kosten per categorie</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={costData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 92%)" />
-              <XAxis dataKey="maand" tick={{ fill: 'hsl(215, 14%, 46%)', fontSize: 12 }} />
-              <YAxis tick={{ fill: 'hsl(215, 14%, 46%)', fontSize: 12 }} tickFormatter={v => `€${v}`} />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(214, 20%, 92%)' }} />
-              <Bar dataKey="brandstof" fill="hsl(221, 83%, 53%)" radius={[4, 4, 0, 0]} name="Brandstof" />
-              <Bar dataKey="onderhoud" fill="hsl(221, 83%, 70%)" radius={[4, 4, 0, 0]} name="Onderhoud" />
-              <Bar dataKey="verzekering" fill="hsl(142, 71%, 45%)" radius={[4, 4, 0, 0]} name="Verzekering" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="maand" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} tickFormatter={v => `€${v}`} />
+              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))' }} />
+              <Bar dataKey="brandstof" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} name="Brandstof" />
+              <Bar dataKey="onderhoud" fill="hsl(var(--primary) / 0.6)" radius={[4, 4, 0, 0]} name="Onderhoud" />
+              <Bar dataKey="verzekering" fill="hsl(var(--success))" radius={[4, 4, 0, 0]} name="Verzekering" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -155,11 +148,11 @@ export default function Reports() {
           <h3 className="font-semibold text-foreground mb-4">Bezettingsgraad (%)</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={occupancyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(214, 20%, 92%)" />
-              <XAxis dataKey="maand" tick={{ fill: 'hsl(215, 14%, 46%)', fontSize: 12 }} />
-              <YAxis tick={{ fill: 'hsl(215, 14%, 46%)', fontSize: 12 }} domain={[0, 100]} tickFormatter={v => `${v}%`} />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(214, 20%, 92%)' }} formatter={(v: number) => [`${v}%`, 'Bezetting']} />
-              <Line type="monotone" dataKey="bezetting" stroke="hsl(221, 83%, 53%)" strokeWidth={2.5} dot={{ r: 4, fill: 'hsl(221, 83%, 53%)' }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <XAxis dataKey="maand" tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} />
+              <YAxis tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }} domain={[0, 100]} tickFormatter={v => `${v}%`} />
+              <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid hsl(var(--border))' }} formatter={(v: number) => [`${v}%`, 'Bezetting']} />
+              <Line type="monotone" dataKey="bezetting" stroke="hsl(var(--primary))" strokeWidth={2.5} dot={{ r: 4, fill: 'hsl(var(--primary))' }} />
             </LineChart>
           </ResponsiveContainer>
         </div>

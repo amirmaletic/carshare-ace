@@ -6,7 +6,6 @@ import {
   CalendarRange,
   FileText,
   Wrench,
-  BarChart3,
   Euro,
   Settings,
   ChevronLeft,
@@ -40,7 +39,6 @@ const navItems = [
   { icon: IdCard, label: "Rijbewijzen", path: "/rijbewijzen" },
   { icon: CalendarRange, label: "Reserveringen", path: "/reserveringen" },
   { icon: Wrench, label: "Onderhoud", path: "/onderhoud" },
-  { icon: BarChart3, label: "Rapportages", path: "/rapportages" },
   { icon: Euro, label: "Kosten", path: "/kosten" },
   { icon: Settings, label: "Instellingen", path: "/instellingen" },
 ];
