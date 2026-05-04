@@ -680,6 +680,128 @@ export default function MarketingHome() {
         </div>
       </section>
 
+      {/* Vlootgalerij */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8" id="vloot">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
+              <Car className="w-3.5 h-3.5" /> Geschikt voor elk type voertuig
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+              Van stadsauto tot bestelbus, alles in één vloot
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              FleeFlo werkt met alle merken en modellen. Voertuigfoto's worden automatisch
+              gegenereerd op basis van merk, model en kleur, zodat je vloot er altijd strak uitziet
+              in het dashboard, op de boekingspagina en in het klantportaal.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {[
+              { src: vwGolf, naam: "Volkswagen Golf", cat: "Stadsauto" },
+              { src: audiA4, naam: "Audi A4", cat: "Zakelijk" },
+              { src: vwId4, naam: "Volkswagen ID.4", cat: "Elektrisch" },
+              { src: vwTransporter, naam: "VW Transporter", cat: "Bestelwagen" },
+              { src: porscheTaycan, naam: "Porsche Taycan", cat: "Luxe EV" },
+              { src: skodaEnyaq, naam: "Skoda Enyaq", cat: "Elektrisch" },
+              { src: vwTiguan, naam: "Volkswagen Tiguan", cat: "SUV" },
+              { src: audiQ5, naam: "Audi Q5", cat: "SUV" },
+              { src: cupraFormentor, naam: "Cupra Formentor", cat: "Sport SUV" },
+              { src: skodaOctavia, naam: "Skoda Octavia", cat: "Stationwagen" },
+              { src: audiEtron, naam: "Audi e-tron", cat: "Elektrisch" },
+              { src: porscheMacan, naam: "Porsche Macan", cat: "Luxe SUV" },
+            ].map((v) => (
+              <article
+                key={v.naam}
+                className="rounded-2xl border border-border bg-background hover:shadow-lg hover:border-primary/30 transition-all overflow-hidden"
+              >
+                <div className="aspect-[4/3] bg-muted/30 flex items-center justify-center p-4">
+                  <img
+                    src={v.src}
+                    alt={`${v.naam} in de vloot van een verhuurbedrijf op FleeFlo`}
+                    className="max-h-full max-w-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                </div>
+                <div className="px-4 py-3 border-t border-border">
+                  <p className="text-sm font-semibold text-foreground truncate">{v.naam}</p>
+                  <p className="text-xs text-muted-foreground">{v.cat}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="text-center mt-8 text-sm text-muted-foreground">
+            Honderden merken en modellen worden ondersteund · automatische voertuigfoto via merk en kleur
+          </p>
+        </div>
+      </section>
+
+      {/* Migratie hulp */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/20" id="migratie">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold mb-4">
+              <ArrowRightLeft className="w-3.5 h-3.5" /> Wij doen de overstap voor je
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+              Wij helpen je migreren vanuit je huidige systeem
+            </h2>
+            <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+              Werk je nu met Excel, Wincar, CarRental Manager, Plan A of een ander pakket?
+              Onze migratiespecialisten zetten je voertuigen, klanten, contracten en historie
+              kosteloos over naar FleeFlo. Jij blijft gewoon verhuren, wij regelen de overstap.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              {
+                icon: Database,
+                title: "Data export",
+                desc: "Wij analyseren je huidige systeem en exporteren voertuigen, klanten en lopende contracten.",
+              },
+              {
+                icon: FileSpreadsheet,
+                title: "Mapping en validatie",
+                desc: "Velden mappen we naar FleeFlo, dubbele records worden samengevoegd en RDW data wordt aangevuld.",
+              },
+              {
+                icon: ArrowRightLeft,
+                title: "Live overzetten",
+                desc: "Een testomgeving om te valideren, daarna een knip naar live zonder downtime tijdens kantoortijden.",
+              },
+              {
+                icon: Headphones,
+                title: "Persoonlijke begeleiding",
+                desc: "Een vaste contactpersoon, training voor je team en 30 dagen extra support na de overstap.",
+              },
+            ].map((s) => (
+              <article key={s.title} className="p-6 rounded-2xl border border-border bg-background">
+                <div className="p-3 rounded-xl bg-primary/10 w-fit mb-4">
+                  <s.icon className="w-6 h-6 text-primary" />
+                </div>
+                <h3 className="text-base font-semibold text-foreground mb-2">{s.title}</h3>
+                <p className="text-muted-foreground text-sm leading-relaxed">{s.desc}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-10 p-6 sm:p-8 rounded-2xl border-2 border-primary/20 bg-primary/5 flex flex-col sm:flex-row items-center gap-6 justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-foreground mb-1">Gratis migratie scan</h3>
+              <p className="text-sm text-muted-foreground">
+                Plan een gesprek van 20 minuten · we kijken samen naar je huidige systeem en maken een overstapplan op maat.
+              </p>
+            </div>
+            <Button size="lg" className="gap-2 flex-shrink-0" asChild>
+              <a href="mailto:info@fleeflo.nl?subject=Gratis%20migratie%20scan%20FleeFlo">
+                Plan een migratie gesprek
+                <ArrowRight className="w-4 h-4" />
+              </a>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       {/* Voordelen */}
       <section className="py-20 px-4 sm:px-6 lg:px-8" id="voordelen">
         <div className="max-w-7xl mx-auto">
