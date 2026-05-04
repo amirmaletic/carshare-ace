@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
+import { useOrganisatie } from "@/hooks/useOrganisatie";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,24 +13,17 @@ import { Globe, Upload, Copy, ExternalLink, Check } from "lucide-react";
 import CustomDomeinenSectie from "./CustomDomeinenSectie";
 
 export default function PortaalTab() {
-  const { user } = useAuth();
+  const { organisatieId, isLoading: organisatieLoading } = useOrganisatie();
   const qc = useQueryClient();
 
-  const { data: org, isLoading } = useQuery({
-    queryKey: ["org-portaal-settings", user?.id],
-    enabled: !!user?.id,
+  const { data: org, isLoading: orgLoading } = useQuery({
+    queryKey: ["org-portaal-settings", organisatieId],
+    enabled: !!organisatieId,
     queryFn: async () => {
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("organisatie_id")
-        .eq("user_id", user!.id)
-        .limit(1)
-        .maybeSingle();
-      if (!roles?.organisatie_id) return null;
       const { data, error } = await supabase
         .from("organisaties")
         .select("id, naam, slug, portaal_naam, portaal_logo_url, portaal_kleur, portaal_welkomtekst, portaal_actief")
-        .eq("id", roles.organisatie_id)
+        .eq("id", organisatieId!)
         .maybeSingle();
       if (error) throw error;
       return data;
@@ -96,6 +89,8 @@ export default function PortaalTab() {
     qc.invalidateQueries({ queryKey: ["org-portaal-settings"] });
     toast({ title: "Logo geüpload" });
   };
+
+  const isLoading = organisatieLoading || orgLoading;
 
   if (isLoading) return <div className="h-32 animate-pulse bg-muted rounded-lg" />;
   if (!org) return <Card><CardContent className="p-6">Geen organisatie gevonden.</CardContent></Card>;
