@@ -290,16 +290,17 @@ export default function MarketingHome() {
 
       {/* Hero */}
       <section className="relative overflow-hidden pt-10 pb-12 sm:pt-20 sm:pb-24 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 pointer-events-none" />
+        <div className="absolute inset-0 mesh-bg pointer-events-none" />
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-primary/20 blur-[120px] pointer-events-none" />
         <div className="max-w-7xl mx-auto relative">
           <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 backdrop-blur text-primary text-sm font-medium mb-6 shadow-sm">
               <Sparkles className="w-4 h-4" />
               30 dagen gratis · geen creditcard · in 60 seconden live
             </div>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-[1.1]">
               Het complete platform voor{" "}
-              <span className="text-primary">autoverhuur en wagenparkbeheer</span>
+              <span className="gradient-text">autoverhuur en wagenparkbeheer</span>
             </h1>
             <p className="mt-4 sm:mt-6 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Eén platform voor verhuurbedrijven én voor bedrijven met een eigen wagenpark.
@@ -337,11 +338,12 @@ export default function MarketingHome() {
             </div>
           </div>
 
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto relative group">
+            <div className="absolute -inset-4 bg-gradient-to-r from-primary/30 via-violet-500/20 to-cyan-500/30 rounded-3xl blur-2xl opacity-60 group-hover:opacity-80 transition-opacity" />
             <img
               src={productDashboard}
               alt="FleeFlo overzicht met snelacties, overdrachten, openstaande taken en agenda voor de medewerker"
-              className="w-full rounded-xl shadow-2xl shadow-primary/10"
+              className="relative w-full rounded-2xl shadow-2xl shadow-primary/20 border border-border/50"
               loading="eager"
               fetchPriority="high"
               decoding="async"
