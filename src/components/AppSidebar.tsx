@@ -18,6 +18,7 @@ import {
   Building2,
   Briefcase,
   BarChartBig,
+  Upload,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -40,6 +41,7 @@ const navItems = [
   { icon: CalendarRange, label: "Reserveringen", path: "/reserveringen" },
   { icon: Wrench, label: "Onderhoud", path: "/onderhoud" },
   { icon: Euro, label: "Kosten", path: "/kosten" },
+  { icon: Upload, label: "Migratie", path: "/migratie" },
   { icon: Settings, label: "Instellingen", path: "/instellingen" },
 ];
 
