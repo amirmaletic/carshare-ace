@@ -103,7 +103,7 @@ export function MigratieWizard({ datatype, open, onOpenChange }: Props) {
       voertuigByKenteken: new Map(),
       klantByEmail: new Map(),
     };
-    if (datatype === "contracten" || datatype === "kilometer" || datatype === "schade") {
+    if (datatype === "contracten" || datatype === "schade") {
       const { data: vs } = await supabase.from("voertuigen").select("id, kenteken").eq("organisatie_id", organisatieId);
       vs?.forEach((v) => ctx.voertuigByKenteken.set(normalizeKenteken(v.kenteken), v.id));
     }
