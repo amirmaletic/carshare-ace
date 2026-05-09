@@ -20,8 +20,9 @@ import {
   BarChartBig,
   Upload,
   Download,
+  ChevronDown,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGoedkeuringen } from "@/hooks/useGoedkeuringen";
@@ -29,22 +30,67 @@ import { useModuleModus, WAGENPARK_HIDDEN_PATHS } from "@/hooks/useModuleModus";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PATH_TO_MODULE } from "@/hooks/useRouteAccess";
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Overzicht", path: "/dashboard" },
-  { icon: BarChartBig, label: "Dashboarding", path: "/dashboarding/operationeel" },
-  { icon: Car, label: "Voertuigen", path: "/voertuigen" },
-  { icon: Users, label: "Chauffeurs", path: "/chauffeurs" },
-  { icon: Route, label: "Ritten", path: "/ritten" },
-  { icon: RotateCcw, label: "Terugmelden", path: "/terugmelden" },
-  { icon: FileText, label: "Contracten", path: "/contracten" },
-  { icon: UserPlus, label: "Klanten", path: "/klanten" },
-  { icon: IdCard, label: "Rijbewijzen", path: "/rijbewijzen" },
-  { icon: CalendarRange, label: "Reserveringen", path: "/reserveringen" },
-  { icon: Wrench, label: "Onderhoud", path: "/onderhoud" },
-  { icon: Euro, label: "Kosten", path: "/kosten" },
-  { icon: Download, label: "Boekhouding", path: "/boekhouding-export" },
-  { icon: Upload, label: "Migratie", path: "/migratie" },
-  { icon: Settings, label: "Instellingen", path: "/instellingen" },
+type NavItem = { icon: any; label: string; path: string };
+type NavSection =
+  | { type: "item"; item: NavItem }
+  | { type: "group"; key: string; label: string; icon: any; items: NavItem[] };
+
+const navSections: NavSection[] = [
+  { type: "item", item: { icon: LayoutDashboard, label: "Overzicht", path: "/dashboard" } },
+  { type: "item", item: { icon: BarChartBig, label: "Dashboarding", path: "/dashboarding/operationeel" } },
+  {
+    type: "group",
+    key: "vloot",
+    label: "Vloot",
+    icon: Car,
+    items: [
+      { icon: Car, label: "Voertuigen", path: "/voertuigen" },
+      { icon: Wrench, label: "Onderhoud", path: "/onderhoud" },
+      { icon: CalendarRange, label: "Reserveringen", path: "/reserveringen" },
+    ],
+  },
+  {
+    type: "group",
+    key: "operatie",
+    label: "Operatie",
+    icon: Route,
+    items: [
+      { icon: Route, label: "Ritten", path: "/ritten" },
+      { icon: Users, label: "Chauffeurs", path: "/chauffeurs" },
+      { icon: RotateCcw, label: "Terugmelden", path: "/terugmelden" },
+    ],
+  },
+  {
+    type: "group",
+    key: "verhuur",
+    label: "Verhuur",
+    icon: FileText,
+    items: [
+      { icon: FileText, label: "Contracten", path: "/contracten" },
+      { icon: UserPlus, label: "Klanten", path: "/klanten" },
+      { icon: IdCard, label: "Rijbewijzen", path: "/rijbewijzen" },
+    ],
+  },
+  {
+    type: "group",
+    key: "financieel",
+    label: "Financieel",
+    icon: Euro,
+    items: [
+      { icon: Euro, label: "Kosten", path: "/kosten" },
+      { icon: Download, label: "Boekhouding", path: "/boekhouding-export" },
+    ],
+  },
+  {
+    type: "group",
+    key: "systeem",
+    label: "Systeem",
+    icon: Settings,
+    items: [
+      { icon: Upload, label: "Migratie", path: "/migratie" },
+      { icon: Settings, label: "Instellingen", path: "/instellingen" },
+    ],
+  },
 ];
 
 interface AppSidebarProps {
@@ -60,15 +106,60 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
   const { data: modus } = useModuleModus();
   const { hasAccess, isLoading: permsLoading } = usePermissions();
 
-  const visibleNavItems = navItems.filter((item) => {
-    // Modus filter
+  const isItemVisible = (item: NavItem) => {
     if (modus === "wagenpark" && WAGENPARK_HIDDEN_PATHS.has(item.path)) return false;
-    // Permissies filter (toon tijdens loading om flicker te voorkomen)
     if (permsLoading) return true;
     const moduleKey = PATH_TO_MODULE[item.path];
     if (!moduleKey) return true;
     return hasAccess(moduleKey);
+  };
+
+  const visibleSections = navSections
+    .map((s) => {
+      if (s.type === "item") return isItemVisible(s.item) ? s : null;
+      const items = s.items.filter(isItemVisible);
+      return items.length ? { ...s, items } : null;
+    })
+    .filter(Boolean) as NavSection[];
+
+  const isItemActive = (path: string) =>
+    location.pathname === path ||
+    (path.startsWith("/dashboarding") &&
+      (location.pathname.startsWith("/dashboarding") ||
+        location.pathname.startsWith("/dashboards")));
+
+  // Open groups state, persisted + auto-open active
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {
+    try {
+      const raw = localStorage.getItem("sidebar-open-groups");
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return {};
   });
+
+  useEffect(() => {
+    // Auto-open group containing active route
+    const next: Record<string, boolean> = { ...openGroups };
+    let changed = false;
+    for (const s of navSections) {
+      if (s.type === "group" && s.items.some((i) => isItemActive(i.path)) && !next[s.key]) {
+        next[s.key] = true;
+        changed = true;
+      }
+    }
+    if (changed) setOpenGroups(next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
+  const toggleGroup = (key: string) => {
+    setOpenGroups((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        localStorage.setItem("sidebar-open-groups", JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const isWagenpark = modus === "wagenpark";
   const ModusIcon = isWagenpark ? Briefcase : Building2;
@@ -123,44 +214,75 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
-        {visibleNavItems.map((item) => {
-          const isActive =
-            location.pathname === item.path ||
-            (item.path.startsWith("/dashboarding") &&
-              (location.pathname.startsWith("/dashboarding") ||
-                location.pathname.startsWith("/dashboards")));
-          const showBadge = item.path === "/instellingen" && openCount > 0;
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              onClick={onNavigate}
-              className={cn(
-                "relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
-                isActive
-                  ? "bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-foreground shadow-[inset_2px_0_0_0_hsl(var(--primary))]"
-                  : "text-sidebar-foreground hover:text-foreground hover:bg-accent/60"
-              )}
-            >
-              <div className="relative flex-shrink-0">
-                <item.icon className={cn("w-[18px] h-[18px]", isActive && "text-primary")} />
-                {showBadge && isCollapsed && (
-                  <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-1 rounded-full bg-primary text-[9px] font-semibold text-primary-foreground flex items-center justify-center">
-                    {openCount > 9 ? "9+" : openCount}
-                  </span>
-                )}
+        {visibleSections.map((section) => {
+          if (section.type === "item") {
+            return (
+              <NavLinkItem
+                key={section.item.path}
+                item={section.item}
+                isActive={isItemActive(section.item.path)}
+                isCollapsed={isCollapsed}
+                openCount={openCount}
+                onNavigate={onNavigate}
+              />
+            );
+          }
+          const groupActive = section.items.some((i) => isItemActive(i.path));
+          const groupOpen = isCollapsed ? false : (openGroups[section.key] ?? groupActive);
+          const GroupIcon = section.icon;
+          if (isCollapsed) {
+            // In collapsed mode: render items flat with icons only
+            return (
+              <div key={section.key} className="space-y-0.5">
+                {section.items.map((item) => (
+                  <NavLinkItem
+                    key={item.path}
+                    item={item}
+                    isActive={isItemActive(item.path)}
+                    isCollapsed
+                    openCount={openCount}
+                    onNavigate={onNavigate}
+                  />
+                ))}
               </div>
-              {!isCollapsed && (
-                <span className="flex-1 flex items-center justify-between">
-                  {item.label}
-                  {showBadge && (
-                    <span className="ml-2 min-w-[18px] h-[18px] px-1.5 rounded-full bg-primary text-[10px] font-semibold text-primary-foreground flex items-center justify-center">
-                      {openCount > 9 ? "9+" : openCount}
-                    </span>
+            );
+          }
+          return (
+            <div key={section.key}>
+              <button
+                type="button"
+                onClick={() => toggleGroup(section.key)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                  groupActive
+                    ? "text-foreground"
+                    : "text-sidebar-foreground hover:text-foreground hover:bg-accent/60"
+                )}
+              >
+                <GroupIcon className={cn("w-[18px] h-[18px]", groupActive && "text-primary")} />
+                <span className="flex-1 text-left">{section.label}</span>
+                <ChevronDown
+                  className={cn(
+                    "w-4 h-4 transition-transform",
+                    groupOpen ? "rotate-0" : "-rotate-90"
                   )}
-                </span>
+                />
+              </button>
+              {groupOpen && (
+                <div className="ml-3 mt-0.5 pl-3 border-l border-sidebar-border space-y-0.5">
+                  {section.items.map((item) => (
+                    <NavLinkItem
+                      key={item.path}
+                      item={item}
+                      isActive={isItemActive(item.path)}
+                      isCollapsed={false}
+                      openCount={openCount}
+                      onNavigate={onNavigate}
+                    />
+                  ))}
+                </div>
               )}
-            </Link>
+            </div>
           );
         })}
       </nav>
@@ -178,5 +300,54 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
         </div>
       )}
     </aside>
+  );
+}
+
+function NavLinkItem({
+  item,
+  isActive,
+  isCollapsed,
+  openCount,
+  onNavigate,
+}: {
+  item: { icon: any; label: string; path: string };
+  isActive: boolean;
+  isCollapsed: boolean;
+  openCount: number;
+  onNavigate?: () => void;
+}) {
+  const showBadge = item.path === "/instellingen" && openCount > 0;
+  const Icon = item.icon;
+  return (
+    <Link
+      to={item.path}
+      onClick={onNavigate}
+      title={isCollapsed ? item.label : undefined}
+      className={cn(
+        "relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+        isActive
+          ? "bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-foreground shadow-[inset_2px_0_0_0_hsl(var(--primary))]"
+          : "text-sidebar-foreground hover:text-foreground hover:bg-accent/60"
+      )}
+    >
+      <div className="relative flex-shrink-0">
+        <Icon className={cn("w-[18px] h-[18px]", isActive && "text-primary")} />
+        {showBadge && isCollapsed && (
+          <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-1 rounded-full bg-primary text-[9px] font-semibold text-primary-foreground flex items-center justify-center">
+            {openCount > 9 ? "9+" : openCount}
+          </span>
+        )}
+      </div>
+      {!isCollapsed && (
+        <span className="flex-1 flex items-center justify-between">
+          {item.label}
+          {showBadge && (
+            <span className="ml-2 min-w-[18px] h-[18px] px-1.5 rounded-full bg-primary text-[10px] font-semibold text-primary-foreground flex items-center justify-center">
+              {openCount > 9 ? "9+" : openCount}
+            </span>
+          )}
+        </span>
+      )}
+    </Link>
   );
 }
