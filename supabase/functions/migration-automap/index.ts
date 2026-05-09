@@ -104,6 +104,7 @@ Geef ook een algemene confidence score 0..1.`;
 
     const result = await response.json();
     const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
+    console.log("AI raw tool args:", toolCall?.function?.arguments);
     if (toolCall?.function?.arguments) {
       const args = JSON.parse(toolCall.function.arguments);
       const mapping: Record<string, string> = {};
