@@ -77,8 +77,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </>
       )}
 
-      <main className="flex-1 overflow-auto">
-        <div className={isMobile ? "p-4 pt-18" : "p-6 lg:p-8 max-w-[1400px] mx-auto"}>
+      <main className="flex-1 overflow-auto relative">
+        <div className="pointer-events-none absolute inset-0 mesh-bg opacity-60" />
+        <div className={cn("relative", isMobile ? "p-4 pt-18" : "p-6 lg:p-8 max-w-[1400px] mx-auto")}>
           {children}
         </div>
       </main>

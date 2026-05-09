@@ -84,9 +84,12 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
     >
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 h-14 border-b border-sidebar-border">
-        <img src={fleefloLogo} alt="FleeFlo" className="w-8 h-8 object-contain flex-shrink-0" />
+        <div className="relative flex-shrink-0">
+          <div className="absolute inset-0 rounded-lg bg-primary/30 blur-md" />
+          <img src={fleefloLogo} alt="FleeFlo" className="relative w-8 h-8 object-contain" />
+        </div>
         {!isCollapsed && (
-          <span className="font-semibold text-base text-foreground tracking-tight">
+          <span className="font-bold text-base tracking-tight gradient-text">
             FleeFlo
           </span>
         )}
@@ -129,10 +132,10 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
               to={item.path}
               onClick={onNavigate}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                "relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
                 isActive
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground hover:text-foreground hover:bg-accent"
+                  ? "bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-foreground shadow-[inset_2px_0_0_0_hsl(var(--primary))]"
+                  : "text-sidebar-foreground hover:text-foreground hover:bg-accent/60"
               )}
             >
               <div className="relative flex-shrink-0">
