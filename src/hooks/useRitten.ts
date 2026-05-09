@@ -22,6 +22,10 @@ export interface DbRit {
   notitie: string | null;
   created_at: string;
   updated_at: string;
+  rit_categorie: string;
+  begin_km: number | null;
+  eind_km: number | null;
+  doel: string | null;
 }
 
 export type RitInsert = Omit<DbRit, "id" | "user_id" | "created_at" | "updated_at">;
