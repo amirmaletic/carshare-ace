@@ -473,7 +473,7 @@ export default function MarketingHome() {
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {stats.map((stat) => (
             <div key={stat.label}>
-              <div className="text-3xl font-extrabold text-foreground">{stat.value}</div>
+              <div className="text-3xl font-extrabold gradient-text">{stat.value}</div>
               <div className="mt-1 text-sm text-muted-foreground">{stat.label}</div>
             </div>
           ))}
@@ -497,9 +497,9 @@ export default function MarketingHome() {
             {features.map((feature) => (
               <article
                 key={feature.title}
-                className="p-6 rounded-2xl border border-border bg-background hover:shadow-lg hover:border-primary/30 transition-all"
+                className="premium-card p-6"
               >
-                <div className="p-3 rounded-xl bg-primary/10 w-fit mb-4">
+                <div className="relative p-3 rounded-xl bg-gradient-to-br from-primary/15 to-primary/5 border border-primary/15 w-fit mb-4">
                   <feature.icon className="w-6 h-6 text-primary" />
                 </div>
                 <h3 className="text-lg font-semibold text-foreground mb-2">{feature.title}</h3>
