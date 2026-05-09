@@ -363,31 +363,6 @@ export async function insertRow(
         if (error) return { success: false, error: error.message };
         return { success: true };
       }
-      case "kilometer": {
-        // km registratie vereist een contract_id, dus we koppelen via huidig actief contract van het voertuig
-        const kenteken = normalizeKenteken(String(row.kenteken));
-        const { data: cdata } = await supabase
-          .from("contracts")
-          .select("id")
-          .eq("organisatie_id", ctx.organisatieId)
-          .eq("voertuig_id", kenteken)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (!cdata?.id) {
-          return { success: false, error: `Geen contract voor ${kenteken}, importeer eerst contracten` };
-        }
-        const { error } = await supabase.from("kilometer_registraties").insert({
-          datum: row.datum as string,
-          kilometerstand: Number(row.kilometerstand),
-          notitie: row.notitie ? String(row.notitie) : `Geïmporteerd: ${kenteken}`,
-          contract_id: cdata.id,
-          user_id: ctx.userId,
-          organisatie_id: ctx.organisatieId,
-        });
-        if (error) return { success: false, error: error.message };
-        return { success: true };
-      }
       case "schade": {
         const kenteken = normalizeKenteken(String(row.kenteken));
         const ernst = String(row.ernst ?? "licht").toLowerCase();
