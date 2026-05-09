@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useEffect } from "react";
 import { Car, UserPlus, FileText, Users, Gauge, AlertTriangle, Sparkles, ArrowRight, Mail } from "lucide-react";
 import { MigratieWizard } from "@/components/migratie/MigratieWizard";
 import { DATATYPES, type MigratieDatatype } from "@/lib/migratie-types";
-import { Helmet } from "react-helmet-async";
 
 const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   Car, UserPlus, FileText, Users, Gauge, AlertTriangle,
@@ -12,11 +12,10 @@ const ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export default function Migratie() {
   const [open, setOpen] = useState<MigratieDatatype | null>(null);
+  useEffect(() => { document.title = "Migratie | FleeFlo"; }, []);
 
   return (
     <div className="space-y-6">
-      <Helmet><title>Migratie | FleeFlo</title></Helmet>
-
       <div className="rounded-2xl premium-card p-6 relative overflow-hidden">
         <div className="absolute inset-0 mesh-bg opacity-50 pointer-events-none" />
         <div className="relative space-y-2">
