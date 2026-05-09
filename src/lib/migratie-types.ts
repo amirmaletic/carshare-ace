@@ -9,7 +9,6 @@ export type MigratieDatatype =
   | "klanten"
   | "contracten"
   | "chauffeurs"
-  | "kilometer"
   | "schade";
 
 export interface TargetField {
@@ -35,7 +34,7 @@ export const DATATYPES: Record<MigratieDatatype, DatatypeSpec> = {
   voertuigen: {
     key: "voertuigen",
     label: "Voertuigen",
-    beschrijving: "Kentekens, merk, model, bouwjaar, brandstof, km-stand, prijs, locatie",
+    beschrijving: "Kentekens, merk, model, bouwjaar, brandstof, km-stand, prijs, locatie, APK, verzekering, chassisnummer",
     icon: "Car",
     fields: [
       { key: "kenteken", label: "Kenteken", required: true, type: "kenteken" },
@@ -117,20 +116,6 @@ export const DATATYPES: Record<MigratieDatatype, DatatypeSpec> = {
     ],
     required: ["voornaam", "achternaam"],
     uniqueKey: (r) => `${r.voornaam}|${r.achternaam}|${r.email ?? ""}`.toLowerCase(),
-  },
-  kilometer: {
-    key: "kilometer",
-    label: "Kilometerhistorie",
-    beschrijving: "Historische km-standen per voertuig",
-    icon: "Gauge",
-    fields: [
-      { key: "kenteken", label: "Kenteken", required: true, type: "kenteken" },
-      { key: "datum", label: "Datum", required: true, type: "date" },
-      { key: "kilometerstand", label: "Kilometerstand", required: true, type: "number" },
-      { key: "notitie", label: "Notitie" },
-    ],
-    required: ["kenteken", "datum", "kilometerstand"],
-    uniqueKey: (r) => `${r.kenteken}|${r.datum}|${r.kilometerstand}`,
   },
   schade: {
     key: "schade",
@@ -375,31 +360,6 @@ export async function insertRow(
           user_id: ctx.userId,
           organisatie_id: ctx.organisatieId,
         } as never);
-        if (error) return { success: false, error: error.message };
-        return { success: true };
-      }
-      case "kilometer": {
-        // km registratie vereist een contract_id, dus we koppelen via huidig actief contract van het voertuig
-        const kenteken = normalizeKenteken(String(row.kenteken));
-        const { data: cdata } = await supabase
-          .from("contracts")
-          .select("id")
-          .eq("organisatie_id", ctx.organisatieId)
-          .eq("voertuig_id", kenteken)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (!cdata?.id) {
-          return { success: false, error: `Geen contract voor ${kenteken}, importeer eerst contracten` };
-        }
-        const { error } = await supabase.from("kilometer_registraties").insert({
-          datum: row.datum as string,
-          kilometerstand: Number(row.kilometerstand),
-          notitie: row.notitie ? String(row.notitie) : `Geïmporteerd: ${kenteken}`,
-          contract_id: cdata.id,
-          user_id: ctx.userId,
-          organisatie_id: ctx.organisatieId,
-        });
         if (error) return { success: false, error: error.message };
         return { success: true };
       }
