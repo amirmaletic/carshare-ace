@@ -27,7 +27,7 @@ import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useGoedkeuringen } from "@/hooks/useGoedkeuringen";
-import { useModuleModus, WAGENPARK_HIDDEN_PATHS } from "@/hooks/useModuleModus";
+import { useModuleModus, WAGENPARK_HIDDEN_PATHS, AUTOVERHUUR_HIDDEN_PATHS } from "@/hooks/useModuleModus";
 import { usePermissions } from "@/hooks/usePermissions";
 import { PATH_TO_MODULE } from "@/hooks/useRouteAccess";
 
@@ -110,6 +110,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
 
   const isItemVisible = (item: NavItem) => {
     if (modus === "wagenpark" && WAGENPARK_HIDDEN_PATHS.has(item.path)) return false;
+    if (modus === "autoverhuur" && AUTOVERHUUR_HIDDEN_PATHS.has(item.path)) return false;
     if (permsLoading) return true;
     const moduleKey = PATH_TO_MODULE[item.path];
     if (!moduleKey) return true;

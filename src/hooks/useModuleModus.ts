@@ -34,6 +34,11 @@ export const WAGENPARK_HIDDEN_PATHS = new Set<string>([
   "/terugmelden",
 ]);
 
+/** Modules die verborgen worden in 'autoverhuur' modus (alleen relevant voor wagenparkbeheer). */
+export const AUTOVERHUUR_HIDDEN_PATHS = new Set<string>([
+  "/bijtelling",
+]);
+
 /** Instellingen-tabs die verborgen worden in 'wagenpark' modus. */
 export const WAGENPARK_HIDDEN_SETTINGS_TABS = new Set<string>([
   "portaal",       // Klantportaal is alleen voor verhuur
@@ -41,9 +46,9 @@ export const WAGENPARK_HIDDEN_SETTINGS_TABS = new Set<string>([
 ]);
 
 export function isPathToegestaan(path: string, modus: ModuleModus | undefined): boolean {
-  if (!modus || modus === "autoverhuur") return true;
-  // wagenpark: blokkeer hidden paths (en sub-routes daarvan)
-  for (const hidden of WAGENPARK_HIDDEN_PATHS) {
+  if (!modus) return true;
+  const blocked = modus === "wagenpark" ? WAGENPARK_HIDDEN_PATHS : AUTOVERHUUR_HIDDEN_PATHS;
+  for (const hidden of blocked) {
     if (path === hidden || path.startsWith(hidden + "/")) return false;
   }
   return true;
