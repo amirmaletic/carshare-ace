@@ -56,6 +56,10 @@ export function RitForm({ open, onOpenChange, defaultChauffeurId, defaultVoertui
     voertuig_id: defaultVoertuigId || null,
     chauffeur_id: defaultChauffeurId || null,
     notitie: "",
+    rit_categorie: "zakelijk",
+    begin_km: null,
+    eind_km: null,
+    doel: "",
   });
 
   const beschikbareVoertuigen = voertuigen.filter((v) => v.status === "beschikbaar" || v.status === "verhuurd");
@@ -110,6 +114,10 @@ export function RitForm({ open, onOpenChange, defaultChauffeurId, defaultVoertui
         voertuig_id: form.voertuig_id || null,
         chauffeur_id: form.chauffeur_id || null,
         notitie: form.notitie || null,
+        rit_categorie: form.rit_categorie || "zakelijk",
+        begin_km: form.begin_km ?? null,
+        eind_km: form.eind_km ?? null,
+        doel: form.doel || null,
       },
       {
         onSuccess: () => {
@@ -122,6 +130,7 @@ export function RitForm({ open, onOpenChange, defaultChauffeurId, defaultVoertui
             afstand_km: 0, km_tarief: 0.35, kosten: 0,
             status: "gepland", type: "transport",
             voertuig_id: null, chauffeur_id: null, notitie: "",
+            rit_categorie: "zakelijk", begin_km: null, eind_km: null, doel: "",
           });
         },
       }
@@ -310,6 +319,80 @@ export function RitForm({ open, onOpenChange, defaultChauffeurId, defaultVoertui
                   <SelectItem value="geannuleerd">Geannuleerd</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          {/* Fiscale categorie + km-tellers */}
+          <div className="rounded-lg border bg-muted/30 p-3 space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                Fiscale categorie
+              </Label>
+              <span className="text-[10px] text-muted-foreground">Voor bijtelling-administratie</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { v: "zakelijk", label: "Zakelijk" },
+                { v: "woon_werk", label: "Woon-werk" },
+                { v: "prive", label: "Privé" },
+              ].map((opt) => (
+                <button
+                  key={opt.v}
+                  type="button"
+                  onClick={() => setForm({ ...form, rit_categorie: opt.v })}
+                  className={`px-3 py-2 rounded-md text-xs font-medium border transition-colors ${
+                    (form.rit_categorie || "zakelijk") === opt.v
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background hover:bg-accent text-foreground"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Begin km</Label>
+                <Input
+                  type="number"
+                  value={form.begin_km ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value === "" ? null : Number(e.target.value);
+                    const next = { ...form, begin_km: v };
+                    if (v != null && form.eind_km != null && form.eind_km >= v) {
+                      next.afstand_km = form.eind_km - v;
+                      next.kosten = berekenKosten(next.afstand_km, form.km_tarief || 0.35);
+                    }
+                    setForm(next);
+                  }}
+                  placeholder="bv. 12345"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Eind km</Label>
+                <Input
+                  type="number"
+                  value={form.eind_km ?? ""}
+                  onChange={(e) => {
+                    const v = e.target.value === "" ? null : Number(e.target.value);
+                    const next = { ...form, eind_km: v };
+                    if (v != null && form.begin_km != null && v >= form.begin_km) {
+                      next.afstand_km = v - form.begin_km;
+                      next.kosten = berekenKosten(next.afstand_km, form.km_tarief || 0.35);
+                    }
+                    setForm(next);
+                  }}
+                  placeholder="bv. 12410"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Doel</Label>
+                <Input
+                  value={form.doel || ""}
+                  onChange={(e) => setForm({ ...form, doel: e.target.value })}
+                  placeholder="Bv. klantbezoek"
+                />
+              </div>
             </div>
           </div>
 

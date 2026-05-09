@@ -54,6 +54,7 @@ const RijbewijsUpload = lazy(() => import("./pages/RijbewijsUpload"));
 const BetaalVerificatie = lazy(() => import("./pages/BetaalVerificatie"));
 const Migratie = lazy(() => import("./pages/Migratie"));
 const BoekhoudingExport = lazy(() => import("./pages/BoekhoudingExport"));
+const Bijtelling = lazy(() => import("./pages/Bijtelling"));
 
 function PageLoader() {
   return (
@@ -199,6 +200,7 @@ const App = () => (
           <Route path="/dashboards/klanten" element={<Navigate to="/dashboarding/klanten" replace />} />
           <Route path="/kosten" element={<ProtectedRoute><PermissionGuard><AppLayout><Kosten /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/boekhouding-export" element={<ProtectedRoute><AppLayout><BoekhoudingExport /></AppLayout></ProtectedRoute>} />
+          <Route path="/bijtelling" element={<ProtectedRoute><AppLayout><Bijtelling /></AppLayout></ProtectedRoute>} />
           <Route path="/chauffeurs" element={<ProtectedRoute><PermissionGuard><AppLayout><Chauffeurs /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/ritten" element={<ProtectedRoute><PermissionGuard><AppLayout><Ritten /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/klanten" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><Klanten /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />

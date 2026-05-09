@@ -38,12 +38,19 @@ const typeLabels: Record<string, string> = {
   prive: "Privé",
 };
 
+const categorieConfig: Record<string, { label: string; className: string }> = {
+  zakelijk: { label: "Zakelijk", className: "bg-primary/10 text-primary border-primary/30" },
+  woon_werk: { label: "Woon-werk", className: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/30" },
+  prive: { label: "Privé", className: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30" },
+};
+
 export default function Ritten() {
   const { ritten, isLoading, updateRit, deleteRit } = useRitten();
   const { voertuigen } = useVoertuigen();
   const { chauffeurs } = useChauffeurs();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("alle");
+  const [categorieFilter, setCategorieFilter] = useState("alle");
 
   const getVoertuig = (id: string | null) => voertuigen.find((v) => v.id === id);
   const getChauffeur = (id: string | null) => chauffeurs.find((c) => c.id === id);
@@ -53,7 +60,8 @@ export default function Ritten() {
       r.van_locatie.toLowerCase().includes(search.toLowerCase()) ||
       r.naar_locatie.toLowerCase().includes(search.toLowerCase());
     const matchStatus = statusFilter === "alle" || r.status === statusFilter;
-    return matchSearch && matchStatus;
+    const matchCat = categorieFilter === "alle" || r.rit_categorie === categorieFilter;
+    return matchSearch && matchStatus && matchCat;
   });
 
   const geplande = filtered.filter((r) => r.status === "gepland");
@@ -120,6 +128,11 @@ export default function Ritten() {
                 </span>
               )}
               <Badge variant="outline" className="text-[10px]">{typeLabels[rit.type] || rit.type}</Badge>
+              {rit.rit_categorie && categorieConfig[rit.rit_categorie] && (
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border font-medium ${categorieConfig[rit.rit_categorie].className}`}>
+                  {categorieConfig[rit.rit_categorie].label}
+                </span>
+              )}
             </div>
             <div className="flex items-center gap-1">
               <Button
@@ -231,6 +244,17 @@ export default function Ritten() {
             <SelectItem value="onderweg">Onderweg</SelectItem>
             <SelectItem value="afgerond">Afgerond</SelectItem>
             <SelectItem value="geannuleerd">Geannuleerd</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={categorieFilter} onValueChange={setCategorieFilter}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="alle">Alle categorieën</SelectItem>
+            <SelectItem value="zakelijk">Zakelijk</SelectItem>
+            <SelectItem value="woon_werk">Woon-werk</SelectItem>
+            <SelectItem value="prive">Privé</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -1454,15 +1454,19 @@ export type Database = {
         Row: {
           aankomst_tijd: string | null
           afstand_km: number | null
+          begin_km: number | null
           chauffeur_id: string | null
           created_at: string
           datum: string
+          doel: string | null
+          eind_km: number | null
           id: string
           km_tarief: number | null
           kosten: number | null
           naar_locatie: string
           notitie: string | null
           organisatie_id: string | null
+          rit_categorie: string
           status: string
           type: string
           updated_at: string
@@ -1474,15 +1478,19 @@ export type Database = {
         Insert: {
           aankomst_tijd?: string | null
           afstand_km?: number | null
+          begin_km?: number | null
           chauffeur_id?: string | null
           created_at?: string
           datum?: string
+          doel?: string | null
+          eind_km?: number | null
           id?: string
           km_tarief?: number | null
           kosten?: number | null
           naar_locatie: string
           notitie?: string | null
           organisatie_id?: string | null
+          rit_categorie?: string
           status?: string
           type?: string
           updated_at?: string
@@ -1494,15 +1502,19 @@ export type Database = {
         Update: {
           aankomst_tijd?: string | null
           afstand_km?: number | null
+          begin_km?: number | null
           chauffeur_id?: string | null
           created_at?: string
           datum?: string
+          doel?: string | null
+          eind_km?: number | null
           id?: string
           km_tarief?: number | null
           kosten?: number | null
           naar_locatie?: string
           notitie?: string | null
           organisatie_id?: string | null
+          rit_categorie?: string
           status?: string
           type?: string
           updated_at?: string
@@ -1925,6 +1937,7 @@ export type Database = {
       voertuigen: {
         Row: {
           apk_vervaldatum: string | null
+          bijtelling_percentage: number
           bouwjaar: number
           brandstof: string
           catalogusprijs: number | null
@@ -1933,6 +1946,7 @@ export type Database = {
           co2_uitstoot: number | null
           created_at: string
           dagprijs: number
+          datum_eerste_toelating: string | null
           eerste_toelating: string | null
           id: string
           image_url: string | null
@@ -1952,6 +1966,7 @@ export type Database = {
         }
         Insert: {
           apk_vervaldatum?: string | null
+          bijtelling_percentage?: number
           bouwjaar: number
           brandstof?: string
           catalogusprijs?: number | null
@@ -1960,6 +1975,7 @@ export type Database = {
           co2_uitstoot?: number | null
           created_at?: string
           dagprijs?: number
+          datum_eerste_toelating?: string | null
           eerste_toelating?: string | null
           id?: string
           image_url?: string | null
@@ -1979,6 +1995,7 @@ export type Database = {
         }
         Update: {
           apk_vervaldatum?: string | null
+          bijtelling_percentage?: number
           bouwjaar?: number
           brandstof?: string
           catalogusprijs?: number | null
@@ -1987,6 +2004,7 @@ export type Database = {
           co2_uitstoot?: number | null
           created_at?: string
           dagprijs?: number
+          datum_eerste_toelating?: string | null
           eerste_toelating?: string | null
           id?: string
           image_url?: string | null
@@ -2278,6 +2296,24 @@ export type Database = {
           _trial_ends_at?: string
         }
         Returns: undefined
+      }
+      bijtelling_overzicht: {
+        Args: { _jaar: number }
+        Returns: {
+          bijtelling_percentage: number
+          bijtelling_verplicht: boolean
+          cataloguswaarde: number
+          jaarlijkse_bijtelling: number
+          kenteken: string
+          maandelijkse_bijtelling: number
+          merk: string
+          model: string
+          prive_km: number
+          totaal_km: number
+          voertuig_id: string
+          woon_werk_km: number
+          zakelijk_km: number
+        }[]
       }
       convert_aanvraag_naar_klant: {
         Args: { _aanvraag_id: string }
