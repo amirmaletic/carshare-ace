@@ -48,7 +48,7 @@ Geef ook een algemene confidence score 0..1.`;
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "openai/gpt-5-mini",
         messages: [
           { role: "system", content: "Je bent een data-mapping assistent voor het Nederlandse vlootbeheersysteem FleeFlo." },
           { role: "user", content: prompt },
