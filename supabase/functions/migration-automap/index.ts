@@ -111,7 +111,7 @@ Geef ook een algemene confidence score 0..1.`;
       for (const p of (args.pairs ?? []) as { header: string; target: string }[]) {
         if (p?.header && p?.target) mapping[p.header] = p.target;
       }
-      return new Response(JSON.stringify({ mapping, confidence: args.confidence ?? 0, notes: args.notes }), {
+      return new Response(JSON.stringify({ mapping, confidence: args.confidence ?? 0, notes: args.notes, _debug_args: args }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
