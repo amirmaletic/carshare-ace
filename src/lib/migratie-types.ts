@@ -9,7 +9,6 @@ export type MigratieDatatype =
   | "klanten"
   | "contracten"
   | "chauffeurs"
-  | "kilometer"
   | "schade";
 
 export interface TargetField {
@@ -35,7 +34,7 @@ export const DATATYPES: Record<MigratieDatatype, DatatypeSpec> = {
   voertuigen: {
     key: "voertuigen",
     label: "Voertuigen",
-    beschrijving: "Kentekens, merk, model, bouwjaar, brandstof, km-stand, prijs, locatie",
+    beschrijving: "Kentekens, merk, model, bouwjaar, brandstof, km-stand, prijs, locatie, APK, verzekering, chassisnummer",
     icon: "Car",
     fields: [
       { key: "kenteken", label: "Kenteken", required: true, type: "kenteken" },
@@ -117,20 +116,6 @@ export const DATATYPES: Record<MigratieDatatype, DatatypeSpec> = {
     ],
     required: ["voornaam", "achternaam"],
     uniqueKey: (r) => `${r.voornaam}|${r.achternaam}|${r.email ?? ""}`.toLowerCase(),
-  },
-  kilometer: {
-    key: "kilometer",
-    label: "Kilometerhistorie",
-    beschrijving: "Historische km-standen per voertuig",
-    icon: "Gauge",
-    fields: [
-      { key: "kenteken", label: "Kenteken", required: true, type: "kenteken" },
-      { key: "datum", label: "Datum", required: true, type: "date" },
-      { key: "kilometerstand", label: "Kilometerstand", required: true, type: "number" },
-      { key: "notitie", label: "Notitie" },
-    ],
-    required: ["kenteken", "datum", "kilometerstand"],
-    uniqueKey: (r) => `${r.kenteken}|${r.datum}|${r.kilometerstand}`,
   },
   schade: {
     key: "schade",
