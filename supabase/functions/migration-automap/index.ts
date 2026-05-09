@@ -40,7 +40,7 @@ ${sampleText}
 Doelvelden in FleeFlo:
 ${fieldList}
 
-Koppel iedere header aan het beste doelveld. Negeer kolommen die niet matchen (geef null).
+Koppel iedere header aan het beste doelveld. Laat headers die niet matchen WEG uit de mapping (niet opnemen).
 Headers kunnen Nederlands, Engels, Duits zijn (kenteken/plate/registration/Nr, merk/brand/make, etc.). Wees slim.
 Geef ook een algemene confidence score 0..1.`;
 
@@ -63,8 +63,8 @@ Geef ook een algemene confidence score 0..1.`;
               properties: {
                 mapping: {
                   type: "object",
-                  description: "Object waarin sleutel = header uit bestand, waarde = doelveld key of null",
-                  additionalProperties: { type: ["string", "null"] },
+                  description: "Object waarin sleutel = exacte header uit bestand, waarde = doelveld key (string). Laat headers zonder match weg.",
+                  additionalProperties: { type: "string" },
                 },
                 confidence: { type: "number", description: "0 tot 1" },
                 notes: { type: "string", description: "Optionele Nederlandse opmerking voor de gebruiker" },
