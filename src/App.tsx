@@ -52,6 +52,7 @@ const TenantReserveren = lazy(() => import("./pages/tenant/TenantReserveren"));
 const Rijbewijzen = lazy(() => import("./pages/Rijbewijzen"));
 const RijbewijsUpload = lazy(() => import("./pages/RijbewijsUpload"));
 const BetaalVerificatie = lazy(() => import("./pages/BetaalVerificatie"));
+const Migratie = lazy(() => import("./pages/Migratie"));
 
 function PageLoader() {
   return (
@@ -201,6 +202,7 @@ const App = () => (
           <Route path="/klanten" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><Klanten /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />
           <Route path="/rijbewijzen" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><Rijbewijzen /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />
           <Route path="/instellingen" element={<ProtectedRoute><PermissionGuard><AppLayout><SettingsPage /></AppLayout></PermissionGuard></ProtectedRoute>} />
+          <Route path="/migratie" element={<ProtectedRoute><AppLayout><Migratie /></AppLayout></ProtectedRoute>} />
 
           {/* Publieke rijbewijs-upload via token */}
           <Route path="/rijbewijs/:token" element={<RijbewijsUpload />} />
