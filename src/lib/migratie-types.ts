@@ -364,17 +364,17 @@ export async function insertRow(
           klant_naam: String(row.klant_naam ?? email),
           klant_email: email,
           voertuig_id: kenteken,
-          type: contractType,
+          type: contractType as "huur" | "lease",
           start_datum: row.start_datum as string,
           eind_datum: row.eind_datum as string,
           maandprijs: Number(row.maandprijs ?? 0),
           borg: Number(row.borg ?? 0),
           km_per_jaar: row.km_per_jaar ? Number(row.km_per_jaar) : null,
-          status: (String(row.status ?? "actief").toLowerCase() === "concept" ? "concept" : "actief"),
+          status: (String(row.status ?? "actief").toLowerCase() === "concept" ? "concept" : "actief") as "concept" | "actief",
           inclusief: [],
           user_id: ctx.userId,
           organisatie_id: ctx.organisatieId,
-        });
+        } as never);
         if (error) return { success: false, error: error.message };
         return { success: true };
       }
