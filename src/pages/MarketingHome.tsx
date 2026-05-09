@@ -300,7 +300,7 @@ export default function MarketingHome() {
             </div>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-foreground tracking-tight leading-[1.1]">
               Het complete platform voor{" "}
-              <span className="gradient-text">autoverhuur en wagenparkbeheer</span>
+              <span className="gradient-text-animated">autoverhuur en wagenparkbeheer</span>
             </h1>
             <p className="mt-4 sm:mt-6 text-base sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Eén platform voor verhuurbedrijven én voor bedrijven met een eigen wagenpark.
