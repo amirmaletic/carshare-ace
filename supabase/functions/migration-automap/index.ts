@@ -61,15 +61,23 @@ Geef ook een algemene confidence score 0..1.`;
             parameters: {
               type: "object",
               properties: {
-                mapping: {
-                  type: "object",
-                  description: "Object waarin sleutel = exacte header uit bestand, waarde = doelveld key (string). Laat headers zonder match weg.",
-                  additionalProperties: { type: "string" },
+                pairs: {
+                  type: "array",
+                  description: "Lijst van koppelingen tussen bestand-header en FleeFlo doelveld. Sla headers zonder match over.",
+                  items: {
+                    type: "object",
+                    properties: {
+                      header: { type: "string", description: "Exacte header uit het bestand" },
+                      target: { type: "string", description: "Doelveld key in FleeFlo" },
+                    },
+                    required: ["header", "target"],
+                    additionalProperties: false,
+                  },
                 },
                 confidence: { type: "number", description: "0 tot 1" },
                 notes: { type: "string", description: "Optionele Nederlandse opmerking voor de gebruiker" },
               },
-              required: ["mapping", "confidence"],
+              required: ["pairs", "confidence"],
               additionalProperties: false,
             },
           },
@@ -98,7 +106,11 @@ Geef ook een algemene confidence score 0..1.`;
     const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
     if (toolCall?.function?.arguments) {
       const args = JSON.parse(toolCall.function.arguments);
-      return new Response(JSON.stringify(args), {
+      const mapping: Record<string, string> = {};
+      for (const p of (args.pairs ?? []) as { header: string; target: string }[]) {
+        if (p?.header && p?.target) mapping[p.header] = p.target;
+      }
+      return new Response(JSON.stringify({ mapping, confidence: args.confidence ?? 0, notes: args.notes }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
