@@ -40,7 +40,7 @@ ${sampleText}
 Doelvelden in FleeFlo:
 ${fieldList}
 
-Koppel iedere header aan het beste doelveld. Negeer kolommen die niet matchen (geef null).
+Koppel iedere header aan het beste doelveld. Laat headers die niet matchen WEG uit de mapping (niet opnemen).
 Headers kunnen Nederlands, Engels, Duits zijn (kenteken/plate/registration/Nr, merk/brand/make, etc.). Wees slim.
 Geef ook een algemene confidence score 0..1.`;
 
@@ -48,7 +48,7 @@ Geef ook een algemene confidence score 0..1.`;
       method: "POST",
       headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "openai/gpt-5-mini",
         messages: [
           { role: "system", content: "Je bent een data-mapping assistent voor het Nederlandse vlootbeheersysteem FleeFlo." },
           { role: "user", content: prompt },
@@ -61,15 +61,23 @@ Geef ook een algemene confidence score 0..1.`;
             parameters: {
               type: "object",
               properties: {
-                mapping: {
-                  type: "object",
-                  description: "Object waarin sleutel = header uit bestand, waarde = doelveld key of null",
-                  additionalProperties: { type: ["string", "null"] },
+                pairs: {
+                  type: "array",
+                  description: "Lijst van koppelingen tussen bestand-header en FleeFlo doelveld. Sla headers zonder match over.",
+                  items: {
+                    type: "object",
+                    properties: {
+                      header: { type: "string", description: "Exacte header uit het bestand" },
+                      target: { type: "string", description: "Doelveld key in FleeFlo" },
+                    },
+                    required: ["header", "target"],
+                    additionalProperties: false,
+                  },
                 },
                 confidence: { type: "number", description: "0 tot 1" },
                 notes: { type: "string", description: "Optionele Nederlandse opmerking voor de gebruiker" },
               },
-              required: ["mapping", "confidence"],
+              required: ["pairs", "confidence"],
               additionalProperties: false,
             },
           },
@@ -96,9 +104,14 @@ Geef ook een algemene confidence score 0..1.`;
 
     const result = await response.json();
     const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
+    console.log("AI raw tool args:", toolCall?.function?.arguments);
     if (toolCall?.function?.arguments) {
       const args = JSON.parse(toolCall.function.arguments);
-      return new Response(JSON.stringify(args), {
+      const mapping: Record<string, string> = {};
+      for (const p of (args.pairs ?? []) as { header: string; target: string }[]) {
+        if (p?.header && p?.target) mapping[p.header] = p.target;
+      }
+      return new Response(JSON.stringify({ mapping, confidence: args.confidence ?? 0, notes: args.notes }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
