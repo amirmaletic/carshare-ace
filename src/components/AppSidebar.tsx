@@ -20,6 +20,7 @@ import {
   BarChartBig,
   Upload,
   Download,
+  Calculator,
   ChevronDown,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -79,6 +80,7 @@ const navSections: NavSection[] = [
     items: [
       { icon: Euro, label: "Kosten", path: "/kosten" },
       { icon: Download, label: "Boekhouding", path: "/boekhouding-export" },
+      { icon: Calculator, label: "Bijtelling", path: "/bijtelling" },
     ],
   },
   {
