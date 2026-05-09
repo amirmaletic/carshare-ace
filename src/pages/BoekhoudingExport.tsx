@@ -46,7 +46,7 @@ export default function BoekhoudingExport() {
         .from("invoices")
         .select(`
           id, datum, bedrag, status, omschrijving, type, contract_id,
-          contracts:contract_id ( voertuig_kenteken, klanten:klant_id ( voornaam, achternaam, email, adres, postcode, plaats ) )
+          contracts:contract_id ( klant_naam, klant_email, klant_adres, voertuig_id, voertuigen:voertuig_id ( kenteken ) )
         `)
         .gte("datum", van)
         .lte("datum", tot)
@@ -55,8 +55,8 @@ export default function BoekhoudingExport() {
       const { data, error } = await q;
       if (error) throw error;
       return (data ?? []).map((row: any, idx) => {
-        const klant = row.contracts?.klanten;
-        const naam = klant ? `${klant.voornaam ?? ""} ${klant.achternaam ?? ""}`.trim() : "Onbekend";
+        const c = row.contracts;
+        const naam = c?.klant_naam || "Onbekend";
         const yr = row.datum?.slice(0, 4) ?? "";
         const seq = String(idx + 1).padStart(4, "0");
         return {
@@ -69,12 +69,12 @@ export default function BoekhoudingExport() {
           status: row.status,
           type: row.type || "huur",
           klant_naam: naam,
-          klant_email: klant?.email ?? "",
-          klant_adres: klant?.adres ?? "",
-          klant_postcode: klant?.postcode ?? "",
-          klant_plaats: klant?.plaats ?? "",
+          klant_email: c?.klant_email ?? "",
+          klant_adres: c?.klant_adres ?? "",
+          klant_postcode: "",
+          klant_plaats: "",
           contract_id: row.contract_id,
-          voertuig_kenteken: row.contracts?.voertuig_kenteken ?? "",
+          voertuig_kenteken: c?.voertuigen?.kenteken ?? "",
         } as FactuurExport;
       });
     },
