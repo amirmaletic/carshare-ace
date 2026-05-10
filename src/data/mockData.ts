@@ -50,6 +50,7 @@ export interface Vehicle {
   categorie: 'Stadsauto' | 'SUV' | 'Bestelwagen' | 'Luxe' | 'Elektrisch';
   kleur: string;
   image?: string;
+  locatie?: string;
 }
 
 export type ContractType = 'lease' | 'verhuur' | 'fietslease' | 'ev-lease';
