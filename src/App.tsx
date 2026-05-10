@@ -203,6 +203,7 @@ const App = () => (
           <Route path="/dashboards/klanten" element={<Navigate to="/dashboarding/klanten" replace />} />
           <Route path="/kosten" element={<ProtectedRoute><PermissionGuard><AppLayout><Kosten /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/boekhouding-export" element={<ProtectedRoute><AppLayout><BoekhoudingExport /></AppLayout></ProtectedRoute>} />
+          <Route path="/auto-facturatie" element={<ProtectedRoute><AppLayout><AutoFacturatie /></AppLayout></ProtectedRoute>} />
           <Route path="/bijtelling" element={<ProtectedRoute><AppLayout><Bijtelling /></AppLayout></ProtectedRoute>} />
           <Route path="/tankbeurten" element={<ProtectedRoute><AppLayout><Tankbeurten /></AppLayout></ProtectedRoute>} />
           <Route path="/verplaatsingen" element={<ProtectedRoute><AppLayout><Verplaatsingen /></AppLayout></ProtectedRoute>} />
