@@ -916,6 +916,9 @@ export default function MarketingHome() {
       {/* Integraties en koppelingen */}
       <IntegrationsSection />
 
+      {/* Werkt op tablet en mobiel */}
+      <DevicesSection />
+
       {/* FAQ */}
       <FaqSection />
 
