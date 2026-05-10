@@ -240,11 +240,20 @@ export default function MarketingHome() {
               "E mail vanuit eigen domein",
             ],
             offers: {
-              "@type": "AggregateOffer",
-              lowPrice: "49",
-              highPrice: "199",
+              "@type": "Offer",
+              price: "4",
               priceCurrency: "EUR",
-              offerCount: "3",
+              priceSpecification: {
+                "@type": "UnitPriceSpecification",
+                price: "4",
+                priceCurrency: "EUR",
+                unitCode: "MON",
+                referenceQuantity: {
+                  "@type": "QuantitativeValue",
+                  value: "1",
+                  unitCode: "C62",
+                },
+              },
             },
             aggregateRating: {
               "@type": "AggregateRating",
