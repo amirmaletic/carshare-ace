@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { CheckCircle2, AlertCircle, ExternalLink, Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useOrganisatie } from "@/hooks/useOrganisatie";
 
 /**
  * Mollie-koppeling per organisatie.
@@ -17,6 +18,7 @@ import { usePermissions } from "@/hooks/usePermissions";
  */
 export default function MollieKoppelingCard() {
   const { isAdmin } = usePermissions();
+  const { organisatieId } = useOrganisatie();
   const qc = useQueryClient();
   const [apiKey, setApiKey] = useState("");
   const [testing, setTesting] = useState(false);
@@ -36,8 +38,7 @@ export default function MollieKoppelingCard() {
 
   const saveKoppeling = useMutation({
     mutationFn: async (payload: { api_key: string; modus: "test" | "live"; profile_id?: string; profile_naam?: string }) => {
-      const { data: org } = await supabase.rpc("get_user_organisatie_id", { _user_id: (await supabase.auth.getUser()).data.user?.id });
-      const organisatie_id = org as unknown as string;
+      if (!organisatieId) throw new Error("Geen organisatie gevonden");
       if (koppeling?.id) {
         const { error } = await supabase.from("mollie_instellingen").update({
           ...payload,
@@ -47,7 +48,7 @@ export default function MollieKoppelingCard() {
         if (error) throw error;
       } else {
         const { error } = await supabase.from("mollie_instellingen").insert({
-          organisatie_id,
+          organisatie_id: organisatieId,
           ...payload,
           laatst_getest_op: new Date().toISOString(),
           laatst_getest_status: "ok",
