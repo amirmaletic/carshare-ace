@@ -18,6 +18,8 @@ import { VehicleImport } from "@/components/VehicleImport";
 import { getStatusColor, type Vehicle } from "@/data/mockData";
 import { VehicleImage } from "@/components/VehicleImage";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
+import { useLocaties } from "@/hooks/useLocaties";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Can } from "@/components/Can";
 
@@ -39,8 +41,10 @@ export default function Vehicles() {
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [viewMode, setViewMode] = useState<ViewMode>("lijst");
+  const [activeLocatie, setActiveLocatie] = useState<string>("Alle");
 
   const { voertuigen: dbVoertuigen, isLoading } = useVoertuigen();
+  const { locaties } = useLocaties();
 
   const allVehicles: Vehicle[] = dbVoertuigen.map((v) => ({
     id: v.id,
@@ -57,6 +61,7 @@ export default function Vehicles() {
     categorie: v.categorie as Vehicle["categorie"],
     kleur: v.kleur,
     image: v.image_url || undefined,
+    locatie: v.locatie || undefined,
   }));
 
   // Diepe link vanuit Copilot: /voertuigen?kenteken=XX-YY-ZZ
@@ -78,12 +83,17 @@ export default function Vehicles() {
   }, [searchParams, dbVoertuigen.length]);
 
   const filtered = allVehicles.filter(v => {
+    const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
+    const q = search.trim().toLowerCase();
+    const qNorm = norm(search);
     const matchesSearch =
-      v.kenteken.toLowerCase().includes(search.toLowerCase()) ||
-      v.merk.toLowerCase().includes(search.toLowerCase()) ||
-      v.model.toLowerCase().includes(search.toLowerCase());
+      q === "" ||
+      norm(v.kenteken).includes(qNorm) ||
+      v.merk.toLowerCase().includes(q) ||
+      v.model.toLowerCase().includes(q);
     const matchesCategory = activeCategory === "Alle" || v.categorie === activeCategory;
-    return matchesSearch && matchesCategory;
+    const matchesLocatie = activeLocatie === "Alle" || (v.locatie ?? "") === activeLocatie;
+    return matchesSearch && matchesCategory && matchesLocatie;
   });
 
   const openVehicle = (vehicle: Vehicle) => {
@@ -167,6 +177,18 @@ export default function Vehicles() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input placeholder="Zoek op kenteken, merk of model..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
             </div>
+            <Select value={activeLocatie} onValueChange={setActiveLocatie}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <MapPin className="w-4 h-4 mr-2 text-muted-foreground" />
+                <SelectValue placeholder="Locatie" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Alle">Alle locaties</SelectItem>
+                {locaties.map((l) => (
+                  <SelectItem key={l.id} value={l.naam}>{l.naam}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <div className="flex gap-2 flex-wrap">
               {categories.map(cat => (
                 <button
@@ -228,6 +250,12 @@ export default function Vehicles() {
                       <div>
                         <h3 className="font-semibold text-foreground">{vehicle.merk} {vehicle.model}</h3>
                         <p className="text-sm text-muted-foreground font-mono">{vehicle.kenteken}</p>
+                        {vehicle.locatie && (
+                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                            <MapPin className="w-3 h-3" />
+                            {vehicle.locatie}
+                          </p>
+                        )}
                       </div>
                       <StatusBadge status={vehicle.status} variant={getStatusColor(vehicle.status)} />
                     </div>
