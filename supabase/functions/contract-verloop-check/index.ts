@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
   const maxStr = max.toISOString().slice(0, 10);
 
   const cRes = await fetch(
-    `${SUPABASE_URL}/rest/v1/contracts?select=id,organisatie_id,contract_nummer,klant_email,klant_naam,voertuig_id,start_datum,eind_datum,verlengbaar,status&status=eq.actief&eind_datum=gte.${todayStr}&eind_datum=lte.${maxStr}`,
+    `${SUPABASE_URL}/rest/v1/contracts?select=id,user_id,organisatie_id,contract_nummer,klant_email,klant_naam,voertuig_id,start_datum,eind_datum,verlengbaar,status&status=eq.actief&eind_datum=gte.${todayStr}&eind_datum=lte.${maxStr}`,
     { headers },
   );
   const contracts = await cRes.json();
@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
       method: "POST",
       headers,
       body: JSON.stringify({
-        user_id: "00000000-0000-0000-0000-000000000000",
+        user_id: c.user_id,
         organisatie_id: c.organisatie_id,
         actie: "contract_verloop_herinnering",
         beschrijving: `Herinnering verstuurd voor contract ${c.contract_nummer} (${milestone} dagen voor einde)`,
