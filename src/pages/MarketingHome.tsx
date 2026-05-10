@@ -39,6 +39,7 @@ import { CopilotShowcase } from "@/components/marketing/CopilotShowcase";
 import productTerugmelden from "@/assets/screenshot-terugmelden.png";
 import FaqSection from "@/components/marketing/FaqSection";
 import BlogPreviewSection from "@/components/marketing/BlogPreviewSection";
+import IntegrationsSection from "@/components/marketing/IntegrationsSection";
 import vwGolf from "@/assets/vehicles/volkswagen-golf.png";
 import vwTiguan from "@/assets/vehicles/volkswagen-tiguan.png";
 import vwId4 from "@/assets/vehicles/volkswagen-id4.png";
@@ -910,6 +911,9 @@ export default function MarketingHome() {
 
       {/* Blog */}
       <BlogPreviewSection />
+
+      {/* Integraties en koppelingen */}
+      <IntegrationsSection />
 
       {/* FAQ */}
       <FaqSection />
