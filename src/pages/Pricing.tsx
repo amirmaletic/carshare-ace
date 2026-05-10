@@ -141,7 +141,8 @@ export default function Pricing() {
           <input
             type="range"
             min={1}
-            max={200}
+            max={10000}
+            step={1}
             value={aantal}
             onChange={(e) => setAantal(Number(e.target.value))}
             className="w-full accent-primary"
@@ -149,7 +150,7 @@ export default function Pricing() {
           />
           <div className="flex justify-between text-xs text-muted-foreground mt-2">
             <span>1</span>
-            <span>200+</span>
+            <span>10.000</span>
           </div>
 
           <div className="mt-6 pt-6 border-t border-border grid sm:grid-cols-3 gap-4 items-end">
