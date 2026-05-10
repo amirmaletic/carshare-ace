@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Clock, Plug, BookOpen, Webhook, FileSpreadsheet, ShieldCheck } from "lucide-react";
+import MollieKoppelingCard from "./MollieKoppelingCard";
 
 /**
  * Integraties-overzicht.
@@ -49,7 +50,7 @@ const categorieen: Categorie[] = [
     icon: Plug,
     items: [
       { naam: "Stripe", beschrijving: "Borg-verificatie en facturen via creditcard en iDEAL", status: "actief" },
-      { naam: "Mollie", beschrijving: "Native iDEAL en SEPA voor Nederlandse klanten", status: "gepland" },
+      { naam: "Mollie", beschrijving: "Native iDEAL en SEPA via je eigen Mollie-account (zelf koppelen hieronder)", status: "actief" },
     ],
   },
   {
@@ -97,7 +98,9 @@ function StatusBadge({ status }: { status: Status }) {
 
 export default function IntegratiesTab() {
   return (
-    <Card>
+    <div className="space-y-6">
+      <MollieKoppelingCard />
+      <Card>
       <CardHeader>
         <CardTitle className="text-lg">Integraties</CardTitle>
         <CardDescription>
@@ -131,6 +134,7 @@ export default function IntegratiesTab() {
           );
         })}
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   );
 }
