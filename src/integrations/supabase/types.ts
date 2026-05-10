@@ -332,6 +332,48 @@ export type Database = {
           },
         ]
       }
+      boekhoud_koppelingen: {
+        Row: {
+          access_token: string
+          actief: boolean
+          administration_id: string | null
+          administration_naam: string | null
+          created_at: string
+          id: string
+          laatst_getest_op: string | null
+          laatst_getest_status: string | null
+          organisatie_id: string
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          actief?: boolean
+          administration_id?: string | null
+          administration_naam?: string | null
+          created_at?: string
+          id?: string
+          laatst_getest_op?: string | null
+          laatst_getest_status?: string | null
+          organisatie_id: string
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          actief?: boolean
+          administration_id?: string | null
+          administration_naam?: string | null
+          created_at?: string
+          id?: string
+          laatst_getest_op?: string | null
+          laatst_getest_status?: string | null
+          organisatie_id?: string
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       chauffeur_beschikbaarheid: {
         Row: {
           chauffeur_id: string
@@ -824,46 +866,64 @@ export type Database = {
       }
       invoices: {
         Row: {
+          aantal_reminders: number
           bedrag: number
           borg_verrekend: number
           contract_id: string
           created_at: string
           datum: string
+          extern_id: string | null
+          extern_provider: string | null
+          extern_synced_op: string | null
           id: string
+          laatste_reminder_op: string | null
           omschrijving: string | null
           organisatie_id: string | null
           schade_rapport_id: string | null
           status: Database["public"]["Enums"]["invoice_status"]
           type: string
           user_id: string
+          vervaldatum: string | null
         }
         Insert: {
+          aantal_reminders?: number
           bedrag?: number
           borg_verrekend?: number
           contract_id: string
           created_at?: string
           datum: string
+          extern_id?: string | null
+          extern_provider?: string | null
+          extern_synced_op?: string | null
           id?: string
+          laatste_reminder_op?: string | null
           omschrijving?: string | null
           organisatie_id?: string | null
           schade_rapport_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           type?: string
           user_id: string
+          vervaldatum?: string | null
         }
         Update: {
+          aantal_reminders?: number
           bedrag?: number
           borg_verrekend?: number
           contract_id?: string
           created_at?: string
           datum?: string
+          extern_id?: string | null
+          extern_provider?: string | null
+          extern_synced_op?: string | null
           id?: string
+          laatste_reminder_op?: string | null
           omschrijving?: string | null
           organisatie_id?: string | null
           schade_rapport_id?: string | null
           status?: Database["public"]["Enums"]["invoice_status"]
           type?: string
           user_id?: string
+          vervaldatum?: string | null
         }
         Relationships: [
           {
@@ -1079,6 +1139,54 @@ export type Database = {
           profile_id?: string | null
           profile_naam?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      notificaties: {
+        Row: {
+          bericht: string | null
+          categorie: string | null
+          created_at: string
+          entiteit_id: string | null
+          entiteit_type: string | null
+          gelezen: boolean
+          gelezen_op: string | null
+          id: string
+          link_url: string | null
+          organisatie_id: string
+          titel: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          bericht?: string | null
+          categorie?: string | null
+          created_at?: string
+          entiteit_id?: string | null
+          entiteit_type?: string | null
+          gelezen?: boolean
+          gelezen_op?: string | null
+          id?: string
+          link_url?: string | null
+          organisatie_id: string
+          titel: string
+          type?: string
+          user_id?: string | null
+        }
+        Update: {
+          bericht?: string | null
+          categorie?: string | null
+          created_at?: string
+          entiteit_id?: string | null
+          entiteit_type?: string | null
+          gelezen?: boolean
+          gelezen_op?: string | null
+          id?: string
+          link_url?: string | null
+          organisatie_id?: string
+          titel?: string
+          type?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1826,6 +1934,72 @@ export type Database = {
         }
         Relationships: []
       }
+      tankbeurten: {
+        Row: {
+          bedrag: number
+          brandstoftype: string | null
+          bron: string
+          chauffeur_id: string | null
+          created_at: string
+          datum: string
+          id: string
+          kenteken_input: string
+          kilometerstand: number | null
+          liters: number | null
+          notitie: string | null
+          organisatie_id: string
+          pas_nummer: string | null
+          prijs_per_liter: number | null
+          ruwe_data: Json | null
+          station: string | null
+          updated_at: string
+          user_id: string
+          voertuig_id: string | null
+        }
+        Insert: {
+          bedrag: number
+          brandstoftype?: string | null
+          bron?: string
+          chauffeur_id?: string | null
+          created_at?: string
+          datum: string
+          id?: string
+          kenteken_input: string
+          kilometerstand?: number | null
+          liters?: number | null
+          notitie?: string | null
+          organisatie_id: string
+          pas_nummer?: string | null
+          prijs_per_liter?: number | null
+          ruwe_data?: Json | null
+          station?: string | null
+          updated_at?: string
+          user_id: string
+          voertuig_id?: string | null
+        }
+        Update: {
+          bedrag?: number
+          brandstoftype?: string | null
+          bron?: string
+          chauffeur_id?: string | null
+          created_at?: string
+          datum?: string
+          id?: string
+          kenteken_input?: string
+          kilometerstand?: number | null
+          liters?: number | null
+          notitie?: string | null
+          organisatie_id?: string
+          pas_nummer?: string | null
+          prijs_per_liter?: number | null
+          ruwe_data?: Json | null
+          station?: string | null
+          updated_at?: string
+          user_id?: string
+          voertuig_id?: string | null
+        }
+        Relationships: []
+      }
       terugmeldingen: {
         Row: {
           bon_ai_data: Json | null
@@ -1976,6 +2150,48 @@ export type Database = {
           },
         ]
       }
+      voertuig_verplaatsingen: {
+        Row: {
+          chauffeur_id: string | null
+          created_at: string
+          datum: string
+          id: string
+          kilometerstand: number | null
+          naar_locatie_id: string
+          notitie: string | null
+          organisatie_id: string
+          user_id: string
+          van_locatie_id: string | null
+          voertuig_id: string
+        }
+        Insert: {
+          chauffeur_id?: string | null
+          created_at?: string
+          datum?: string
+          id?: string
+          kilometerstand?: number | null
+          naar_locatie_id: string
+          notitie?: string | null
+          organisatie_id: string
+          user_id: string
+          van_locatie_id?: string | null
+          voertuig_id: string
+        }
+        Update: {
+          chauffeur_id?: string | null
+          created_at?: string
+          datum?: string
+          id?: string
+          kilometerstand?: number | null
+          naar_locatie_id?: string
+          notitie?: string | null
+          organisatie_id?: string
+          user_id?: string
+          van_locatie_id?: string | null
+          voertuig_id?: string
+        }
+        Relationships: []
+      }
       voertuigen: {
         Row: {
           apk_vervaldatum: string | null
@@ -1996,6 +2212,7 @@ export type Database = {
           kilometerstand: number
           kleur: string
           locatie: string | null
+          locatie_id: string | null
           massa_ledig: number | null
           merk: string
           model: string
@@ -2025,6 +2242,7 @@ export type Database = {
           kilometerstand?: number
           kleur?: string
           locatie?: string | null
+          locatie_id?: string | null
           massa_ledig?: number | null
           merk: string
           model: string
@@ -2054,6 +2272,7 @@ export type Database = {
           kilometerstand?: number
           kleur?: string
           locatie?: string | null
+          locatie_id?: string | null
           massa_ledig?: number | null
           merk?: string
           model?: string
@@ -2486,6 +2705,19 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: never; Returns: boolean }
+      maak_notificatie: {
+        Args: {
+          _bericht: string
+          _categorie: string
+          _entiteit_id: string
+          _entiteit_type: string
+          _link: string
+          _org: string
+          _titel: string
+          _type: string
+        }
+        Returns: string
+      }
       markeer_betaal_verificatie_betaald: {
         Args: {
           _iban: string
