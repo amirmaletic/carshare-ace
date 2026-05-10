@@ -22,6 +22,7 @@ import {
   Download,
   Calculator,
   ChevronDown,
+  Send,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -79,6 +80,7 @@ const navSections: NavSection[] = [
     icon: Euro,
     items: [
       { icon: Euro, label: "Kosten", path: "/kosten" },
+      { icon: Send, label: "Auto facturatie", path: "/auto-facturatie" },
       { icon: Download, label: "Boekhouding", path: "/boekhouding-export" },
       { icon: Calculator, label: "Bijtelling", path: "/bijtelling" },
     ],
