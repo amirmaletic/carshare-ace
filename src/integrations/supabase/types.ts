@@ -2834,6 +2834,7 @@ export type Database = {
       contract_type: "lease" | "verhuur" | "fietslease" | "ev-lease"
       invoice_status:
         | "betaald"
+        | "concept"
         | "openstaand"
         | "te_laat"
         | "herinnering_verstuurd"
@@ -2988,6 +2989,7 @@ export const Constants = {
       contract_type: ["lease", "verhuur", "fietslease", "ev-lease"],
       invoice_status: [
         "betaald",
+        "concept",
         "openstaand",
         "te_laat",
         "herinnering_verstuurd",
