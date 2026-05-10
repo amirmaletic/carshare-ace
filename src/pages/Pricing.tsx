@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Zap, Shield, Crown, ArrowRight } from "lucide-react";
+import { Check, Zap, ArrowRight, Car } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -10,75 +10,27 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const plans = [
-  {
-    name: "Starter",
-    description: "Perfect voor kleine verhuurbedrijven die net beginnen",
-    monthlyPrice: 49,
-    yearlyPrice: 470,
-    icon: Zap,
-    popular: false,
-    features: [
-      "Tot 10 voertuigen",
-      "Contractbeheer",
-      "Kilometerregistratie",
-      "Terugmeldingen",
-      "Basis rapportages",
-      "E-mail support",
-    ],
-    notIncluded: [
-      "Klantportaal",
-      "AI-assistent",
-      "Chauffeursbeheer",
-      "API-toegang",
-    ],
-  },
-  {
-    name: "Professional",
-    description: "De ideale keuze voor groeiende verhuurbedrijven",
-    monthlyPrice: 99,
-    yearlyPrice: 950,
-    icon: Shield,
-    popular: true,
-    features: [
-      "Tot 50 voertuigen",
-      "Alles uit Starter",
-      "Klantportaal",
-      "AI-assistent",
-      "Chauffeursbeheer",
-      "Ritplanning",
-      "Schadebeheer met visuele schets",
-      "PDF-export facturen",
-      "Prioriteit support",
-    ],
-    notIncluded: [
-      "API-toegang",
-    ],
-  },
-  {
-    name: "Enterprise",
-    description: "Voor grote vloten met geavanceerde behoeften",
-    monthlyPrice: 199,
-    yearlyPrice: 1910,
-    icon: Crown,
-    popular: false,
-    features: [
-      "Onbeperkt voertuigen",
-      "Alles uit Professional",
-      "API-toegang",
-      "Aangepaste integraties",
-      "Dedicated accountmanager",
-      "SSO & multi-locatie",
-      "Geavanceerde analytics",
-      "SLA & uptime-garantie",
-    ],
-    notIncluded: [],
-  },
+const PRIJS_PER_VOERTUIG = 4;
+
+const features = [
+  "Onbeperkt gebruikers",
+  "Contractbeheer met digitale ondertekening",
+  "Klantportaal en publiek reserveren",
+  "Visueel schadebeheer",
+  "AI Vloot Copilot",
+  "Ritregistratie en transport",
+  "Facturatie met Stripe en Mollie",
+  "Boekhoudkoppelingen (Moneybird, Exact, Yuki)",
+  "E mail vanuit eigen domein",
+  "API toegang en webhooks",
+  "Onbeperkt locaties en vestigingen",
+  "Prioriteit support",
 ];
 
 export default function Pricing() {
-  const [isYearly, setIsYearly] = useState(false);
+  const [aantal, setAantal] = useState(10);
   const navigate = useNavigate();
+  const maandTotaal = aantal * PRIJS_PER_VOERTUIG;
 
   return (
     <div>
@@ -90,124 +42,96 @@ export default function Pricing() {
             1 maand gratis proberen, geen creditcard nodig
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight">
-            Beheer je wagenpark{" "}
-            <span className="text-primary">moeiteloos</span>
+            Eén eerlijk tarief,{" "}
+            <span className="text-primary">€4 per voertuig per maand</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Van contracten tot schadebeheer, van ritplanning tot facturatie.
-            Alles wat je nodig hebt om je verhuurbedrijf professioneel te runnen.
+            Geen pakketten, geen verrassingen. Je betaalt alleen voor de voertuigen
+            die je actief beheert. Alle functies zijn inbegrepen, ongeacht de grootte
+            van je vloot.
           </p>
         </div>
       </section>
 
-      {/* Billing toggle */}
-      <div className="flex items-center justify-center gap-4 mb-12">
-        <span className={cn("text-sm font-medium transition-colors", !isYearly ? "text-foreground" : "text-muted-foreground")}>
-          Maandelijks
-        </span>
-        <button
-          onClick={() => setIsYearly(!isYearly)}
-          className={cn(
-            "relative w-14 h-7 rounded-full transition-colors",
-            isYearly ? "bg-primary" : "bg-muted-foreground/30"
-          )}
-        >
-          <div className={cn(
-            "absolute top-0.5 w-6 h-6 rounded-full bg-white shadow-md transition-transform",
-            isYearly ? "translate-x-7" : "translate-x-0.5"
-          )} />
-        </button>
-        <span className={cn("text-sm font-medium transition-colors", isYearly ? "text-foreground" : "text-muted-foreground")}>
-          Jaarlijks
-        </span>
-        {isYearly && (
-          <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full animate-fade-in">
-            Bespaar tot 20%
-          </span>
-        )}
-      </div>
+      {/* Pricing card met calculator */}
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="relative rounded-2xl border border-primary p-8 sm:p-10 shadow-xl shadow-primary/10 bg-card">
+          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">
+            Alles inbegrepen
+          </div>
 
-      {/* Pricing cards */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="grid md:grid-cols-3 gap-8">
-          {plans.map((plan) => {
-            const price = isYearly ? plan.yearlyPrice : plan.monthlyPrice;
-            const perMonth = isYearly ? Math.round(plan.yearlyPrice / 12) : plan.monthlyPrice;
+          <div className="flex items-center gap-3 mb-2">
+            <div className="p-2.5 rounded-xl bg-primary/10">
+              <Car className="w-5 h-5 text-primary" />
+            </div>
+            <h2 className="font-bold text-foreground text-xl">FleeFlo Compleet</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-8">
+            Pay as you grow. Voeg voertuigen toe of verwijder ze, je rekening past
+            zich automatisch aan.
+          </p>
 
-            return (
-              <div
-                key={plan.name}
-                className={cn(
-                  "relative rounded-2xl border p-8 flex flex-col transition-shadow",
-                  plan.popular
-                    ? "border-primary shadow-xl shadow-primary/10 scale-[1.02]"
-                    : "border-border hover:shadow-lg"
-                )}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">
-                    Meest gekozen
-                  </div>
-                )}
+          <div className="rounded-xl bg-muted/40 border border-border p-6 mb-8">
+            <div className="flex items-baseline justify-between mb-4">
+              <label className="text-sm font-medium text-foreground">
+                Aantal voertuigen
+              </label>
+              <span className="text-lg font-bold text-foreground tabular-nums">
+                {aantal}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={1}
+              max={250}
+              value={aantal}
+              onChange={(e) => setAantal(Number(e.target.value))}
+              className="w-full accent-primary"
+              aria-label="Aantal voertuigen"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground mt-2">
+              <span>1</span>
+              <span>250+</span>
+            </div>
 
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={cn(
-                    "p-2.5 rounded-xl",
-                    plan.popular ? "bg-primary/10" : "bg-muted"
-                  )}>
-                    <plan.icon className={cn("w-5 h-5", plan.popular ? "text-primary" : "text-muted-foreground")} />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-foreground text-lg">{plan.name}</h3>
-                  </div>
+            <div className="mt-6 pt-6 border-t border-border flex items-baseline gap-2">
+              <span className="text-5xl font-extrabold text-foreground tabular-nums">
+                €{maandTotaal}
+              </span>
+              <span className="text-muted-foreground">/maand</span>
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {aantal} × €{PRIJS_PER_VOERTUIG} per voertuig per maand · excl. btw
+            </p>
+          </div>
+
+          <Button
+            className="w-full gap-2 mb-8"
+            size="lg"
+            onClick={() => navigate("/auth?mode=signup")}
+          >
+            Start gratis proefperiode
+            <ArrowRight className="w-4 h-4" />
+          </Button>
+
+          <div className="grid sm:grid-cols-2 gap-3">
+            {features.map((feature) => (
+              <div key={feature} className="flex items-start gap-3">
+                <div className="mt-0.5 p-0.5 rounded-full bg-primary/10 shrink-0">
+                  <Check className="w-3.5 h-3.5 text-primary" />
                 </div>
-
-                <p className="text-sm text-muted-foreground mb-6">{plan.description}</p>
-
-                <div className="mb-6">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-extrabold text-foreground">€{perMonth}</span>
-                    <span className="text-muted-foreground text-sm">/maand</span>
-                  </div>
-                  {isYearly && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      €{price} per jaar gefactureerd
-                    </p>
-                  )}
-                </div>
-
-                <Button
-                  className={cn("w-full gap-2 mb-8", plan.popular ? "" : "variant-outline")}
-                  variant={plan.popular ? "default" : "outline"}
-                  size="lg"
-                  onClick={() => navigate("/auth?mode=signup")}
-                >
-                  Start gratis proefperiode
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-
-                <div className="space-y-3 flex-1">
-                  {plan.features.map((feature) => (
-                    <div key={feature} className="flex items-start gap-3">
-                      <div className="mt-0.5 p-0.5 rounded-full bg-primary/10">
-                        <Check className="w-3.5 h-3.5 text-primary" />
-                      </div>
-                      <span className="text-sm text-foreground">{feature}</span>
-                    </div>
-                  ))}
-                  {plan.notIncluded.map((feature) => (
-                    <div key={feature} className="flex items-start gap-3 opacity-40">
-                      <div className="mt-0.5 p-0.5 rounded-full bg-muted">
-                        <Check className="w-3.5 h-3.5 text-muted-foreground" />
-                      </div>
-                      <span className="text-sm text-muted-foreground">{feature}</span>
-                    </div>
-                  ))}
-                </div>
+                <span className="text-sm text-foreground">{feature}</span>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
+
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          Meer dan 250 voertuigen?{" "}
+          <a href="mailto:hello@fleeflo.nl" className="text-primary font-medium hover:underline">
+            Neem contact op voor een vlootabonnement
+          </a>
+        </p>
       </section>
 
       {/* Trust section */}
