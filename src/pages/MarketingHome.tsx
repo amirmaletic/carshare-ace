@@ -40,6 +40,7 @@ import productTerugmelden from "@/assets/screenshot-terugmelden.png";
 import FaqSection from "@/components/marketing/FaqSection";
 import BlogPreviewSection from "@/components/marketing/BlogPreviewSection";
 import IntegrationsSection from "@/components/marketing/IntegrationsSection";
+import DevicesSection from "@/components/marketing/DevicesSection";
 import vwGolf from "@/assets/vehicles/volkswagen-golf.png";
 import vwTiguan from "@/assets/vehicles/volkswagen-tiguan.png";
 import vwId4 from "@/assets/vehicles/volkswagen-id4.png";
