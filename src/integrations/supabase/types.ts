@@ -1040,6 +1040,48 @@ export type Database = {
           },
         ]
       }
+      mollie_instellingen: {
+        Row: {
+          actief: boolean
+          api_key: string
+          created_at: string
+          id: string
+          laatst_getest_op: string | null
+          laatst_getest_status: string | null
+          modus: string
+          organisatie_id: string
+          profile_id: string | null
+          profile_naam: string | null
+          updated_at: string
+        }
+        Insert: {
+          actief?: boolean
+          api_key: string
+          created_at?: string
+          id?: string
+          laatst_getest_op?: string | null
+          laatst_getest_status?: string | null
+          modus?: string
+          organisatie_id: string
+          profile_id?: string | null
+          profile_naam?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actief?: boolean
+          api_key?: string
+          created_at?: string
+          id?: string
+          laatst_getest_op?: string | null
+          laatst_getest_status?: string | null
+          modus?: string
+          organisatie_id?: string
+          profile_id?: string | null
+          profile_naam?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       organisatie_voorkeuren: {
         Row: {
           apk_dagen_vooraf: number
