@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Clock, Plug, BookOpen, Webhook, FileSpreadsheet, ShieldCheck } from "lucide-react";
 import MollieKoppelingCard from "./MollieKoppelingCard";
+import MoneybirdKoppelingCard from "./MoneybirdKoppelingCard";
 
 /**
  * Integraties-overzicht.
@@ -100,6 +101,7 @@ export default function IntegratiesTab() {
   return (
     <div className="space-y-6">
       <MollieKoppelingCard />
+      <MoneybirdKoppelingCard />
       <Card>
       <CardHeader>
         <CardTitle className="text-lg">Integraties</CardTitle>

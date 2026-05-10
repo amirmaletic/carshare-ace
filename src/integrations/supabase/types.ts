@@ -740,6 +740,48 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          accent_kleur: string
+          achtergrond_kleur: string
+          actief: boolean
+          blokken: Json
+          created_at: string
+          id: string
+          naam: string
+          onderwerp: string
+          organisatie_id: string
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          accent_kleur?: string
+          achtergrond_kleur?: string
+          actief?: boolean
+          blokken?: Json
+          created_at?: string
+          id?: string
+          naam: string
+          onderwerp?: string
+          organisatie_id: string
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          accent_kleur?: string
+          achtergrond_kleur?: string
+          actief?: boolean
+          blokken?: Json
+          created_at?: string
+          id?: string
+          naam?: string
+          onderwerp?: string
+          organisatie_id?: string
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_unsubscribe_tokens: {
         Row: {
           created_at: string

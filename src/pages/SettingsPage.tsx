@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Settings, Shield, Bell, Building2, Save, LogOut, KeyRound, MapPin, Users, ShieldCheck, Globe, ChevronRight, Plug, Webhook } from "lucide-react";
+import { Settings, Shield, Bell, Building2, Save, LogOut, KeyRound, MapPin, Users, ShieldCheck, Globe, ChevronRight, Plug, Webhook, Mail } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ import GoedkeuringenTab from "@/components/settings/GoedkeuringenTab";
 import PortaalTab from "@/components/settings/PortaalTab";
 import IntegratiesTab from "@/components/settings/IntegratiesTab";
 import ApiWebhooksTab from "@/components/settings/ApiWebhooksTab";
+import EmailTemplatesTab from "@/components/settings/EmailTemplatesTab";
 
 type TabDef = { value: string; label: string; icon: any; description: string; group: string };
 const tabs: TabDef[] = [
@@ -32,6 +33,7 @@ const tabs: TabDef[] = [
   { value: "goedkeuringen", label: "Goedkeuringen", icon: ShieldCheck, description: "Workflow voor acties met drempelwaarde", group: "Toegang" },
   { value: "integraties", label: "Integraties", icon: Plug, description: "Koppelingen met RDW, boekhouding en betalingen", group: "Voorkeuren" },
   { value: "api", label: "API & Webhooks", icon: Webhook, description: "Open API met API keys en realtime webhooks", group: "Voorkeuren" },
+  { value: "emails", label: "E-mailtemplates", icon: Mail, description: "Visuele block-editor voor eigen e-mails", group: "Voorkeuren" },
   { value: "notificaties", label: "Meldingen", icon: Bell, description: "Herinneringen voor APK, contracten en facturen", group: "Voorkeuren" },
   { value: "algemeen", label: "Algemeen", icon: Settings, description: "BTW, valuta, datumformaat", group: "Voorkeuren" },
   { value: "account", label: "Account", icon: Shield, description: "Wachtwoord, sessies en uitloggen", group: "Voorkeuren" },
@@ -309,6 +311,9 @@ export default function SettingsPage() {
 
       case "api":
         return <ApiWebhooksTab />;
+
+      case "emails":
+        return <EmailTemplatesTab />;
 
       case "algemeen":
         return (
