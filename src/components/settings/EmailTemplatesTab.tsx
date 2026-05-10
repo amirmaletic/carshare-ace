@@ -53,8 +53,9 @@ export default function EmailTemplatesTab() {
     mutationFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Niet ingelogd");
-      const { data: org } = await supabase.from("user_roles").select("organisatie_id").eq("user_id", user.id).limit(1).maybeSingle();
-      const organisatie_id = (org as any)?.organisatie_id;
+      const { data: orgId, error: orgErr } = await supabase.rpc("get_user_organisatie_id", { _user_id: user.id });
+      if (orgErr) throw orgErr;
+      const organisatie_id = orgId as string | null;
       if (!organisatie_id) throw new Error("Geen organisatie gevonden");
       const naam = "Nieuwe template";
       const baseSlug = slugify(naam);
