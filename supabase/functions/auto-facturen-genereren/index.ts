@@ -4,9 +4,14 @@ const corsHeaders = {
 };
 
 /**
- * Maandelijkse cron: genereert per actief contract een factuur voor de huidige maand
- * (op basis van `maandprijs`), tenzij er voor die periode al een huurfactuur bestaat.
- * Stuurt klant een transactionele e-mail en maakt in-app notificatie aan.
+ * Maandelijkse cron + handmatige trigger: genereert per actief contract een
+ * CONCEPT-factuur voor de huidige maand (op basis van `maandprijs`), tenzij er
+ * voor die periode al een huurfactuur bestaat. Verstuurt nog GEEN e-mail.
+ * De gebruiker controleert de concepten en verstuurt ze daarna in batch via
+ * de edge function `facturen-verstuur-batch`.
+ *
+ * Optionele body: { organisatie_id?: string } om alleen voor 1 org te draaien
+ * (gebruikt bij handmatig "Genereer nu" vanuit de UI).
  */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -29,8 +34,17 @@ Deno.serve(async (req) => {
   const vervalDate = new Date(Date.UTC(jaar, maand - 1, 15));
   const vervaldatum = vervalDate.toISOString().slice(0, 10);
 
+  let alleenOrg: string | null = null;
+  if (req.method === "POST") {
+    try {
+      const body = await req.json();
+      if (body && typeof body.organisatie_id === "string") alleenOrg = body.organisatie_id;
+    } catch (_e) { /* geen body */ }
+  }
+
   const today = nu.toISOString().slice(0, 10);
-  const url = `${SUPABASE_URL}/rest/v1/contracts?select=id,user_id,organisatie_id,contract_nummer,klant_email,klant_naam,maandprijs,start_datum,eind_datum,verlengbaar&status=eq.actief&start_datum=lte.${today}&eind_datum=gte.${today}`;
+  let url = `${SUPABASE_URL}/rest/v1/contracts?select=id,user_id,organisatie_id,contract_nummer,klant_email,klant_naam,maandprijs,start_datum,eind_datum,verlengbaar&status=eq.actief&start_datum=lte.${today}&eind_datum=gte.${today}`;
+  if (alleenOrg) url += `&organisatie_id=eq.${alleenOrg}`;
   const res = await fetch(url, { headers });
   const contracts = await res.json();
   if (!Array.isArray(contracts)) {
@@ -52,7 +66,7 @@ Deno.serve(async (req) => {
     const bestaande = await checkRes.json();
     if (Array.isArray(bestaande) && bestaande.length > 0) { overgeslagen++; continue; }
 
-    // Maak factuur
+    // Maak conceptfactuur
     const omschrijving = `Maandtermijn ${periodeLabel} | contract ${c.contract_nummer} ${periodeMarker}`;
     const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/invoices`, {
       method: "POST",
@@ -64,7 +78,7 @@ Deno.serve(async (req) => {
         datum: factuurDatum,
         vervaldatum,
         bedrag: Number(c.maandprijs),
-        status: "openstaand",
+        status: "concept",
         omschrijving,
         type: "huur",
       }),
@@ -75,29 +89,6 @@ Deno.serve(async (req) => {
     }
 
     aangemaakt++;
-
-    // Email naar klant
-    if (c.klant_email) {
-      try {
-        await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({
-            templateName: "factuur-aangemaakt",
-            recipientEmail: c.klant_email,
-            idempotencyKey: `auto-factuur-${c.id}-${periodeLabel}`,
-            templateData: {
-              klant_naam: c.klant_naam,
-              contract_nummer: c.contract_nummer,
-              bedrag: Number(c.maandprijs).toFixed(2).replace(".", ","),
-              periode: periodeLabel,
-              vervaldatum,
-              omschrijving: `Maandtermijn ${periodeLabel}`,
-            },
-          }),
-        });
-      } catch (_e) { /* niet fataal */ }
-    }
   }
 
   return new Response(
