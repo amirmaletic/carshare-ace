@@ -65,14 +65,17 @@ export function renderTemplateHtml(
   return `<!doctype html><html><head><meta charset="utf-8" /></head><body style="margin:0;padding:0;background:#f1f5f9;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;"><tr><td align="center" style="padding:24px 12px;"><table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:${escape(content.achtergrond_kleur)};border-radius:12px;"><tr><td style="padding:32px 28px;">${body}</td></tr></table></td></tr></table></body></html>`;
 }
 
-export const NIEUW_BLOK_DEFAULTS: Record<EmailBlokType, Omit<EmailBlok, "id">> = {
-  heading: { type: "heading", tekst: "Nieuwe titel", niveau: 2 },
-  tekst: { type: "tekst", tekst: "Schrijf hier je tekst. Gebruik {{naam}} voor variabelen." },
-  knop: { type: "knop", tekst: "Klik hier", url: "https://" },
-  afbeelding: { type: "afbeelding", src: "https://placehold.co/560x240", alt: "" },
-  divider: { type: "divider" },
-  spacer: { type: "spacer", hoogte: 24 },
-};
+export function maakNieuwBlok(type: EmailBlokType): EmailBlok {
+  const id = crypto.randomUUID();
+  switch (type) {
+    case "heading": return { id, type: "heading", tekst: "Nieuwe titel", niveau: 2 };
+    case "tekst": return { id, type: "tekst", tekst: "Schrijf hier je tekst. Gebruik {{naam}} voor variabelen." };
+    case "knop": return { id, type: "knop", tekst: "Klik hier", url: "https://" };
+    case "afbeelding": return { id, type: "afbeelding", src: "https://placehold.co/560x240", alt: "" };
+    case "divider": return { id, type: "divider" };
+    case "spacer": return { id, type: "spacer", hoogte: 24 };
+  }
+}
 
 export const BESCHIKBARE_VARIABELEN: { sleutel: string; voorbeeld: string }[] = [
   { sleutel: "naam", voorbeeld: "Klantnaam" },
