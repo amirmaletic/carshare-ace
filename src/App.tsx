@@ -57,6 +57,7 @@ const BoekhoudingExport = lazy(() => import("./pages/BoekhoudingExport"));
 const Bijtelling = lazy(() => import("./pages/Bijtelling"));
 const Tankbeurten = lazy(() => import("./pages/Tankbeurten"));
 const Verplaatsingen = lazy(() => import("./pages/Verplaatsingen"));
+const AutoFacturatie = lazy(() => import("./pages/AutoFacturatie"));
 
 function PageLoader() {
   return (
