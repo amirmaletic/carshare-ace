@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Check, Zap, ArrowRight, Car } from "lucide-react";
+import { Check, Zap, ArrowRight, Sparkles, Building2, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 import {
   Accordion,
   AccordionContent,
@@ -9,27 +10,101 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const PRIJS_PER_VOERTUIG = 4;
+type Pakket = {
+  naam: string;
+  beschrijving: string;
+  prijsPerVoertuig: number;
+  range: string;
+  min: number;
+  max: number | null;
+  icon: typeof Sparkles;
+  popular?: boolean;
+  features: string[];
+};
 
-const features = [
-  "Onbeperkt gebruikers",
-  "Contractbeheer met digitale ondertekening",
-  "Klantportaal en publiek reserveren",
-  "Visueel schadebeheer",
-  "AI Vloot Copilot",
-  "Ritregistratie en transport",
-  "Facturatie met Stripe en Mollie",
-  "Boekhoudkoppelingen (Moneybird, Exact, Yuki)",
-  "E mail vanuit eigen domein",
-  "API toegang en webhooks",
-  "Onbeperkt locaties en vestigingen",
-  "Prioriteit support",
+const pakketten: Pakket[] = [
+  {
+    naam: "Starter",
+    beschrijving: "Voor kleine verhuurders en wagenparken",
+    prijsPerVoertuig: 4.5,
+    range: "1 t/m 10 voertuigen",
+    min: 1,
+    max: 10,
+    icon: Sparkles,
+    features: [
+      "Alle kernfuncties",
+      "Contractbeheer met digitale ondertekening",
+      "Klantportaal en publiek reserveren",
+      "Visueel schadebeheer",
+      "Onbeperkt gebruikers",
+      "E mail support",
+    ],
+  },
+  {
+    naam: "Groei",
+    beschrijving: "Voor groeiende vloten met meerdere vestigingen",
+    prijsPerVoertuig: 3.75,
+    range: "11 t/m 50 voertuigen",
+    min: 11,
+    max: 50,
+    icon: Building2,
+    popular: true,
+    features: [
+      "Alles uit Starter",
+      "AI Vloot Copilot",
+      "Ritregistratie en transport",
+      "Boekhoudkoppelingen",
+      "Onbeperkt locaties en vestigingen",
+      "Prioriteit support",
+    ],
+  },
+  {
+    naam: "Pro",
+    beschrijving: "Voor professionele vloten en lease maatschappijen",
+    prijsPerVoertuig: 3.0,
+    range: "51 t/m 150 voertuigen",
+    min: 51,
+    max: 150,
+    icon: Crown,
+    features: [
+      "Alles uit Groei",
+      "API toegang en webhooks",
+      "Custom domeinen voor klantportaal",
+      "Geavanceerde rapportages",
+      "Dedicated onboarding",
+    ],
+  },
+  {
+    naam: "Enterprise",
+    beschrijving: "Voor grote vloten met maatwerk wensen",
+    prijsPerVoertuig: 2.25,
+    range: "150+ voertuigen",
+    min: 151,
+    max: null,
+    icon: Crown,
+    features: [
+      "Alles uit Pro",
+      "Vlootabonnement op maat",
+      "SLA en uptime garantie",
+      "Dedicated accountmanager",
+      "SSO en SAML",
+    ],
+  },
 ];
+
+function pakketVoorAantal(n: number): Pakket {
+  return pakketten.find((p) => n >= p.min && (p.max === null || n <= p.max)) ?? pakketten[0];
+}
+
+function fmtEuro(n: number): string {
+  return n.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
 
 export default function Pricing() {
   const [aantal, setAantal] = useState(10);
   const navigate = useNavigate();
-  const maandTotaal = aantal * PRIJS_PER_VOERTUIG;
+  const huidig = pakketVoorAantal(aantal);
+  const maandTotaal = aantal * huidig.prijsPerVoertuig;
 
   return (
     <div>
@@ -41,96 +116,145 @@ export default function Pricing() {
             1 maand gratis proberen, geen creditcard nodig
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-foreground tracking-tight">
-            Eén eerlijk tarief,{" "}
-            <span className="text-primary">€4 per voertuig per maand</span>
+            Schaalbare prijzen,{" "}
+            <span className="text-primary">vanaf €4,50 per voertuig</span>
           </h1>
           <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto">
-            Geen pakketten, geen verrassingen. Je betaalt alleen voor de voertuigen
-            die je actief beheert. Alle functies zijn inbegrepen, ongeacht de grootte
-            van je vloot.
+            Hoe groter je vloot, hoe lager de prijs per voertuig. Kies het pakket
+            dat past bij je huidige vloot en groei zonder rompslomp door naar het
+            volgende.
           </p>
         </div>
       </section>
 
-      {/* Pricing card met calculator */}
-      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
-        <div className="relative rounded-2xl border border-primary p-8 sm:p-10 shadow-xl shadow-primary/10 bg-card">
-          <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">
-            Alles inbegrepen
+      {/* Calculator */}
+      <section className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+          <div className="flex items-baseline justify-between mb-4">
+            <label className="text-sm font-medium text-foreground">
+              Hoeveel voertuigen heb je?
+            </label>
+            <span className="text-lg font-bold text-foreground tabular-nums">
+              {aantal}
+            </span>
+          </div>
+          <input
+            type="range"
+            min={1}
+            max={200}
+            value={aantal}
+            onChange={(e) => setAantal(Number(e.target.value))}
+            className="w-full accent-primary"
+            aria-label="Aantal voertuigen"
+          />
+          <div className="flex justify-between text-xs text-muted-foreground mt-2">
+            <span>1</span>
+            <span>200+</span>
           </div>
 
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-xl bg-primary/10">
-              <Car className="w-5 h-5 text-primary" />
+          <div className="mt-6 pt-6 border-t border-border grid sm:grid-cols-3 gap-4 items-end">
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                Pakket
+              </p>
+              <p className="text-lg font-bold text-foreground">{huidig.naam}</p>
             </div>
-            <h2 className="font-bold text-foreground text-xl">FleeFlo Compleet</h2>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                Per voertuig
+              </p>
+              <p className="text-lg font-bold text-foreground tabular-nums">
+                €{fmtEuro(huidig.prijsPerVoertuig)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">
+                Totaal per maand
+              </p>
+              <p className="text-2xl font-extrabold text-primary tabular-nums">
+                €{fmtEuro(maandTotaal)}
+              </p>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground mb-8">
-            Pay as you grow. Voeg voertuigen toe of verwijder ze, je rekening past
-            zich automatisch aan.
-          </p>
-
-          <div className="rounded-xl bg-muted/40 border border-border p-6 mb-8">
-            <div className="flex items-baseline justify-between mb-4">
-              <label className="text-sm font-medium text-foreground">
-                Aantal voertuigen
-              </label>
-              <span className="text-lg font-bold text-foreground tabular-nums">
-                {aantal}
-              </span>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={250}
-              value={aantal}
-              onChange={(e) => setAantal(Number(e.target.value))}
-              className="w-full accent-primary"
-              aria-label="Aantal voertuigen"
-            />
-            <div className="flex justify-between text-xs text-muted-foreground mt-2">
-              <span>1</span>
-              <span>250+</span>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-border flex items-baseline gap-2">
-              <span className="text-5xl font-extrabold text-foreground tabular-nums">
-                €{maandTotaal}
-              </span>
-              <span className="text-muted-foreground">/maand</span>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              {aantal} × €{PRIJS_PER_VOERTUIG} per voertuig per maand · excl. btw
-            </p>
-          </div>
-
-          <Button
-            className="w-full gap-2 mb-8"
-            size="lg"
-            onClick={() => navigate("/auth?mode=signup")}
-          >
-            Start gratis proefperiode
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-
-          <div className="grid sm:grid-cols-2 gap-3">
-            {features.map((feature) => (
-              <div key={feature} className="flex items-start gap-3">
-                <div className="mt-0.5 p-0.5 rounded-full bg-primary/10 shrink-0">
-                  <Check className="w-3.5 h-3.5 text-primary" />
-                </div>
-                <span className="text-sm text-foreground">{feature}</span>
-              </div>
-            ))}
-          </div>
+          <p className="text-xs text-muted-foreground mt-3">Bedragen zijn excl. btw.</p>
         </div>
+      </section>
 
-        <p className="text-center text-sm text-muted-foreground mt-6">
-          Meer dan 250 voertuigen?{" "}
-          <a href="mailto:hello@fleeflo.nl" className="text-primary font-medium hover:underline">
-            Neem contact op voor een vlootabonnement
-          </a>
-        </p>
+      {/* Pakketten */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+          {pakketten.map((p) => {
+            const actief = huidig.naam === p.naam;
+            return (
+              <div
+                key={p.naam}
+                className={cn(
+                  "relative rounded-2xl border p-6 flex flex-col transition-shadow",
+                  p.popular
+                    ? "border-primary shadow-xl shadow-primary/10"
+                    : "border-border hover:shadow-lg",
+                  actief && !p.popular && "ring-2 ring-primary/40"
+                )}
+              >
+                {p.popular && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 bg-primary text-primary-foreground text-xs font-bold rounded-full">
+                    Meest gekozen
+                  </div>
+                )}
+                {actief && (
+                  <div className="absolute top-4 right-4 px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-semibold rounded-full uppercase tracking-wide">
+                    Jouw keuze
+                  </div>
+                )}
+
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={cn("p-2.5 rounded-xl", p.popular ? "bg-primary/10" : "bg-muted")}>
+                    <p.icon className={cn("w-5 h-5", p.popular ? "text-primary" : "text-muted-foreground")} />
+                  </div>
+                  <h3 className="font-bold text-foreground text-lg">{p.naam}</h3>
+                </div>
+                <p className="text-sm text-muted-foreground mb-4 min-h-[40px]">
+                  {p.beschrijving}
+                </p>
+
+                <div className="mb-1">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-extrabold text-foreground tabular-nums">
+                      €{fmtEuro(p.prijsPerVoertuig)}
+                    </span>
+                    <span className="text-muted-foreground text-xs">/voertuig/mnd</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{p.range}</p>
+                </div>
+
+                <Button
+                  className="w-full gap-2 my-5"
+                  variant={p.popular ? "default" : "outline"}
+                  size="sm"
+                  onClick={() =>
+                    p.naam === "Enterprise"
+                      ? (window.location.href = "mailto:hello@fleeflo.nl")
+                      : navigate("/auth?mode=signup")
+                  }
+                >
+                  {p.naam === "Enterprise" ? "Neem contact op" : "Start gratis"}
+                  <ArrowRight className="w-4 h-4" />
+                </Button>
+
+                <div className="space-y-2 flex-1">
+                  {p.features.map((f) => (
+                    <div key={f} className="flex items-start gap-2">
+                      <div className="mt-0.5 p-0.5 rounded-full bg-primary/10 shrink-0">
+                        <Check className="w-3 h-3 text-primary" />
+                      </div>
+                      <span className="text-xs text-foreground">{f}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* Trust section */}
