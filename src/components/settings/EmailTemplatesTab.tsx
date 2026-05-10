@@ -45,7 +45,7 @@ export default function EmailTemplatesTab() {
     queryFn: async () => {
       const { data, error } = await supabase.from("email_templates" as any).select("*").order("naam");
       if (error) throw error;
-      return (data ?? []) as Row[];
+      return (data ?? []) as unknown as Row[];
     },
   });
 
