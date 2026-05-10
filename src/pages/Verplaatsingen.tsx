@@ -17,8 +17,8 @@ export default function Verplaatsingen() {
   const { toast } = useToast();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
-  const { data: locaties = [] } = useLocaties();
-  const { data: voertuigen = [] } = useVoertuigen();
+  const { locaties = [] } = useLocaties();
+  const { voertuigen = [] } = useVoertuigen();
 
   const lookupLocatie = (id: string | null) => locaties.find((l: any) => l.id === id)?.naam ?? "-";
   const lookupVoertuig = (id: string) => {
