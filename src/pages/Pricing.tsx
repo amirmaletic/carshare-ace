@@ -9,6 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Seo from "@/components/Seo";
 
 type Pakket = {
   naam: string;

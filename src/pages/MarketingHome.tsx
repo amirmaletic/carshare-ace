@@ -213,6 +213,11 @@ const testimonials = [
 export default function MarketingHome() {
   return (
     <div>
+      <Seo
+        title="FleeFlo | Wagenparkbeheer software voor verhuur en lease"
+        description="Compleet wagenparkbeheer voor autoverhuur en leasebedrijven. RDW kenteken lookup, digitale contracten, klantportaal, schade inspectie, AI copilot. 30 dagen gratis."
+        path="/"
+      />
       {/* JSON LD: SoftwareApplication */}
       <script
         type="application/ld+json"
