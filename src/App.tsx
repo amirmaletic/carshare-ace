@@ -47,6 +47,7 @@ const Vlootbeheer = lazy(() => import("./pages/marketing/Vlootbeheer"));
 const ContractenFacturatie = lazy(() => import("./pages/marketing/ContractenFacturatie"));
 const MigratieIntegraties = lazy(() => import("./pages/marketing/MigratieIntegraties"));
 const WaaromFleeflo = lazy(() => import("./pages/marketing/WaaromFleeflo"));
+const Roadmap = lazy(() => import("./pages/marketing/Roadmap"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Updates = lazy(() => import("./pages/Updates"));
@@ -187,6 +188,7 @@ const App = () => (
           <Route path="/contracten-facturatie" element={<MarketingLayout><ContractenFacturatie /></MarketingLayout>} />
           <Route path="/migratie-integraties" element={<MarketingLayout><MigratieIntegraties /></MarketingLayout>} />
           <Route path="/waarom-fleeflo" element={<MarketingLayout><WaaromFleeflo /></MarketingLayout>} />
+          <Route path="/roadmap" element={<MarketingLayout><Roadmap /></MarketingLayout>} />
           <Route path="/blog" element={<MarketingLayout><Blog /></MarketingLayout>} />
           <Route path="/blog/:slug" element={<MarketingLayout><BlogPost /></MarketingLayout>} />
           <Route path="/updates" element={<MarketingLayout><Updates /></MarketingLayout>} />

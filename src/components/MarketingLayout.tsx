@@ -17,6 +17,7 @@ function MarketingHeader() {
     { to: "/vlootbeheer", label: "Vlootbeheer" },
     { to: "/contracten-facturatie", label: "Contracten" },
     { to: "/waarom-fleeflo", label: "Waarom FleeFlo" },
+    { to: "/roadmap", label: "Roadmap" },
     { to: "/prijzen", label: "Prijzen" },
     { to: "/updates", label: "Updates" },
   ];
@@ -141,6 +142,7 @@ function MarketingFooter() {
               <li><Link to="/contracten-facturatie" className="text-muted-foreground hover:text-foreground transition-colors">Contracten en facturatie</Link></li>
               <li><Link to="/migratie-integraties" className="text-muted-foreground hover:text-foreground transition-colors">Migratie en integraties</Link></li>
               <li><Link to="/waarom-fleeflo" className="text-muted-foreground hover:text-foreground transition-colors">Waarom FleeFlo</Link></li>
+              <li><Link to="/roadmap" className="text-muted-foreground hover:text-foreground transition-colors">Roadmap</Link></li>
               <li><Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
               <li><Link to="/updates" className="text-muted-foreground hover:text-foreground transition-colors">Updates</Link></li>
             </ul>
