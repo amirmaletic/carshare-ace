@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { KentekenZoekPlaat } from "@/components/dashboard/KentekenZoekPlaat";
 import { ActionableTasks } from "@/components/dashboard/ActionableTasks";
 import { UpcomingAgenda } from "@/components/dashboard/UpcomingAgenda";
 import { OverdrachtenCenter } from "@/components/dashboard/OverdrachtenCenter";
@@ -66,6 +67,9 @@ export default function Dashboard() {
 
       {/* Quick actions */}
       <QuickActions />
+
+      {/* Nederlandse kentekenzoeker */}
+      <KentekenZoekPlaat />
 
       {/* Overdrachten (vandaag, morgen, recent) */}
       <OverdrachtenCenter />

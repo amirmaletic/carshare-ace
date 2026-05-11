@@ -19,6 +19,7 @@ import { getStatusColor, type Vehicle } from "@/data/mockData";
 import { VehicleImage } from "@/components/VehicleImage";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { useLocaties } from "@/hooks/useLocaties";
+import { KentekenZoekPlaat } from "@/components/dashboard/KentekenZoekPlaat";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { Can } from "@/components/Can";
@@ -123,6 +124,8 @@ export default function Vehicles() {
             </Can>
           </div>
         </div>
+
+        <KentekenZoekPlaat />
 
         {/* View mode toggle */}
         <div className="flex items-center gap-1 bg-muted p-1 rounded-lg w-fit">
