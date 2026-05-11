@@ -54,6 +54,7 @@ import cupraFormentor from "@/assets/vehicles/cupra-formentor.png";
 import porscheTaycan from "@/assets/vehicles/porsche-taycan.png";
 import porscheMacan from "@/assets/vehicles/porsche-macan.png";
 import { Database, FileSpreadsheet, ArrowRightLeft, Headphones } from "lucide-react";
+import Seo from "@/components/Seo";
 
 const features = [
   {
