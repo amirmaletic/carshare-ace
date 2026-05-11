@@ -1,0 +1,1 @@
+ALTER TABLE public.organisatie_voorkeuren ADD COLUMN IF NOT EXISTS auto_facturatie boolean NOT NULL DEFAULT true;
