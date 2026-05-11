@@ -7,7 +7,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Send, RefreshCw, FileText } from "lucide-react";
+import { Loader2, Send, RefreshCw, FileText, Pencil, Trash2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ConceptFactuur {
   id: string;
@@ -29,6 +33,10 @@ export default function AutoFacturatie() {
   const [genereren, setGenereren] = useState(false);
   const [versturen, setVersturen] = useState(false);
   const [selectie, setSelectie] = useState<Set<string>>(new Set());
+  const [bewerken, setBewerken] = useState<ConceptFactuur | null>(null);
+  const [bewerkBedrag, setBewerkBedrag] = useState("");
+  const [bewerkOmschrijving, setBewerkOmschrijving] = useState("");
+  const [bewerkOpslaan, setBewerkOpslaan] = useState(false);
 
   const { data: concepten = [], isLoading } = useQuery({
     queryKey: ["concept-facturen"],
@@ -104,6 +112,49 @@ export default function AutoFacturatie() {
     }
   };
 
+  const openBewerken = (c: ConceptFactuur) => {
+    setBewerken(c);
+    setBewerkBedrag(String(c.bedrag));
+    setBewerkOmschrijving(c.omschrijving ?? "");
+  };
+
+  const handleBewerkOpslaan = async () => {
+    if (!bewerken) return;
+    const bedragNum = Number(bewerkBedrag.replace(",", "."));
+    if (!Number.isFinite(bedragNum) || bedragNum <= 0) {
+      toast({ title: "Ongeldig bedrag", variant: "destructive" });
+      return;
+    }
+    setBewerkOpslaan(true);
+    try {
+      const { error } = await supabase
+        .from("invoices")
+        .update({ bedrag: bedragNum, omschrijving: bewerkOmschrijving })
+        .eq("id", bewerken.id);
+      if (error) throw error;
+      toast({ title: "Opgeslagen" });
+      setBewerken(null);
+      qc.invalidateQueries({ queryKey: ["concept-facturen"] });
+    } catch (e: any) {
+      toast({ title: "Fout", description: e.message, variant: "destructive" });
+    } finally {
+      setBewerkOpslaan(false);
+    }
+  };
+
+  const handleVerwijder = async (id: string) => {
+    if (!confirm("Concept-factuur verwijderen?")) return;
+    try {
+      const { error } = await supabase.from("invoices").delete().eq("id", id);
+      if (error) throw error;
+      toast({ title: "Verwijderd" });
+      setSelectie((prev) => { const n = new Set(prev); n.delete(id); return n; });
+      qc.invalidateQueries({ queryKey: ["concept-facturen"] });
+    } catch (e: any) {
+      toast({ title: "Fout", description: e.message, variant: "destructive" });
+    }
+  };
+
   return (
     <div className="container mx-auto p-4 md:p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -157,6 +208,7 @@ export default function AutoFacturatie() {
                     <TableHead>Omschrijving</TableHead>
                     <TableHead>Vervaldatum</TableHead>
                     <TableHead className="text-right">Bedrag</TableHead>
+                    <TableHead className="w-20" />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -175,6 +227,16 @@ export default function AutoFacturatie() {
                       <TableCell className="text-right font-medium">
                         € {Number(c.bedrag).toFixed(2).replace(".", ",")}
                       </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => openBewerken(c)}>
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleVerwijder(c.id)}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -183,6 +245,31 @@ export default function AutoFacturatie() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={!!bewerken} onOpenChange={(o) => !o && setBewerken(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Concept-factuur bewerken</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="bedrag">Bedrag (€)</Label>
+              <Input id="bedrag" value={bewerkBedrag} onChange={(e) => setBewerkBedrag(e.target.value)} inputMode="decimal" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="oms">Omschrijving</Label>
+              <Textarea id="oms" value={bewerkOmschrijving} onChange={(e) => setBewerkOmschrijving(e.target.value)} rows={3} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBewerken(null)}>Annuleren</Button>
+            <Button onClick={handleBewerkOpslaan} disabled={bewerkOpslaan}>
+              {bewerkOpslaan && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Opslaan
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
