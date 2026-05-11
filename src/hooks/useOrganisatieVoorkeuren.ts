@@ -11,6 +11,7 @@ export interface Voorkeuren {
   contract_dagen_vooraf: number;
   factuur_herinnering: boolean;
   km_overschrijding: boolean;
+  auto_facturatie: boolean;
   standaard_btw: string;
   valuta: string;
   datum_formaat: string;
@@ -23,6 +24,7 @@ const defaults: Voorkeuren = {
   verzekering_herinnering: true, onderhoud_herinnering: true,
   contract_verloop: true, contract_dagen_vooraf: 60,
   factuur_herinnering: true, km_overschrijding: true,
+  auto_facturatie: true,
   standaard_btw: "21", valuta: "EUR", datum_formaat: "dd-mm-yyyy",
   km_registratie_interval: "maandelijks", standaard_contract_duur: "12",
 };
@@ -51,6 +53,7 @@ export function useOrganisatieVoorkeuren() {
         contract_dagen_vooraf: data.contract_dagen_vooraf,
         factuur_herinnering: data.factuur_herinnering,
         km_overschrijding: data.km_overschrijding,
+        auto_facturatie: (data as any).auto_facturatie ?? true,
         standaard_btw: data.standaard_btw,
         valuta: data.valuta,
         datum_formaat: data.datum_formaat,

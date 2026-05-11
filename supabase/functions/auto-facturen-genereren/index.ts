@@ -42,6 +42,18 @@ Deno.serve(async (req) => {
     } catch (_e) { /* geen body */ }
   }
 
+  // Haal voorkeuren per organisatie op (auto_facturatie aan/uit)
+  const vRes = await fetch(
+    `${SUPABASE_URL}/rest/v1/organisatie_voorkeuren?select=organisatie_id,auto_facturatie`,
+    { headers },
+  );
+  const voorkeuren = await vRes.json();
+  const autoUit = new Set<string>(
+    Array.isArray(voorkeuren)
+      ? voorkeuren.filter((v: any) => v.auto_facturatie === false).map((v: any) => v.organisatie_id)
+      : [],
+  );
+
   const today = nu.toISOString().slice(0, 10);
   let url = `${SUPABASE_URL}/rest/v1/contracts?select=id,user_id,organisatie_id,contract_nummer,klant_email,klant_naam,maandprijs,start_datum,eind_datum,verlengbaar&status=eq.actief&start_datum=lte.${today}&eind_datum=gte.${today}`;
   if (alleenOrg) url += `&organisatie_id=eq.${alleenOrg}`;
@@ -58,6 +70,8 @@ Deno.serve(async (req) => {
   const errors: any[] = [];
 
   for (const c of contracts) {
+    // Sla over als organisatie auto_facturatie heeft uitgezet (handmatige trigger met expliciete org wint)
+    if (!alleenOrg && autoUit.has(c.organisatie_id)) { overgeslagen++; continue; }
     if (!c.maandprijs || Number(c.maandprijs) <= 0) { overgeslagen++; continue; }
 
     // Check of er voor dit contract al een factuur is met de periode-marker

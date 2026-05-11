@@ -1236,6 +1236,7 @@ export type Database = {
         Row: {
           apk_dagen_vooraf: number
           apk_herinnering: boolean
+          auto_facturatie: boolean
           contract_dagen_vooraf: number
           contract_verloop: boolean
           created_at: string
@@ -1255,6 +1256,7 @@ export type Database = {
         Insert: {
           apk_dagen_vooraf?: number
           apk_herinnering?: boolean
+          auto_facturatie?: boolean
           contract_dagen_vooraf?: number
           contract_verloop?: boolean
           created_at?: string
@@ -1274,6 +1276,7 @@ export type Database = {
         Update: {
           apk_dagen_vooraf?: number
           apk_herinnering?: boolean
+          auto_facturatie?: boolean
           contract_dagen_vooraf?: number
           contract_verloop?: boolean
           created_at?: string
