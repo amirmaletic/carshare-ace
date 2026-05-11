@@ -13,9 +13,10 @@ function MarketingHeader() {
 
   const navLinks = [
     { to: "/", label: "Home" },
-    { to: "/#functies", label: "Functies" },
-    { to: "/#voertuigen", label: "Voertuigen" },
-    { to: "/#contracten", label: "Contracten" },
+    { to: "/functies", label: "Functies" },
+    { to: "/vlootbeheer", label: "Vlootbeheer" },
+    { to: "/contracten-facturatie", label: "Contracten" },
+    { to: "/waarom-fleeflo", label: "Waarom FleeFlo" },
     { to: "/prijzen", label: "Prijzen" },
     { to: "/updates", label: "Updates" },
   ];
@@ -135,10 +136,11 @@ function MarketingFooter() {
           <div>
             <h4 className="font-semibold text-foreground text-sm mb-3">Platform</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="/#functies" className="text-muted-foreground hover:text-foreground transition-colors">Functies</a></li>
-              <li><a href="/#voertuigen" className="text-muted-foreground hover:text-foreground transition-colors">Voertuigbeheer</a></li>
-              <li><a href="/#contracten" className="text-muted-foreground hover:text-foreground transition-colors">Contractbeheer</a></li>
-              <li><a href="/#voordelen" className="text-muted-foreground hover:text-foreground transition-colors">Voordelen</a></li>
+              <li><Link to="/functies" className="text-muted-foreground hover:text-foreground transition-colors">Functies</Link></li>
+              <li><Link to="/vlootbeheer" className="text-muted-foreground hover:text-foreground transition-colors">Vlootbeheer</Link></li>
+              <li><Link to="/contracten-facturatie" className="text-muted-foreground hover:text-foreground transition-colors">Contracten en facturatie</Link></li>
+              <li><Link to="/migratie-integraties" className="text-muted-foreground hover:text-foreground transition-colors">Migratie en integraties</Link></li>
+              <li><Link to="/waarom-fleeflo" className="text-muted-foreground hover:text-foreground transition-colors">Waarom FleeFlo</Link></li>
               <li><Link to="/blog" className="text-muted-foreground hover:text-foreground transition-colors">Blog</Link></li>
               <li><Link to="/updates" className="text-muted-foreground hover:text-foreground transition-colors">Updates</Link></li>
             </ul>

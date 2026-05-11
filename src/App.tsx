@@ -42,6 +42,11 @@ const MijnProfiel = lazy(() => import("./pages/portaal/MijnProfiel"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const Functies = lazy(() => import("./pages/marketing/Functies"));
+const Vlootbeheer = lazy(() => import("./pages/marketing/Vlootbeheer"));
+const ContractenFacturatie = lazy(() => import("./pages/marketing/ContractenFacturatie"));
+const MigratieIntegraties = lazy(() => import("./pages/marketing/MigratieIntegraties"));
+const WaaromFleeflo = lazy(() => import("./pages/marketing/WaaromFleeflo"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Updates = lazy(() => import("./pages/Updates"));
@@ -177,6 +182,11 @@ const App = () => (
           {/* Public / marketing routes */}
           <Route path="/" element={<MarketingLayout><MarketingHome /></MarketingLayout>} />
           <Route path="/prijzen" element={<MarketingLayout><Pricing /></MarketingLayout>} />
+          <Route path="/functies" element={<MarketingLayout><Functies /></MarketingLayout>} />
+          <Route path="/vlootbeheer" element={<MarketingLayout><Vlootbeheer /></MarketingLayout>} />
+          <Route path="/contracten-facturatie" element={<MarketingLayout><ContractenFacturatie /></MarketingLayout>} />
+          <Route path="/migratie-integraties" element={<MarketingLayout><MigratieIntegraties /></MarketingLayout>} />
+          <Route path="/waarom-fleeflo" element={<MarketingLayout><WaaromFleeflo /></MarketingLayout>} />
           <Route path="/blog" element={<MarketingLayout><Blog /></MarketingLayout>} />
           <Route path="/blog/:slug" element={<MarketingLayout><BlogPost /></MarketingLayout>} />
           <Route path="/updates" element={<MarketingLayout><Updates /></MarketingLayout>} />
