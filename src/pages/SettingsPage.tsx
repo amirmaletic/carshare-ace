@@ -251,6 +251,7 @@ export default function SettingsPage() {
                 { key: "onderhoud_herinnering", label: "Onderhouds-herinnering", desc: "Melding bij gepland onderhoud" },
                 { key: "contract_verloop", label: "Contract-verloop", desc: "Herinnering voordat een contract verloopt", select: { key: "contract_dagen_vooraf" as const, options: ["30", "60", "90"], suffix: "dagen" } },
                 { key: "factuur_herinnering", label: "Factuur-herinnering", desc: "Melding bij openstaande facturen" },
+                { key: "auto_facturatie", label: "Automatisch maandfacturen", desc: "Genereer elke maand concept-facturen voor actieve contracten" },
                 { key: "km_overschrijding", label: "Kilometer-overschrijding", desc: "Waarschuwing wanneer km-limiet bijna bereikt is" },
               ].map((item, idx) => (
                 <div key={item.key}>
