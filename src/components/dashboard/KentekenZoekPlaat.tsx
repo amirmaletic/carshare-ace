@@ -8,11 +8,64 @@ function normaliseer(input: string) {
   return input.replace(/[^A-Z0-9]/gi, "").toUpperCase();
 }
 
+/**
+ * Plaatst streepjes volgens de Nederlandse sidecodes 1 t/m 14.
+ * L = letter, C = cijfer. Patroon strings beschrijven 6 karakters
+ * en de streepjes worden tussen de groepen gezet.
+ */
+const SIDECODES: string[] = [
+  "LL-CC-CC", // 1
+  "CC-CC-LL", // 2
+  "CC-LL-CC", // 3
+  "LL-CC-LL", // 4
+  "LL-LL-CC", // 5
+  "CC-LL-LL", // 6
+  "CC-LLL-C", // 7
+  "C-LLL-CC", // 8
+  "LL-CCC-L", // 9
+  "L-CCC-LL", // 10
+  "LLL-CC-L", // 11
+  "L-CC-LLL", // 12
+  "C-LL-CCC", // 13
+  "CCC-LL-C", // 14
+];
+
+function matchSidecode(k: string): string | null {
+  if (k.length !== 6) return null;
+  for (const code of SIDECODES) {
+    const stripped = code.replace(/-/g, "");
+    let ok = true;
+    for (let i = 0; i < 6; i++) {
+      const c = k[i];
+      const t = stripped[i];
+      if (t === "L" && !/[A-Z]/.test(c)) { ok = false; break; }
+      if (t === "C" && !/[0-9]/.test(c)) { ok = false; break; }
+    }
+    if (ok) {
+      // bouw geformatteerd resultaat met streepjes op juiste plek
+      let out = "";
+      let idx = 0;
+      for (const ch of code) {
+        if (ch === "-") out += "-";
+        else { out += k[idx]; idx++; }
+      }
+      return out;
+    }
+  }
+  return null;
+}
+
 function formatVoorWeergave(raw: string) {
   const k = normaliseer(raw);
+  const sidecode = matchSidecode(k);
+  if (sidecode) return sidecode;
+  // fallback: 6 tekens als 2-2-2, anders ruw
   if (k.length === 6) return `${k.slice(0, 2)}-${k.slice(2, 4)}-${k.slice(4, 6)}`;
-  if (k.length > 6) return `${k.slice(0, 2)}-${k.slice(2, 4)}-${k.slice(4, 8)}`;
   return k;
+}
+
+function isGeldigKenteken(k: string): boolean {
+  return matchSidecode(k) !== null;
 }
 
 /**
@@ -56,8 +109,10 @@ export function KentekenZoekPlaat() {
       gaNaar(suggesties[0].kenteken);
       return;
     }
-    if (norm.length < 4) {
-      toast.error("Voer een geldig kenteken in");
+    if (!isGeldigKenteken(norm)) {
+      toast.error("Geen geldig Nederlands kenteken", {
+        description: "Gebruik een sidecode 1 t/m 14, bijvoorbeeld 12-ABC-3.",
+      });
       return;
     }
     toast.error(`Kenteken ${formatVoorWeergave(norm)} niet in je vloot`, {
