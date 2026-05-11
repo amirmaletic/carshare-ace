@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
 import {
   LayoutDashboard,
   Car,
@@ -183,13 +182,14 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-14 border-b border-sidebar-border">
-        <div className="relative flex-shrink-0">
-          <div className="absolute inset-0 rounded-lg bg-primary/30 blur-md" />
-          <img src={fleefloLogo} alt="FleeFlo" className="relative w-8 h-8 object-contain" />
-        </div>
-        {!isCollapsed && (
-          <span className="font-bold text-base tracking-tight gradient-text">
+      <div className={cn(
+        "flex items-center h-16 border-b border-sidebar-border",
+        isCollapsed ? "justify-center px-2" : "px-5"
+      )}>
+        {isCollapsed ? (
+          <span className="font-display text-2xl font-medium text-primary tracking-tight">F</span>
+        ) : (
+          <span className="font-display text-2xl font-medium text-primary tracking-tight">
             FleeFlo
           </span>
         )}
@@ -218,7 +218,7 @@ export function AppSidebar({ onNavigate }: AppSidebarProps) {
       )}
 
       {/* Navigation */}
-      <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto">
+      <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
         {visibleSections.map((section) => {
           if (section.type === "item") {
             return (
@@ -329,14 +329,14 @@ function NavLinkItem({
       onClick={onNavigate}
       title={isCollapsed ? item.label : undefined}
       className={cn(
-        "relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+        "relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-150",
         isActive
-          ? "bg-gradient-to-r from-primary/15 via-primary/8 to-transparent text-foreground shadow-[inset_2px_0_0_0_hsl(var(--primary))]"
-          : "text-sidebar-foreground hover:text-foreground hover:bg-accent/60"
+          ? "bg-primary text-primary-foreground"
+          : "text-sidebar-foreground hover:text-foreground hover:bg-sidebar-accent"
       )}
     >
       <div className="relative flex-shrink-0">
-        <Icon className={cn("w-[18px] h-[18px]", isActive && "text-primary")} />
+        <Icon className={cn("w-[18px] h-[18px]", isActive ? "text-primary-foreground" : "")} />
         {showBadge && isCollapsed && (
           <span className="absolute -top-1 -right-1 min-w-[14px] h-[14px] px-1 rounded-full bg-primary text-[9px] font-semibold text-primary-foreground flex items-center justify-center">
             {openCount > 9 ? "9+" : openCount}
