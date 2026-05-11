@@ -1,10 +1,28 @@
 import { Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import { blogPosts } from "@/components/marketing/BlogPreviewSection";
+import Seo from "@/components/Seo";
 
 export default function Blog() {
   return (
     <div className="py-20 px-4 sm:px-6 lg:px-8">
+      <Seo
+        title="Blog en kennisbank wagenparkbeheer | FleeFlo"
+        description="Praktische artikelen over wagenparkbeheer, autoverhuur, digitale contracten en schaderegistratie. Tips waarmee je direct grip krijgt op je vloot."
+        path="/blog"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Blog",
+          name: "FleeFlo blog",
+          url: "https://www.fleeflo.nl/blog",
+          blogPost: blogPosts.map((p) => ({
+            "@type": "BlogPosting",
+            headline: p.title,
+            url: `https://www.fleeflo.nl/blog/${p.slug}`,
+            datePublished: p.date,
+          })),
+        }}
+      />
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-14">
           <h1 className="text-3xl sm:text-4xl font-bold text-foreground">

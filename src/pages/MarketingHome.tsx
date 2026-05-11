@@ -54,6 +54,7 @@ import cupraFormentor from "@/assets/vehicles/cupra-formentor.png";
 import porscheTaycan from "@/assets/vehicles/porsche-taycan.png";
 import porscheMacan from "@/assets/vehicles/porsche-macan.png";
 import { Database, FileSpreadsheet, ArrowRightLeft, Headphones } from "lucide-react";
+import Seo from "@/components/Seo";
 
 const features = [
   {
@@ -212,6 +213,11 @@ const testimonials = [
 export default function MarketingHome() {
   return (
     <div>
+      <Seo
+        title="FleeFlo | Wagenparkbeheer software voor verhuur en lease"
+        description="Compleet wagenparkbeheer voor autoverhuur en leasebedrijven. RDW kenteken lookup, digitale contracten, klantportaal, schade inspectie, AI copilot. 30 dagen gratis."
+        path="/"
+      />
       {/* JSON LD: SoftwareApplication */}
       <script
         type="application/ld+json"

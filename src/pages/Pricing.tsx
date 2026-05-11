@@ -9,6 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import Seo from "@/components/Seo";
 
 type Pakket = {
   naam: string;
@@ -108,6 +109,27 @@ export default function Pricing() {
 
   return (
     <div>
+      <Seo
+        title="Prijzen wagenparkbeheer | Vanaf €2,25 per voertuig | FleeFlo"
+        description="Transparante prijzen voor wagenparkbeheer en autoverhuur software. Pakketten van Starter tot Enterprise, vanaf €2,25 per voertuig per maand. 30 dagen gratis proberen, geen creditcard."
+        path="/prijzen"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: "FleeFlo wagenparkbeheer software",
+          description:
+            "Complete software voor autoverhuur en wagenparkbeheer met RDW koppeling, digitale contracten, planning, klantportaal en AI copilot.",
+          brand: { "@type": "Brand", name: "FleeFlo" },
+          offers: {
+            "@type": "AggregateOffer",
+            priceCurrency: "EUR",
+            lowPrice: "2.25",
+            highPrice: "4.50",
+            offerCount: "4",
+            url: "https://www.fleeflo.nl/prijzen",
+          },
+        }}
+      />
       {/* Hero */}
       <section className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 text-center">
         <div className="max-w-3xl mx-auto">

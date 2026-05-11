@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { blogPosts } from "@/components/marketing/BlogPreviewSection";
+import Seo from "@/components/Seo";
 
 const blogContent: Record<string, string[]> = {
   "wagenparkbeheer-tips-verhuurbedrijven": [
@@ -43,6 +44,12 @@ export default function BlogPost() {
   if (!post || !content) {
     return (
       <div className="py-20 px-4 text-center">
+        <Seo
+          title="Artikel niet gevonden | FleeFlo blog"
+          description="Het artikel dat je zoekt bestaat niet of is verplaatst. Bekijk alle artikelen in de FleeFlo kennisbank."
+          path={`/blog/${slug ?? ""}`}
+          noindex
+        />
         <h1 className="text-2xl font-bold text-foreground mb-4">Artikel niet gevonden</h1>
         <Button asChild>
           <Link to="/blog">Terug naar blog</Link>
@@ -53,6 +60,27 @@ export default function BlogPost() {
 
   return (
     <div className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
+      <Seo
+        title={`${post.title} | FleeFlo blog`}
+        description={post.excerpt}
+        path={`/blog/${post.slug}`}
+        type="article"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "BlogPosting",
+          headline: post.title,
+          description: post.excerpt,
+          articleSection: post.category,
+          datePublished: post.date,
+          author: { "@type": "Organization", name: "FleeFlo" },
+          publisher: {
+            "@type": "Organization",
+            name: "FleeFlo",
+            logo: { "@type": "ImageObject", url: "https://www.fleeflo.nl/favicon.png" },
+          },
+          mainEntityOfPage: `https://www.fleeflo.nl/blog/${post.slug}`,
+        }}
+      />
       <article className="max-w-3xl mx-auto">
         <Button variant="ghost" size="sm" className="gap-2 mb-8" asChild>
           <Link to="/blog">
