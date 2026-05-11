@@ -60,8 +60,8 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Overzicht</h1>
-        <p className="text-muted-foreground mt-1">Jouw werk voor vandaag: overdrachten, taken en agenda</p>
+        <h1 className="text-3xl sm:text-5xl font-medium text-foreground tracking-tight">Overzicht</h1>
+        <p className="text-muted-foreground mt-2 text-sm sm:text-base">Jouw werk voor vandaag: overdrachten, taken en agenda</p>
       </div>
 
       {/* Quick actions */}
