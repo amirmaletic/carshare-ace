@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Car } from "lucide-react";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { toast } from "sonner";
 
@@ -22,32 +22,56 @@ function formatVoorWeergave(raw: string) {
  */
 export function KentekenZoekPlaat() {
   const [waarde, setWaarde] = useState("");
+  const [focus, setFocus] = useState(false);
   const navigate = useNavigate();
   const { voertuigen = [] } = useVoertuigen();
 
+  const norm = normaliseer(waarde);
+  const zoek = waarde.trim().toLowerCase();
+
+  const suggesties = useMemo(() => {
+    if (zoek.length < 1) return [];
+    return voertuigen
+      .filter((v) => {
+        const k = normaliseer(v.kenteken ?? "");
+        const merk = (v.merk ?? "").toLowerCase();
+        const model = (v.model ?? "").toLowerCase();
+        return (
+          (norm.length > 0 && k.includes(norm)) ||
+          merk.includes(zoek) ||
+          model.includes(zoek) ||
+          `${merk} ${model}`.includes(zoek)
+        );
+      })
+      .slice(0, 6);
+  }, [voertuigen, norm, zoek]);
+
+  const gaNaar = (kenteken: string) => {
+    navigate(`/voertuigen?kenteken=${encodeURIComponent(formatVoorWeergave(kenteken))}`);
+  };
+
   const submit = (e?: React.FormEvent) => {
     e?.preventDefault();
-    const norm = normaliseer(waarde);
+    if (suggesties.length > 0) {
+      gaNaar(suggesties[0].kenteken);
+      return;
+    }
     if (norm.length < 4) {
       toast.error("Voer een geldig kenteken in");
       return;
     }
-    const match = voertuigen.find(
-      (v) => normaliseer(v.kenteken) === norm
-    );
-    if (!match) {
-      toast.error(`Kenteken ${formatVoorWeergave(norm)} niet in je vloot`, {
-        description: "Voeg het toe via voertuigen of de RDW lookup.",
-      });
-    }
-    navigate(`/voertuigen?kenteken=${encodeURIComponent(formatVoorWeergave(norm))}`);
+    toast.error(`Kenteken ${formatVoorWeergave(norm)} niet in je vloot`, {
+      description: "Voeg het toe via voertuigen of de RDW lookup.",
+    });
+    gaNaar(norm);
   };
 
   return (
-    <form
-      onSubmit={submit}
-      className="rounded-2xl border border-border bg-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4"
-    >
+    <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      <form
+        onSubmit={submit}
+        className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4"
+      >
       <div className="flex-1 min-w-0">
         <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           Kentekenzoeker
@@ -86,6 +110,8 @@ export function KentekenZoekPlaat() {
           <input
             value={waarde}
             onChange={(e) => setWaarde(e.target.value)}
+            onFocus={() => setFocus(true)}
+            onBlur={() => setTimeout(() => setFocus(false), 150)}
             placeholder="AB-12-CD"
             autoCapitalize="characters"
             autoCorrect="off"
@@ -104,6 +130,48 @@ export function KentekenZoekPlaat() {
         Zoeken
         <ArrowRight className="w-4 h-4" />
       </button>
-    </form>
+      </form>
+
+      {focus && zoek.length > 0 && (
+        <div className="border-t border-border bg-muted/30 animate-fade-in">
+          {suggesties.length === 0 ? (
+            <div className="px-4 py-3 text-sm text-muted-foreground">
+              Geen voertuigen gevonden voor "{waarde}"
+            </div>
+          ) : (
+            <ul className="divide-y divide-border">
+              {suggesties.map((v) => (
+                <li key={v.id}>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      gaNaar(v.kenteken);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-accent/60 transition-colors"
+                  >
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-md bg-primary/10 text-primary shrink-0">
+                      <Car className="w-4 h-4" />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-medium text-foreground truncate">
+                        {v.merk} {v.model}
+                      </span>
+                      <span className="block text-xs text-muted-foreground truncate">
+                        {v.locatie ?? "Onbekende locatie"}
+                      </span>
+                    </span>
+                    <span className="font-mono text-xs font-bold tracking-wider px-2 py-1 rounded bg-[#FFCC00] text-[#0a1f4a] ring-1 ring-black/10">
+                      {formatVoorWeergave(v.kenteken)}
+                    </span>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground shrink-0" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
