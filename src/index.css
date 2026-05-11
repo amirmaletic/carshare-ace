@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,26 +7,28 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 215 25% 15%;
+    /* Premium light: warm off-white paper, deep ink text */
+    --background: 36 24% 98%;
+    --foreground: 222 32% 11%;
 
-    --card: 210 20% 98%;
-    --card-foreground: 215 25% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 32% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 15%;
+    --popover-foreground: 222 32% 11%;
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
+    /* Deeper, more refined navy-blue (still in same family as #3B82F6) */
+    --primary: 222 70% 32%;
+    --primary-foreground: 36 24% 98%;
 
-    --secondary: 214 20% 95%;
-    --secondary-foreground: 215 20% 30%;
+    --secondary: 220 16% 95%;
+    --secondary-foreground: 222 28% 22%;
 
-    --muted: 214 20% 96%;
-    --muted-foreground: 215 14% 46%;
+    --muted: 220 16% 96%;
+    --muted-foreground: 222 12% 42%;
 
-    --accent: 214 20% 94%;
-    --accent-foreground: 215 25% 15%;
+    --accent: 220 16% 94%;
+    --accent-foreground: 222 32% 11%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
@@ -39,88 +42,86 @@
     --info: 210 92% 45%;
     --info-foreground: 0 0% 100%;
 
-    --border: 214 20% 92%;
-    --input: 214 20% 92%;
-    --ring: 221 83% 53%;
+    --border: 220 16% 90%;
+    --input: 220 16% 90%;
+    --ring: 222 70% 32%;
 
-    --radius: 0.625rem;
+    --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 215 14% 46%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 221 83% 96%;
-    --sidebar-accent-foreground: 221 83% 40%;
-    --sidebar-border: 214 20% 92%;
-    --sidebar-ring: 221 83% 53%;
-    --sidebar-muted: 214 20% 96%;
+    --sidebar-background: 36 24% 98%;
+    --sidebar-foreground: 222 12% 42%;
+    --sidebar-primary: 222 70% 32%;
+    --sidebar-primary-foreground: 36 24% 98%;
+    --sidebar-accent: 222 40% 94%;
+    --sidebar-accent-foreground: 222 70% 28%;
+    --sidebar-border: 220 16% 90%;
+    --sidebar-ring: 222 70% 32%;
+    --sidebar-muted: 220 16% 96%;
 
-    /* Premium tokens */
-    --primary-glow: 217 91% 65%;
-    --accent-violet: 262 83% 62%;
-    --accent-cyan: 190 95% 55%;
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 53%), hsl(262 83% 62%));
-    --gradient-soft: linear-gradient(135deg, hsl(221 83% 53% / 0.12), hsl(262 83% 62% / 0.10) 50%, hsl(190 95% 55% / 0.08));
-    --gradient-mesh: radial-gradient(ellipse 80% 60% at 20% 0%, hsl(221 83% 53% / 0.18), transparent 60%),
-                     radial-gradient(ellipse 70% 60% at 100% 30%, hsl(262 83% 62% / 0.14), transparent 60%),
-                     radial-gradient(ellipse 90% 70% at 50% 100%, hsl(190 95% 55% / 0.10), transparent 70%);
-    --shadow-glow: 0 10px 40px -12px hsl(221 83% 53% / 0.45);
-    --shadow-elegant: 0 20px 60px -20px hsl(221 83% 25% / 0.18), 0 8px 24px -12px hsl(221 83% 25% / 0.10);
-    --glass-bg: 0 0% 100% / 0.65;
-    --glass-border: 221 50% 80% / 0.35;
+    /* Premium tokens — restrained, monochrome blue family */
+    --primary-glow: 222 70% 48%;
+    --accent-violet: 222 60% 28%;
+    --accent-cyan: 222 50% 60%;
+    --gradient-primary: linear-gradient(135deg, hsl(222 70% 32%), hsl(222 70% 22%));
+    --gradient-soft: linear-gradient(135deg, hsl(222 70% 32% / 0.06), hsl(222 70% 22% / 0.04));
+    --gradient-mesh: radial-gradient(ellipse 70% 50% at 15% 0%, hsl(222 70% 32% / 0.06), transparent 60%),
+                     radial-gradient(ellipse 60% 50% at 100% 30%, hsl(222 70% 32% / 0.04), transparent 60%);
+    --shadow-glow: 0 1px 2px hsl(222 30% 10% / 0.04), 0 8px 24px -10px hsl(222 70% 20% / 0.18);
+    --shadow-elegant: 0 1px 0 hsl(222 30% 10% / 0.04), 0 12px 32px -16px hsl(222 30% 10% / 0.14), 0 2px 6px -2px hsl(222 30% 10% / 0.06);
+    --glass-bg: 36 24% 98% / 0.78;
+    --glass-border: 222 30% 80% / 0.30;
   }
 
   .dark {
-    --background: 222 30% 7%;
-    --foreground: 214 20% 92%;
+    --background: 222 32% 6%;
+    --foreground: 36 16% 92%;
 
-    --card: 222 28% 10%;
-    --card-foreground: 214 20% 92%;
+    --card: 222 28% 9%;
+    --card-foreground: 36 16% 92%;
 
-    --popover: 222 28% 10%;
-    --popover-foreground: 214 20% 92%;
+    --popover: 222 28% 9%;
+    --popover-foreground: 36 16% 92%;
 
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 222 70% 62%;
+    --primary-foreground: 222 32% 6%;
 
-    --secondary: 222 20% 16%;
-    --secondary-foreground: 214 20% 80%;
+    --secondary: 222 22% 14%;
+    --secondary-foreground: 36 16% 86%;
 
-    --muted: 222 20% 14%;
-    --muted-foreground: 214 14% 55%;
+    --muted: 222 22% 12%;
+    --muted-foreground: 222 10% 60%;
 
-    --accent: 222 20% 18%;
-    --accent-foreground: 214 20% 92%;
+    --accent: 222 22% 16%;
+    --accent-foreground: 36 16% 92%;
 
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 222 20% 18%;
-    --input: 222 20% 18%;
-    --ring: 221 83% 53%;
+    --border: 222 22% 16%;
+    --input: 222 22% 16%;
+    --ring: 222 70% 62%;
 
-    --sidebar-background: 222 30% 6%;
-    --sidebar-foreground: 214 14% 55%;
-    --sidebar-primary: 221 83% 53%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 221 40% 14%;
-    --sidebar-accent-foreground: 221 60% 70%;
-    --sidebar-border: 222 20% 16%;
-    --sidebar-ring: 221 83% 53%;
-    --sidebar-muted: 222 20% 12%;
+    --sidebar-background: 222 32% 5%;
+    --sidebar-foreground: 222 10% 60%;
+    --sidebar-primary: 222 70% 62%;
+    --sidebar-primary-foreground: 222 32% 6%;
+    --sidebar-accent: 222 30% 12%;
+    --sidebar-accent-foreground: 222 60% 78%;
+    --sidebar-border: 222 22% 14%;
+    --sidebar-ring: 222 70% 62%;
+    --sidebar-muted: 222 22% 10%;
 
-    --primary-glow: 217 91% 70%;
-    --accent-violet: 262 83% 70%;
-    --accent-cyan: 190 95% 60%;
-    --gradient-primary: linear-gradient(135deg, hsl(221 83% 60%), hsl(262 83% 70%));
-    --gradient-soft: linear-gradient(135deg, hsl(221 83% 60% / 0.18), hsl(262 83% 70% / 0.14) 50%, hsl(190 95% 60% / 0.10));
-    --gradient-mesh: radial-gradient(ellipse 80% 60% at 20% 0%, hsl(221 83% 53% / 0.28), transparent 60%),
-                     radial-gradient(ellipse 70% 60% at 100% 30%, hsl(262 83% 62% / 0.22), transparent 60%),
-                     radial-gradient(ellipse 90% 70% at 50% 100%, hsl(190 95% 55% / 0.16), transparent 70%);
-    --shadow-glow: 0 10px 50px -12px hsl(217 91% 60% / 0.55);
-    --shadow-elegant: 0 20px 60px -20px hsl(0 0% 0% / 0.55), 0 8px 24px -12px hsl(0 0% 0% / 0.35);
-    --glass-bg: 222 28% 12% / 0.55;
-    --glass-border: 221 40% 60% / 0.20;
+    --primary-glow: 222 70% 70%;
+    --accent-violet: 222 60% 50%;
+    --accent-cyan: 222 50% 70%;
+    --gradient-primary: linear-gradient(135deg, hsl(222 70% 62%), hsl(222 70% 48%));
+    --gradient-soft: linear-gradient(135deg, hsl(222 70% 62% / 0.10), hsl(222 70% 48% / 0.06));
+    --gradient-mesh: radial-gradient(ellipse 70% 50% at 15% 0%, hsl(222 70% 62% / 0.10), transparent 60%),
+                     radial-gradient(ellipse 60% 50% at 100% 30%, hsl(222 70% 62% / 0.06), transparent 60%);
+    --shadow-glow: 0 1px 2px hsl(0 0% 0% / 0.4), 0 12px 32px -12px hsl(222 70% 30% / 0.5);
+    --shadow-elegant: 0 1px 0 hsl(0 0% 0% / 0.4), 0 16px 40px -20px hsl(0 0% 0% / 0.55), 0 4px 10px -4px hsl(0 0% 0% / 0.35);
+    --glass-bg: 222 28% 10% / 0.65;
+    --glass-border: 222 30% 50% / 0.18;
   }
 }
 
@@ -131,16 +132,15 @@
 
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    background-image:
-      radial-gradient(1200px 600px at 100% -10%, hsl(var(--primary) / 0.06), transparent 60%),
-      radial-gradient(900px 500px at -10% 110%, hsl(var(--accent-violet) / 0.05), transparent 60%);
-    background-attachment: fixed;
     font-feature-settings: "ss01","cv11","cv02";
     letter-spacing: -0.005em;
   }
 
   h1, h2, h3 {
-    letter-spacing: -0.02em;
+    font-family: 'Fraunces', 'Inter', serif;
+    font-weight: 500;
+    letter-spacing: -0.025em;
+    font-feature-settings: "ss01";
   }
 }
 
