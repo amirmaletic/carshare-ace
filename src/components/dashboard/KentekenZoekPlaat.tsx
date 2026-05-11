@@ -23,7 +23,7 @@ function formatVoorWeergave(raw: string) {
 export function KentekenZoekPlaat() {
   const [waarde, setWaarde] = useState("");
   const navigate = useNavigate();
-  const { data: voertuigen = [] } = useVoertuigen();
+  const { voertuigen = [] } = useVoertuigen();
 
   const submit = (e?: React.FormEvent) => {
     e?.preventDefault();
