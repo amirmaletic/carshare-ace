@@ -12,6 +12,7 @@ import {
   type CopilotActionPrimary,
   type CopilotActionVehicle,
   type CopilotVoorstel,
+  type CopilotForm,
 } from "./CopilotActions";
 
 export function AiAssistant() {
@@ -81,6 +82,16 @@ export function AiAssistant() {
     } catch (e: any) {
       return { error: e?.message || "Mislukt" };
     }
+  };
+
+  const handleSubmitForm = (form: CopilotForm, values: Record<string, string>) => {
+    const lines = form.fields.map(f => {
+      const v = values[f.name] ?? "";
+      return `- ${f.label} (${f.name}): ${v || "(leeg)"}`;
+    });
+    const title = form.title ? `formulier "${form.title}"` : "formulier";
+    const text = `Ingevuld ${title}:\n${lines.join("\n")}\n\nGa nu door met de volgende stap op basis van deze gegevens.`;
+    send(text);
   };
 
   return (
@@ -171,6 +182,7 @@ export function AiAssistant() {
                             onOpenVehicle={handleOpenVehicle}
                             onPrimary={handlePrimary}
                             onConfirmVoorstel={handleConfirmVoorstel}
+                            onSubmitForm={handleSubmitForm}
                           />
                         )}
                       </>
