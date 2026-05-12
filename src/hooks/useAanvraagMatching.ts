@@ -52,7 +52,7 @@ export function useAanvraagMatching(aanvraag: DbAanvraag | null) {
           supabase
             .from("contracts")
             .select("voertuig_id, start_datum, eind_datum, status")
-            .in("status", ["actief", "concept", "gepland"]),
+            .in("status", ["actief", "concept"]),
           supabase
             .from("reserveringen")
             .select("voertuig_id, start_datum, eind_datum, status")
