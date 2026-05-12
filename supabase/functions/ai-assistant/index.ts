@@ -22,9 +22,21 @@ Stijl:
 - Kort, concreet, Nederlands. Geen em-dashes; gebruik | · of woorden.
 - Vermeld altijd tijdvenster en aantal records.
 - Eerlijk als data ontbreekt; stel concrete vervolgstap voor.
-- Wees pro-actief en handel als ervaren front-office: anticipeer op vervolgstappen, doe direct voorstellen i.p.v. open vragen. Bij "maak een reservering" eerst een mini-form, daarna meteen een voorstel; bij "klant belt over verlenging" zoek lopend contract + stel verlenging voor; bij "schade gemeld" maak direct schade-voorstel met voertuig + datum; bij "noteer onderhoud" form met datum/omschrijving/kosten; bij "log rit" form met van/naar/datum.
-- Houd antwoorden ULTRAKORT (max 1-3 zinnen) - de gebruiker is een drukke front-office medewerker. Lever data, niet uitleg.
-- Doe ALLES in zo min mogelijk beurten. Combineer tool-calls parallel waar mogelijk. Nooit vragen wat je zelf kunt opzoeken.
+- Wees pro-actief als ervaren front-office medewerker: anticipeer en handel zelf af.
+- Houd antwoorden ULTRAKORT (max 1-3 zinnen) - lever het resultaat, geen uitleg.
+- Doe ALLES in zo min mogelijk beurten. Combineer tool-calls parallel.
+- VOER ZELF UIT (geen formulier of voorstel nodig) wanneer alle gegevens bekend zijn:
+  - "bevestig de aanvraag van X met de polo" -> bevestig_aanvraag (kiest zelf passende beschikbare polo) en meld kort: "Bevestigd, reservering #...".
+  - "zet 78-XY-901 op onderhoud" / "verhuurd" / "beschikbaar" -> wijzig_voertuig_status.
+  - "verleng contract C-123 met 7 dagen" -> verleng_contract.
+  - "factuur 5 betaald" -> markeer_factuur_betaald.
+  - "stuur betaal-herinnering naar X" -> stuur_factuur_herinnering.
+  - "voeg klant Jan Jansen toe (jan@x.nl)" -> maak_klant.
+  - "plan onderhoud op 78-XY voor volgende week, APK" -> plan_onderhoud.
+  - "wijs aanvraag #X af" -> wijs_aanvraag_af.
+  Na uitvoer: 1 zin bevestiging + optioneel 1 [[fleeflo:actions]] met 'primary' link naar het scherm.
+- Gebruik VOORSTEL-blok alleen als je nog onzeker bent over een keuze (bv. meerdere polos beschikbaar, klant moet kiezen welke).
+- Vraag nooit om bevestiging als de instructie duidelijk en compleet is - voer uit en rapporteer.
 - Reken zelf: dagen = (eind - start), totaalprijs = dagen * dagprijs. Toon de berekening in de samenvatting.
 - Gebruik relatieve tijd correct (vandaag, morgen, "volgende week vrijdag" → resolve naar ISO-datum o.b.v. CONTEXT.now).
 
@@ -329,6 +341,79 @@ const tools = [
       parameters: { type: "object", properties: { id: { type: "string" } }, required: ["id"] },
     },
   },
+  // ============ AUTONOME UITVOER-TOOLS (front-office) ============
+  {
+    type: "function",
+    function: {
+      name: "lijst_aanvragen",
+      description: "Open klantaanvragen (status nieuw/gekoppeld/in_behandeling). Gebruik dit om aanvragen op naam/email te vinden voor bevestiging.",
+      parameters: { type: "object", properties: { status: { type: "string" }, query: { type: "string" }, limit: { type: "number" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "bevestig_aanvraag",
+      description: "Bevestig een klantaanvraag direct: koppelt voertuig, maakt klant aan indien nodig en maakt reservering. Geef aanvraag_id + voertuig_id (zelf gekozen uit beschikbare voertuigen), optioneel dagprijs.",
+      parameters: { type: "object", properties: { aanvraag_id: { type: "string" }, voertuig_id: { type: "string" }, dagprijs: { type: "number" } }, required: ["aanvraag_id", "voertuig_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "wijs_aanvraag_af",
+      description: "Wijs een klantaanvraag af (status 'afgewezen').",
+      parameters: { type: "object", properties: { aanvraag_id: { type: "string" }, reden: { type: "string" } }, required: ["aanvraag_id"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "wijzig_voertuig_status",
+      description: "Zet de status van een voertuig (beschikbaar, verhuurd, onderhoud, gereserveerd). Geef voertuig_id of kenteken.",
+      parameters: { type: "object", properties: { voertuig_id: { type: "string" }, kenteken: { type: "string" }, status: { type: "string", enum: ["beschikbaar", "verhuurd", "onderhoud", "gereserveerd"] } }, required: ["status"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "verleng_contract",
+      description: "Verleng een actief contract met N dagen of zet nieuwe einddatum. Geef contract_id of contract_nummer.",
+      parameters: { type: "object", properties: { contract_id: { type: "string" }, contract_nummer: { type: "string" }, dagen: { type: "number" }, nieuwe_eind_datum: { type: "string" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "markeer_factuur_betaald",
+      description: "Zet een factuur op betaald. Geef factuur_id of factuur_nummer.",
+      parameters: { type: "object", properties: { factuur_id: { type: "string" }, factuur_nummer: { type: "string" } } },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "maak_klant",
+      description: "Maak direct een klant aan in de database. Vereist voornaam, achternaam, email.",
+      parameters: { type: "object", properties: { voornaam: { type: "string" }, achternaam: { type: "string" }, email: { type: "string" }, telefoon: { type: "string" }, bedrijfsnaam: { type: "string" }, type: { type: "string", enum: ["particulier", "zakelijk"] } }, required: ["voornaam", "achternaam", "email"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "plan_onderhoud",
+      description: "Plan onderhoud (service_historie regel) voor een voertuig. Vereist voertuig_id of kenteken, datum en omschrijving.",
+      parameters: { type: "object", properties: { voertuig_id: { type: "string" }, kenteken: { type: "string" }, datum: { type: "string" }, omschrijving: { type: "string" }, type: { type: "string" }, kosten: { type: "number" }, garage: { type: "string" } }, required: ["datum", "omschrijving"] },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "registreer_schade",
+      description: "Registreer een schade direct. Vereist voertuig_id of kenteken, datum en omschrijving.",
+      parameters: { type: "object", properties: { voertuig_id: { type: "string" }, kenteken: { type: "string" }, datum: { type: "string" }, omschrijving: { type: "string" }, ernst: { type: "string", enum: ["licht", "middel", "zwaar"] }, kosten: { type: "number" } }, required: ["datum", "omschrijving"] },
+    },
+  },
 ];
 
 // ----------------- Tool executor -----------------
@@ -600,6 +685,129 @@ async function runTool(name: string, args: any, sb: any, ctx: { userId?: string;
         const { error } = await sb.from("copilot_geheugen").delete().eq("id", args.id).eq("user_id", ctx.userId);
         if (error) return { error: error.message };
         return { ok: true };
+      }
+      // ============ AUTONOME UITVOER ============
+      case "lijst_aanvragen": {
+        const lim = Math.min(args.limit ?? 20, 100);
+        let q = sb.from("aanvragen").select("id,klant_naam,klant_email,klant_telefoon,gewenst_type,gewenste_categorie,gewenste_periode_start,gewenste_periode_eind,status,gekoppeld_voertuig_id,notitie,created_at").order("created_at", { ascending: false }).limit(lim);
+        if (args.status) q = q.eq("status", args.status);
+        else q = q.in("status", ["nieuw", "gekoppeld", "in_behandeling"]);
+        if (args.query) {
+          const p = `%${String(args.query).trim()}%`;
+          q = q.or(`klant_naam.ilike.${p},klant_email.ilike.${p}`);
+        }
+        const { data, error } = await q;
+        if (error) throw error;
+        return { count: data?.length ?? 0, aanvragen: data };
+      }
+      case "bevestig_aanvraag": {
+        if (!ctx.userId) return { error: "niet ingelogd" };
+        const { data, error } = await sb.rpc("bevestig_aanvraag", {
+          _aanvraag_id: args.aanvraag_id,
+          _voertuig_id: args.voertuig_id,
+          _dagprijs: args.dagprijs ?? null,
+        });
+        if (error) return { error: error.message };
+        return { ok: true, reservering_id: data, href: "/reserveringen" };
+      }
+      case "wijs_aanvraag_af": {
+        const { error } = await sb.from("aanvragen").update({ status: "afgewezen", notitie: args.reden ? `Afgewezen: ${args.reden}` : undefined }).eq("id", args.aanvraag_id);
+        if (error) return { error: error.message };
+        return { ok: true };
+      }
+      case "wijzig_voertuig_status": {
+        let vid = args.voertuig_id;
+        if (!vid && args.kenteken) {
+          const { data: v } = await sb.from("voertuigen").select("id").ilike("kenteken", args.kenteken).maybeSingle();
+          vid = v?.id;
+        }
+        if (!vid) return { error: "voertuig niet gevonden" };
+        const { error } = await sb.from("voertuigen").update({ status: args.status }).eq("id", vid);
+        if (error) return { error: error.message };
+        return { ok: true, voertuig_id: vid, status: args.status };
+      }
+      case "verleng_contract": {
+        let cid = args.contract_id;
+        let huidige: any = null;
+        if (!cid && args.contract_nummer) {
+          const { data: c } = await sb.from("contracts").select("id,eind_datum").eq("contract_nummer", args.contract_nummer).maybeSingle();
+          cid = c?.id; huidige = c;
+        } else if (cid) {
+          const { data: c } = await sb.from("contracts").select("eind_datum").eq("id", cid).maybeSingle();
+          huidige = c;
+        }
+        if (!cid) return { error: "contract niet gevonden" };
+        let nieuweEind = args.nieuwe_eind_datum;
+        if (!nieuweEind && args.dagen && huidige?.eind_datum) {
+          const d = new Date(huidige.eind_datum);
+          d.setDate(d.getDate() + Number(args.dagen));
+          nieuweEind = d.toISOString().slice(0, 10);
+        }
+        if (!nieuweEind) return { error: "geef dagen of nieuwe_eind_datum" };
+        const { error } = await sb.from("contracts").update({ eind_datum: nieuweEind }).eq("id", cid);
+        if (error) return { error: error.message };
+        return { ok: true, contract_id: cid, nieuwe_eind_datum: nieuweEind };
+      }
+      case "markeer_factuur_betaald": {
+        let fid = args.factuur_id;
+        if (!fid && args.factuur_nummer) {
+          const { data: f } = await sb.from("invoices").select("id").eq("factuur_nummer", args.factuur_nummer).maybeSingle();
+          fid = f?.id;
+        }
+        if (!fid) return { error: "factuur niet gevonden" };
+        const { error } = await sb.from("invoices").update({ status: "betaald", betaald_op: new Date().toISOString().slice(0, 10) }).eq("id", fid);
+        if (error) return { error: error.message };
+        return { ok: true, factuur_id: fid };
+      }
+      case "maak_klant": {
+        if (!ctx.orgId) return { error: "geen organisatie" };
+        const { data, error } = await sb.from("klanten").insert({
+          organisatie_id: ctx.orgId,
+          voornaam: args.voornaam,
+          achternaam: args.achternaam,
+          email: String(args.email || "").toLowerCase().trim(),
+          telefoon: args.telefoon || null,
+          bedrijfsnaam: args.bedrijfsnaam || null,
+          type: args.type || (args.bedrijfsnaam ? "zakelijk" : "particulier"),
+        }).select("id").maybeSingle();
+        if (error) return { error: error.message };
+        return { ok: true, klant_id: data?.id, href: "/klanten" };
+      }
+      case "plan_onderhoud": {
+        if (!ctx.userId || !ctx.orgId) return { error: "niet ingelogd" };
+        let vid = args.voertuig_id;
+        if (!vid && args.kenteken) {
+          const { data: v } = await sb.from("voertuigen").select("id").ilike("kenteken", args.kenteken).maybeSingle();
+          vid = v?.id;
+        }
+        if (!vid) return { error: "voertuig vereist" };
+        const { data, error } = await sb.from("service_historie").insert({
+          organisatie_id: ctx.orgId, user_id: ctx.userId,
+          voertuig_id: vid, datum: args.datum,
+          omschrijving: args.omschrijving, type: args.type || "onderhoud",
+          kosten: Number(args.kosten || 0), garage: args.garage || null,
+        }).select("id").maybeSingle();
+        if (error) return { error: error.message };
+        return { ok: true, id: data?.id, href: "/onderhoud" };
+      }
+      case "registreer_schade": {
+        if (!ctx.userId || !ctx.orgId) return { error: "niet ingelogd" };
+        let vid = args.voertuig_id;
+        if (!vid && args.kenteken) {
+          const { data: v } = await sb.from("voertuigen").select("id").ilike("kenteken", args.kenteken).maybeSingle();
+          vid = v?.id;
+        }
+        if (!vid) return { error: "voertuig vereist" };
+        const { data, error } = await sb.from("schade_rapporten").insert({
+          organisatie_id: ctx.orgId, user_id: ctx.userId,
+          voertuig_id: vid, datum: args.datum,
+          omschrijving: args.omschrijving,
+          ernst: args.ernst || "licht",
+          kosten: Number(args.kosten || 0),
+          hersteld: false,
+        }).select("id").maybeSingle();
+        if (error) return { error: error.message };
+        return { ok: true, id: data?.id, href: "/schade" };
       }
       default:
         return { error: `Onbekende tool: ${name}` };
