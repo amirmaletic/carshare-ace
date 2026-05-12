@@ -8,6 +8,7 @@ export const PATH_TO_MODULE: Record<string, string> = {
   "/terugmelden": "terugmelden",
   "/contracten": "contracten",
   "/reserveringen": "reserveringen",
+  "/aanvragen-planning": "reserveringen",
   "/onderhoud": "onderhoud",
   "/rapportages": "rapportages",
   "/kosten": "kosten",

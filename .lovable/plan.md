@@ -1,78 +1,62 @@
-# Migratie Hub | super eenvoudige overstap vanuit elk systeem
-
 ## Doel
-Een nieuwe FleeFlo-klant moet binnen 5 minuten zijn complete wagenpark uit een ander systeem (Excel-export, lease-portal, oud beheersysteem) kunnen overzetten, zonder kennis van kolomnamen of veldformaten.
 
-## Eindplaatje voor de gebruiker
+Een nieuw planning-onderdeel waar alle inkomende aanvragen samenkomen. Per aanvraag wordt automatisch het beste beschikbare voertuig voor de gewenste periode voorgesteld (bijv. klant vraagt Polo → eerste vrije Polo in die periode). De gebruiker hoeft enkel "Bevestigen" te drukken en de reservering wordt direct aangemaakt.
 
-1. Sidebar krijgt nieuw item **Migratie** (alleen zichtbaar voor beheerders).
-2. Pagina `/migratie` toont 6 tegels per datatype:
-   - Voertuigen, Klanten, Contracten, Chauffeurs, Kilometerhistorie, Schadehistorie
-3. Per tegel: drie routes
-   - **Snel via kenteken** (alleen voertuigen, bestaande RDW-flow, hergebruikt)
-   - **Bestand uploaden** (CSV / Excel / TXT)
-   - **Plakken** (tabel uit clipboard)
-4. Na upload: AI leest het bestand, herkent kolommen automatisch, toont een preview met groen-vinkjes per kolom-koppeling. Gebruiker kan koppelingen overrulen via dropdown.
-5. Validatie-rij per rij met duidelijke fouten, daarna één-klik importeren met progress.
-6. "Doe het voor mij" knop: stuurt het bestand naar het support-mailadres met organisatie-context, klant krijgt bevestiging.
+## Nieuwe pagina: Planning Aanvragen
 
-## Datatype-dekking (wat kan er per type geïmporteerd worden)
+Route: `/aanvragen-planning` (nieuwe sidebar-item onder Planning, naast Reserveringen).
 
-| Type | Verplicht | Optioneel (AI herkent) |
-|------|-----------|------------------------|
-| Voertuigen | kenteken | merk, model, bouwjaar, brandstof, km-stand, categorie, kleur, dagprijs, locatie, APK datum, verzekering datum, fiscale waarde |
-| Klanten | naam OF email | voornaam, achternaam, email, telefoon, adres, postcode, plaats, type (particulier/zakelijk), bedrijfsnaam, KVK, rijbewijsnummer |
-| Contracten | klant-email, kenteken, start, eind | type (huur/lease), maandprijs, dagprijs, borg, km/jaar, status |
-| Chauffeurs | voornaam, achternaam | email, telefoon, rijbewijs categorie/nummer/verloopdatum, geboortedatum, adres |
-| Km-historie | kenteken, datum, kmstand | notitie |
-| Schadehistorie | kenteken, datum, omschrijving | ernst, kosten, locatie, hersteld |
+Layout:
+- Bovenin: filterbalk (status: nieuw / gekoppeld / wacht op bevestiging / omgezet, zoekveld op klantnaam, periode-picker).
+- Linkerkolom: lijst met aanvraagkaarten, gesorteerd op aanvraagdatum (nieuwste eerst, urgent bovenaan).
+- Rechterkolom (detail): geselecteerde aanvraag met:
+  - klantgegevens
+  - gewenst type/categorie/brandstof/budget/periode/notitie
+  - **Voorgesteld voertuig** (groot, met foto, kenteken, dagprijs)
+  - dropdown "Andere keuze" met alle alternatieve beschikbare voertuigen voor die periode
+  - knoppen: **Bevestigen** (primair, groot), Wijzig periode, Andere klant, Afwijzen
 
-Voor voertuigen/klanten: ontbrekende verplichte velden worden via RDW (kenteken) of best-effort split (volledige naam → voornaam/achternaam) aangevuld.
+## Slimme matching-logica
 
-## Hoe slim de AI is
+Bij openen van de planning-pagina draait een matching per open aanvraag:
 
-- Edge function `migration-automap` ontvangt: datatype + eerste 5 rijen + headers.
-- Vraagt Lovable AI (`google/gemini-2.5-flash`) om JSON: `{ kolom_in_bestand: doel_veld_in_fleeflo | null }`.
-- Werkt ongeacht taal van de header (Engels, Duits, Nederlands), ongeacht volgorde, herkent ook varianten ("plate", "registration", "Kenteken", "Nr").
-- Detecteert datumformaten (`dd-mm-yyyy`, `yyyy-mm-dd`, Excel-serial).
-- Detecteert prijs-formaten (`€ 1.234,56`, `1234.56`).
+1. Filter alle voertuigen die voldoen aan harde criteria: `gewenst_type` (merk/model bevat), `gewenste_categorie`, `gewenste_brandstof`, optioneel `budget_max ≥ dagprijs`.
+2. Filter daarvan alle voertuigen die in de periode `gewenste_periode_start..eind` géén overlap hebben met:
+   - bestaande `reserveringen` (status ≠ geannuleerd)
+   - actieve `contracts` (start_datum..eind_datum overlap)
+   - geplande items in `service_historie` (onderhoud)
+   - `voertuigen.status` in {onderhoud, schade, verkocht}
+3. Sorteer kandidaten op: exacte modelmatch > zelfde categorie > prijs dichtst bij budget > minst recent verhuurd (eerlijke rotatie).
+4. De top-1 wordt voorstel; rest verschijnt in dropdown "Andere keuze".
+5. Resultaten worden gecached per aanvraag-id en automatisch geherevalueerd als de aanvraag wijzigt of als de planning verandert (realtime invalidate).
 
-## Koppelingen tussen types
+## 1-klik bevestigen
 
-- Bij contract-import wordt het kenteken opgezocht in de eerder geïmporteerde voertuigen; geen match → rij krijgt warning.
-- Bij contract-import wordt klant gematcht op email; geen match → klant wordt automatisch aangemaakt met de email + naam uit het contract-bestand.
+Knop "Bevestigen" doet in één RPC-call:
+- maakt klant aan als die nog niet bestaat (op basis van email/telefoon)
+- maakt `reserveringen` rij aan (status `bevestigd`, dagprijs uit voertuig, totaalprijs = dagen × dagprijs)
+- update aanvraag naar status `omgezet` met `gekoppeld_voertuig_id`
+- toont toast met link naar nieuwe reservering en optie "Direct contract opmaken"
 
-## Fouten & duplicaten
+## Sidebar / navigatie
 
-- Per type een unieke sleutel (kenteken voor voertuigen, email voor klanten, contract_nummer of kenteken+startdatum voor contracten).
-- Bestaande records worden overgeslagen met duidelijke vermelding, optie "ook bijwerken" als checkbox.
-- Volledige resultatenlog wordt gelogd in `activiteiten_log`.
+- Nieuwe sidebar entry "Aanvragen" onder de Planning-sectie met badge die aantal open aanvragen toont (live via subscription op `aanvragen`).
+- De bestaande tab "Aanvragen" op `/reserveringen` blijft werken maar krijgt een banner "Bekijk in nieuwe Aanvragen-planning →".
 
-## Technische uitwerking
+## Realtime
 
-**Nieuwe bestanden**
-- `src/pages/Migratie.tsx` | hub-pagina met 6 tegels
-- `src/components/migratie/MigratieWizard.tsx` | shared wizard-shell (4 stappen: bron → preview-mapping → valideer → importeer)
-- `src/components/migratie/FileDropzone.tsx` | drop voor csv/xlsx/txt + plak-tab
-- `src/components/migratie/ColumnMapper.tsx` | tabel met dropdowns per kolom + AI-suggestie chip
-- `src/components/migratie/ImportProgress.tsx` | progress + foutenlijst
-- `src/hooks/useMigratie.ts` | per-type insert-logica (gebruikt bestaande hooks waar mogelijk)
-- `src/lib/migratie-types.ts` | per datatype: doelvelden, validators, normalizers
-- `supabase/functions/migration-automap/index.ts` | AI auto-mapping van headers
-- Route `/migratie` in `App.tsx` + sidebar item in `AppSidebar.tsx` (achter `PermissionGuard` beheerder)
+Supabase realtime subscription op `aanvragen` (insert/update) zodat nieuwe aanvragen direct in de lijst poppen, met subtiele toast-notificatie en geluidloze badge-update.
 
-**Bestaande hergebruik**
-- Excel parsing via `xlsx` package (toevoegen)
-- Voertuig-import logica uit `VehicleImport.tsx` wordt gerefactored zodat de RDW lookup en duplicate-check herbruikbaar zijn vanuit de hub
-- `useVoertuigen`, `useKlanten`, `useContracts`, `useChauffeurs`, `useKilometerRegistraties` hooks voor de inserts
+## Technische details
 
-**Dependency**
-- `bun add xlsx` voor `.xlsx` parsing in de browser
+- Nieuwe pagina `src/pages/AanvragenPlanning.tsx`.
+- Nieuwe hook `src/hooks/useAanvraagMatching.ts`: voor één aanvraag retourneert gesorteerde lijst beschikbare voertuigen, gebruikt bestaande availability-logica uit `VehicleGantt` (helper extraheren naar `src/lib/availability.ts`).
+- Nieuwe Supabase RPC `bevestig_aanvraag(_aanvraag_id, _voertuig_id, _dagprijs)` die transactioneel klant + reservering aanmaakt en aanvraag bijwerkt.
+- Sidebar wijziging in `src/components/AppSidebar.tsx` (of equivalent) met badge-count via `useAanvragen`.
+- Route toevoegen in `src/App.tsx`.
+- Realtime subscriptie via bestaand patroon (zie `useNotificaties` of `messages` voorbeeld).
 
-## Wat valt buiten scope (kunnen later)
-- Directe API-koppeling met specifieke fleet-software (Bynco, RentMagic, etc.)
-- Foto van papieren lijst via vision-AI
-- Onboarding-call-agenda
+## Buiten scope
 
-## Resultaat
-Eén plek waar een nieuwe organisatie haar volledige operationele data uit een ander systeem in een paar minuten in FleeFlo zet, met AI die de saaie kolom-mapping voor zijn rekening neemt.
+- Geen wijzigingen aan publiek aanvraagformulier (`/boeken`).
+- Geen wijziging aan AI-matching edge function (`match-vehicle`); de nieuwe deterministische matcher draait clientside bovenop. AI-motivatie wordt indien aanwezig getoond als extra hint.
