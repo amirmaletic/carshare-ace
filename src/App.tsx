@@ -24,6 +24,7 @@ const Vehicles = lazy(() => import("./pages/Vehicles"));
 const Terugmelden = lazy(() => import("./pages/Terugmelden"));
 const Contracts = lazy(() => import("./pages/Contracts"));
 const Reservations = lazy(() => import("./pages/Reservations"));
+const AanvragenPlanning = lazy(() => import("./pages/AanvragenPlanning"));
 const Maintenance = lazy(() => import("./pages/Maintenance"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const Kosten = lazy(() => import("./pages/Kosten"));
@@ -204,6 +205,7 @@ const App = () => (
           <Route path="/terugmelden" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><Terugmelden /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />
           <Route path="/contracten" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><Contracts /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />
           <Route path="/reserveringen" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><Reservations /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />
+          <Route path="/aanvragen-planning" element={<ProtectedRoute><ModuleGuard><PermissionGuard><AppLayout><AanvragenPlanning /></AppLayout></PermissionGuard></ModuleGuard></ProtectedRoute>} />
           <Route path="/onderhoud" element={<ProtectedRoute><PermissionGuard><AppLayout><Maintenance /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/rapportages" element={<Navigate to="/dashboarding/rapportages" replace />} />
           <Route path="/dashboarding" element={<Navigate to="/dashboarding/operationeel" replace />} />
