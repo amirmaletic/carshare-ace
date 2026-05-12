@@ -2603,6 +2603,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      bevestig_aanvraag: {
+        Args: { _aanvraag_id: string; _dagprijs?: number; _voertuig_id: string }
+        Returns: string
+      }
       bijtelling_overzicht: {
         Args: { _jaar: number }
         Returns: {
