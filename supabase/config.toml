@@ -25,3 +25,5 @@ project_id = "wqqebuxglxphivghekyz"
     verify_jwt = true
   [functions.verify-betaal-verificatie]
     verify_jwt = false
+  [functions.submit-aanvraag]
+    verify_jwt = false
