@@ -119,7 +119,7 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
       const { data } = await supabase
         .from("contracts")
         .select("id, voertuig_id, klant_naam, bedrijf, start_datum, eind_datum, status, contract_nummer, maandprijs, type")
-        .in("status", ["actief", "concept", "gepland", "afgerond"])
+        .in("status", ["actief", "concept"])
         .lte("start_datum", format(endDate, "yyyy-MM-dd"))
         .gte("eind_datum", format(startDate, "yyyy-MM-dd"));
       return data || [];
