@@ -49,6 +49,7 @@ const navSections: NavSection[] = [
       { icon: Car, label: "Voertuigen", path: "/voertuigen" },
       { icon: Wrench, label: "Onderhoud", path: "/onderhoud" },
       { icon: CalendarRange, label: "Reserveringen", path: "/reserveringen" },
+      { icon: Sparkles, label: "Aanvragen", path: "/aanvragen-planning" },
     ],
   },
   {
