@@ -95,7 +95,17 @@ export default function PortaalTab() {
   if (isLoading) return <div className="h-32 animate-pulse bg-muted rounded-lg" />;
   if (!org) return <Card><CardContent className="p-6">Geen organisatie gevonden.</CardContent></Card>;
 
-  const previewUrl = form.slug ? `${window.location.origin}/t/${form.slug}` : null;
+  // Bepaal de publieke basis-URL: in de Lovable-editor of preview-iframe is
+  // window.location.origin niet bruikbaar voor klanten (die kunnen daar niet bij
+  // zonder Lovable-account). We vallen daarom altijd terug op het productiedomein.
+  const origin = typeof window !== "undefined" ? window.location.hostname : "";
+  const isPreviewHost =
+    origin.includes("lovable.app") ||
+    origin.includes("lovableproject.com") ||
+    origin === "localhost" ||
+    origin.startsWith("127.");
+  const publicBase = isPreviewHost ? "https://fleeflo.nl" : window.location.origin;
+  const previewUrl = form.slug ? `${publicBase}/t/${form.slug}` : null;
   const subdomeinUrl = form.slug ? `https://${form.slug}.fleeflo.nl` : null;
 
   return (
