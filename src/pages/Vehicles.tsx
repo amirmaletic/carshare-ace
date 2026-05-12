@@ -299,7 +299,26 @@ export default function Vehicles() {
       <VehicleDetail vehicle={selectedVehicle} open={detailOpen} onOpenChange={setDetailOpen} />
       <VehicleForm open={formOpen} onOpenChange={setFormOpen} />
       <VehicleImport open={importOpen} onOpenChange={setImportOpen} />
-      <ContractForm open={contractFormOpen} onOpenChange={setContractFormOpen} prefilledVehicleId={contractVehicleId} />
+      <ContractForm
+        open={contractFormOpen}
+        onOpenChange={setContractFormOpen}
+        prefilledVehicleId={contractVehicleId}
+        prefilledStartDatum={contractStart}
+        prefilledEindDatum={contractEind}
+      />
+      <KlantQuickCreate
+        open={klantDialogOpen}
+        onOpenChange={setKlantDialogOpen}
+        voertuigKenteken={klantContextVehicle?.kenteken}
+        onCreated={() => {
+          if (klantContextVehicle) {
+            setContractVehicleId(klantContextVehicle.id);
+            setContractStart(undefined);
+            setContractEind(undefined);
+            setContractFormOpen(true);
+          }
+        }}
+      />
     </div>
   );
 }
