@@ -22,7 +22,9 @@ Stijl:
 - Kort, concreet, Nederlands. Geen em-dashes; gebruik | · of woorden.
 - Vermeld altijd tijdvenster en aantal records.
 - Eerlijk als data ontbreekt; stel concrete vervolgstap voor.
-- Wees pro-actief: bij bv. "maak een reservering" eerst een formulier tonen met datums en klant; bij "noteer onderhoud" een form met datum/omschrijving/kosten; bij "log rit" een form met van/naar/datum.
+- Wees pro-actief en handel als ervaren front-office: anticipeer op vervolgstappen, doe direct voorstellen i.p.v. open vragen. Bij "maak een reservering" eerst een mini-form, daarna meteen een voorstel; bij "klant belt over verlenging" zoek lopend contract + stel verlenging voor; bij "schade gemeld" maak direct schade-voorstel met voertuig + datum; bij "noteer onderhoud" form met datum/omschrijving/kosten; bij "log rit" form met van/naar/datum.
+- Houd antwoorden ULTRAKORT (max 1-3 zinnen) - de gebruiker is een drukke front-office medewerker. Lever data, niet uitleg.
+- Doe ALLES in zo min mogelijk beurten. Combineer tool-calls parallel waar mogelijk. Nooit vragen wat je zelf kunt opzoeken.
 - Reken zelf: dagen = (eind - start), totaalprijs = dagen * dagprijs. Toon de berekening in de samenvatting.
 - Gebruik relatieve tijd correct (vandaag, morgen, "volgende week vrijdag" → resolve naar ISO-datum o.b.v. CONTEXT.now).
 
@@ -616,14 +618,17 @@ function sseDone(): Uint8Array {
   return new TextEncoder().encode(`data: [DONE]\n\n`);
 }
 
-async function callGateway(messages: any[], apiKey: string, withTools: boolean) {
+const FAST_MODEL = "google/gemini-3-flash-preview";
+
+async function callGateway(messages: any[], apiKey: string, withTools: boolean, stream = false) {
   return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "google/gemini-2.5-pro",
+      model: FAST_MODEL,
       messages,
-      ...(withTools ? { tools, tool_choice: "auto" } : {}),
+      stream,
+      ...(withTools ? { tools, tool_choice: "auto", parallel_tool_calls: true } : {}),
     }),
   });
 }
@@ -687,7 +692,7 @@ serve(async (req) => {
 
     // Agentic loop: tot N tool-rondes, dan stream final answer
     const convo: any[] = [{ role: "system", content: SYSTEM_PROMPT }, ...messages];
-    const MAX_ROUNDS = 6;
+    const MAX_ROUNDS = 4;
 
     for (let round = 0; round < MAX_ROUNDS; round++) {
       const resp = await callGateway(convo, LOVABLE_API_KEY, true);
@@ -705,33 +710,32 @@ serve(async (req) => {
 
       if (toolCalls && toolCalls.length > 0) {
         convo.push({ role: "assistant", content: msg.content ?? "", tool_calls: toolCalls });
-        for (const call of toolCalls) {
+        // Voer tool calls PARALLEL uit voor maximale snelheid
+        const results = await Promise.all(toolCalls.map(async (call: any) => {
           let parsedArgs: any = {};
           try { parsedArgs = JSON.parse(call.function.arguments || "{}"); } catch {}
           console.log("[copilot] tool", call.function.name, parsedArgs);
           const result = await runTool(call.function.name, parsedArgs, sb, { userId, orgId });
-          convo.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(result).slice(0, 12000) });
-        }
-        continue; // volgende ronde
+          return { tool_call_id: call.id, content: JSON.stringify(result).slice(0, 12000) };
+        }));
+        for (const r of results) convo.push({ role: "tool", ...r });
+        continue;
       }
 
-      // Geen tool calls: stream final content terug naar client
-      const finalText: string = msg?.content || "Geen antwoord ontvangen.";
-      const stream = new ReadableStream({
-        start(controller) {
-          // chunked om streaming-gevoel te geven
-          const chunks = finalText.match(/.{1,40}/gs) || [finalText];
-          (async () => {
-            for (const c of chunks) {
-              controller.enqueue(sseEncode(c));
-              await new Promise(r => setTimeout(r, 15));
-            }
+      // Geen tool calls: stream direct vanuit gateway (echte token-streaming)
+      const streamResp = await callGateway(convo, LOVABLE_API_KEY, false, true);
+      if (!streamResp.ok || !streamResp.body) {
+        const finalText: string = msg?.content || "Geen antwoord ontvangen.";
+        const fb = new ReadableStream({
+          start(controller) {
+            controller.enqueue(sseEncode(finalText));
             controller.enqueue(sseDone());
             controller.close();
-          })();
-        },
-      });
-      return new Response(stream, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
+          },
+        });
+        return new Response(fb, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
+      }
+      return new Response(streamResp.body, { headers: { ...corsHeaders, "Content-Type": "text/event-stream" } });
     }
 
     // Fallback als max rounds bereikt
