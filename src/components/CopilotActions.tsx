@@ -1,6 +1,16 @@
-import { ChevronRight, Car, Check, Loader2 } from "lucide-react";
-import { useState } from "react";
+import { ChevronRight, Car, Check, Loader2, Send } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface CopilotActionVehicle {
   id?: string;
@@ -31,11 +41,43 @@ export interface CopilotVoorstel {
   open_after?: string;
 }
 
+export type CopilotFormFieldType =
+  | "text"
+  | "textarea"
+  | "number"
+  | "date"
+  | "time"
+  | "datetime"
+  | "select";
+
+export interface CopilotFormField {
+  name: string;
+  label: string;
+  type: CopilotFormFieldType;
+  placeholder?: string;
+  required?: boolean;
+  default?: string | number;
+  options?: { value: string; label: string }[];
+  min?: number;
+  max?: number;
+  step?: number;
+  helper?: string;
+}
+
+export interface CopilotForm {
+  id?: string;
+  title?: string;
+  intro?: string;
+  fields: CopilotFormField[];
+  submit_label?: string;
+}
+
 export interface CopilotActionsData {
   intro?: string;
   vehicles?: CopilotActionVehicle[];
   primary?: CopilotActionPrimary;
   voorstel?: CopilotVoorstel;
+  form?: CopilotForm;
 }
 
 interface Props {
@@ -43,11 +85,25 @@ interface Props {
   onOpenVehicle: (v: CopilotActionVehicle) => void;
   onPrimary: (p: CopilotActionPrimary) => void;
   onConfirmVoorstel?: (v: CopilotVoorstel) => Promise<{ ok?: boolean; href?: string; error?: string }>;
+  onSubmitForm?: (form: CopilotForm, values: Record<string, string>) => void;
 }
 
-export function CopilotActions({ data, onOpenVehicle, onPrimary, onConfirmVoorstel }: Props) {
+export function CopilotActions({ data, onOpenVehicle, onPrimary, onConfirmVoorstel, onSubmitForm }: Props) {
   const [voorstelStatus, setVoorstelStatus] = useState<"idle" | "loading" | "done" | "error">("idle");
   const [voorstelError, setVoorstelError] = useState<string | null>(null);
+  const [formValues, setFormValues] = useState<Record<string, string>>({});
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (data.form?.fields) {
+      const init: Record<string, string> = {};
+      for (const f of data.form.fields) {
+        if (f.default !== undefined && f.default !== null) init[f.name] = String(f.default);
+      }
+      setFormValues(init);
+    }
+  }, [data.form]);
 
   const handleConfirm = async () => {
     if (!data.voorstel || !onConfirmVoorstel) return;
@@ -61,6 +117,19 @@ export function CopilotActions({ data, onOpenVehicle, onPrimary, onConfirmVoorst
       setVoorstelStatus("error");
       setVoorstelError(e?.message || "Mislukt");
     }
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!data.form || !onSubmitForm) return;
+    const missing = data.form.fields.filter(f => f.required && !String(formValues[f.name] ?? "").trim());
+    if (missing.length > 0) {
+      setFormError(`Vul nog in: ${missing.map(m => m.label).join(", ")}`);
+      return;
+    }
+    setFormError(null);
+    setFormSubmitted(true);
+    onSubmitForm(data.form, formValues);
   };
 
   return (
@@ -100,6 +169,82 @@ export function CopilotActions({ data, onOpenVehicle, onPrimary, onConfirmVoorst
             </button>
           ))}
         </div>
+      )}
+      {data.form && data.form.fields?.length > 0 && (
+        <form
+          onSubmit={handleFormSubmit}
+          className="rounded-lg border border-border bg-background p-3 space-y-2.5"
+        >
+          {data.form.title && (
+            <div className="text-xs font-semibold text-foreground">{data.form.title}</div>
+          )}
+          {data.form.intro && (
+            <p className="text-xs text-muted-foreground">{data.form.intro}</p>
+          )}
+          {data.form.fields.map((f) => {
+            const val = formValues[f.name] ?? "";
+            const setVal = (v: string) => setFormValues(prev => ({ ...prev, [f.name]: v }));
+            return (
+              <div key={f.name} className="space-y-1">
+                <Label className="text-xs">
+                  {f.label}
+                  {f.required && <span className="text-destructive ml-0.5">*</span>}
+                </Label>
+                {f.type === "textarea" ? (
+                  <Textarea
+                    value={val}
+                    onChange={e => setVal(e.target.value)}
+                    placeholder={f.placeholder}
+                    disabled={formSubmitted}
+                    className="text-sm min-h-[60px]"
+                  />
+                ) : f.type === "select" ? (
+                  <Select value={val} onValueChange={setVal} disabled={formSubmitted}>
+                    <SelectTrigger className="h-9 text-sm">
+                      <SelectValue placeholder={f.placeholder || "Kies..."} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(f.options ?? []).map(o => (
+                        <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    type={
+                      f.type === "date" ? "date" :
+                      f.type === "time" ? "time" :
+                      f.type === "datetime" ? "datetime-local" :
+                      f.type === "number" ? "number" : "text"
+                    }
+                    value={val}
+                    onChange={e => setVal(e.target.value)}
+                    placeholder={f.placeholder}
+                    min={f.min}
+                    max={f.max}
+                    step={f.step}
+                    disabled={formSubmitted}
+                    className="h-9 text-sm"
+                  />
+                )}
+                {f.helper && <p className="text-[10px] text-muted-foreground">{f.helper}</p>}
+              </div>
+            );
+          })}
+          {formError && <p className="text-xs text-destructive">{formError}</p>}
+          <Button
+            type="submit"
+            size="sm"
+            className="w-full"
+            disabled={formSubmitted}
+          >
+            {formSubmitted ? (
+              <><Check className="w-3 h-3 mr-2" /> Verstuurd</>
+            ) : (
+              <><Send className="w-3 h-3 mr-2" /> {data.form.submit_label || "Versturen"}</>
+            )}
+          </Button>
+        </form>
       )}
       {data.voorstel && (
         <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
