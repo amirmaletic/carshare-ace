@@ -15,6 +15,7 @@ import { VehicleKanban } from "@/components/VehicleKanban";
 import { VehicleGantt } from "@/components/VehicleGantt";
 import { ContractForm } from "@/components/ContractForm";
 import { VehicleImport } from "@/components/VehicleImport";
+import { KlantQuickCreate } from "@/components/KlantQuickCreate";
 import { getStatusColor, type Vehicle } from "@/data/mockData";
 import { VehicleImage } from "@/components/VehicleImage";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
@@ -38,6 +39,10 @@ export default function Vehicles() {
   const [formOpen, setFormOpen] = useState(false);
   const [contractFormOpen, setContractFormOpen] = useState(false);
   const [contractVehicleId, setContractVehicleId] = useState<string | undefined>();
+  const [contractStart, setContractStart] = useState<string | undefined>();
+  const [contractEind, setContractEind] = useState<string | undefined>();
+  const [klantDialogOpen, setKlantDialogOpen] = useState(false);
+  const [klantContextVehicle, setKlantContextVehicle] = useState<Vehicle | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
@@ -166,9 +171,15 @@ export default function Vehicles() {
         <VehicleGantt
           onSelectVehicle={openVehicle}
           onReturnVehicle={(v) => navigate(`/terugmelden?kenteken=${encodeURIComponent(v.kenteken)}`)}
-          onCreateContract={(v) => {
+          onCreateContract={(v, opts) => {
             setContractVehicleId(v.id);
+            setContractStart(opts?.startDate ? format(opts.startDate, "yyyy-MM-dd") : undefined);
+            setContractEind(opts?.endDate ? format(opts.endDate, "yyyy-MM-dd") : undefined);
             setContractFormOpen(true);
+          }}
+          onCreateKlant={(v) => {
+            setKlantContextVehicle(v);
+            setKlantDialogOpen(true);
           }}
         />
       ) : viewMode === "locaties" ? (
