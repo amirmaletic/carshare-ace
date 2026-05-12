@@ -686,6 +686,129 @@ async function runTool(name: string, args: any, sb: any, ctx: { userId?: string;
         if (error) return { error: error.message };
         return { ok: true };
       }
+      // ============ AUTONOME UITVOER ============
+      case "lijst_aanvragen": {
+        const lim = Math.min(args.limit ?? 20, 100);
+        let q = sb.from("aanvragen").select("id,klant_naam,klant_email,klant_telefoon,gewenst_type,gewenste_categorie,gewenste_periode_start,gewenste_periode_eind,status,gekoppeld_voertuig_id,notitie,created_at").order("created_at", { ascending: false }).limit(lim);
+        if (args.status) q = q.eq("status", args.status);
+        else q = q.in("status", ["nieuw", "gekoppeld", "in_behandeling"]);
+        if (args.query) {
+          const p = `%${String(args.query).trim()}%`;
+          q = q.or(`klant_naam.ilike.${p},klant_email.ilike.${p}`);
+        }
+        const { data, error } = await q;
+        if (error) throw error;
+        return { count: data?.length ?? 0, aanvragen: data };
+      }
+      case "bevestig_aanvraag": {
+        if (!ctx.userId) return { error: "niet ingelogd" };
+        const { data, error } = await sb.rpc("bevestig_aanvraag", {
+          _aanvraag_id: args.aanvraag_id,
+          _voertuig_id: args.voertuig_id,
+          _dagprijs: args.dagprijs ?? null,
+        });
+        if (error) return { error: error.message };
+        return { ok: true, reservering_id: data, href: "/reserveringen" };
+      }
+      case "wijs_aanvraag_af": {
+        const { error } = await sb.from("aanvragen").update({ status: "afgewezen", notitie: args.reden ? `Afgewezen: ${args.reden}` : undefined }).eq("id", args.aanvraag_id);
+        if (error) return { error: error.message };
+        return { ok: true };
+      }
+      case "wijzig_voertuig_status": {
+        let vid = args.voertuig_id;
+        if (!vid && args.kenteken) {
+          const { data: v } = await sb.from("voertuigen").select("id").ilike("kenteken", args.kenteken).maybeSingle();
+          vid = v?.id;
+        }
+        if (!vid) return { error: "voertuig niet gevonden" };
+        const { error } = await sb.from("voertuigen").update({ status: args.status }).eq("id", vid);
+        if (error) return { error: error.message };
+        return { ok: true, voertuig_id: vid, status: args.status };
+      }
+      case "verleng_contract": {
+        let cid = args.contract_id;
+        let huidige: any = null;
+        if (!cid && args.contract_nummer) {
+          const { data: c } = await sb.from("contracts").select("id,eind_datum").eq("contract_nummer", args.contract_nummer).maybeSingle();
+          cid = c?.id; huidige = c;
+        } else if (cid) {
+          const { data: c } = await sb.from("contracts").select("eind_datum").eq("id", cid).maybeSingle();
+          huidige = c;
+        }
+        if (!cid) return { error: "contract niet gevonden" };
+        let nieuweEind = args.nieuwe_eind_datum;
+        if (!nieuweEind && args.dagen && huidige?.eind_datum) {
+          const d = new Date(huidige.eind_datum);
+          d.setDate(d.getDate() + Number(args.dagen));
+          nieuweEind = d.toISOString().slice(0, 10);
+        }
+        if (!nieuweEind) return { error: "geef dagen of nieuwe_eind_datum" };
+        const { error } = await sb.from("contracts").update({ eind_datum: nieuweEind }).eq("id", cid);
+        if (error) return { error: error.message };
+        return { ok: true, contract_id: cid, nieuwe_eind_datum: nieuweEind };
+      }
+      case "markeer_factuur_betaald": {
+        let fid = args.factuur_id;
+        if (!fid && args.factuur_nummer) {
+          const { data: f } = await sb.from("invoices").select("id").eq("factuur_nummer", args.factuur_nummer).maybeSingle();
+          fid = f?.id;
+        }
+        if (!fid) return { error: "factuur niet gevonden" };
+        const { error } = await sb.from("invoices").update({ status: "betaald", betaald_op: new Date().toISOString().slice(0, 10) }).eq("id", fid);
+        if (error) return { error: error.message };
+        return { ok: true, factuur_id: fid };
+      }
+      case "maak_klant": {
+        if (!ctx.orgId) return { error: "geen organisatie" };
+        const { data, error } = await sb.from("klanten").insert({
+          organisatie_id: ctx.orgId,
+          voornaam: args.voornaam,
+          achternaam: args.achternaam,
+          email: String(args.email || "").toLowerCase().trim(),
+          telefoon: args.telefoon || null,
+          bedrijfsnaam: args.bedrijfsnaam || null,
+          type: args.type || (args.bedrijfsnaam ? "zakelijk" : "particulier"),
+        }).select("id").maybeSingle();
+        if (error) return { error: error.message };
+        return { ok: true, klant_id: data?.id, href: "/klanten" };
+      }
+      case "plan_onderhoud": {
+        if (!ctx.userId || !ctx.orgId) return { error: "niet ingelogd" };
+        let vid = args.voertuig_id;
+        if (!vid && args.kenteken) {
+          const { data: v } = await sb.from("voertuigen").select("id").ilike("kenteken", args.kenteken).maybeSingle();
+          vid = v?.id;
+        }
+        if (!vid) return { error: "voertuig vereist" };
+        const { data, error } = await sb.from("service_historie").insert({
+          organisatie_id: ctx.orgId, user_id: ctx.userId,
+          voertuig_id: vid, datum: args.datum,
+          omschrijving: args.omschrijving, type: args.type || "onderhoud",
+          kosten: Number(args.kosten || 0), garage: args.garage || null,
+        }).select("id").maybeSingle();
+        if (error) return { error: error.message };
+        return { ok: true, id: data?.id, href: "/onderhoud" };
+      }
+      case "registreer_schade": {
+        if (!ctx.userId || !ctx.orgId) return { error: "niet ingelogd" };
+        let vid = args.voertuig_id;
+        if (!vid && args.kenteken) {
+          const { data: v } = await sb.from("voertuigen").select("id").ilike("kenteken", args.kenteken).maybeSingle();
+          vid = v?.id;
+        }
+        if (!vid) return { error: "voertuig vereist" };
+        const { data, error } = await sb.from("schade_rapporten").insert({
+          organisatie_id: ctx.orgId, user_id: ctx.userId,
+          voertuig_id: vid, datum: args.datum,
+          omschrijving: args.omschrijving,
+          ernst: args.ernst || "licht",
+          kosten: Number(args.kosten || 0),
+          hersteld: false,
+        }).select("id").maybeSingle();
+        if (error) return { error: error.message };
+        return { ok: true, id: data?.id, href: "/schade" };
+      }
       default:
         return { error: `Onbekende tool: ${name}` };
     }
