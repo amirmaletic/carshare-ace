@@ -69,6 +69,7 @@ export function VehicleDetail({ vehicle, open, onOpenChange }: VehicleDetailProp
             merk={vehicle.merk}
             model={vehicle.model}
             src={vehicle.image}
+            voertuigId={vehicle.id}
             className="absolute inset-0 w-full h-full object-contain object-center p-4 drop-shadow-lg"
             containerClassName="absolute inset-0 bg-transparent"
             iconClassName="w-16 h-16"

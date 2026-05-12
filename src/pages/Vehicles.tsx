@@ -255,6 +255,7 @@ export default function Vehicles() {
                       merk={vehicle.merk}
                       model={vehicle.model}
                       src={vehicle.image}
+                      voertuigId={vehicle.id}
                       className="absolute inset-0 w-full h-full object-contain object-center p-3"
                       containerClassName="absolute inset-0"
                     />
