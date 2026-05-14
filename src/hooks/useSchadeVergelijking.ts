@@ -11,7 +11,9 @@ export interface VergelijkingResultaat {
     confidence: number;
     uitleg: string;
   }>;
-  reeds_bestaande: Array<{ terugmeld_punt_id?: string; uitleg: string }>;
+  reeds_bestaande: Array<{ terugmeld_punt_id?: string; uitleg: string; bron?: string }>;
+  geschatte_herstelkosten?: number;
+  aanbeveling?: string;
 }
 
 export interface SchadeVergelijking {
