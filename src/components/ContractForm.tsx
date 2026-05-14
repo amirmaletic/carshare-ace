@@ -95,7 +95,7 @@ export function ContractForm({ open, onOpenChange, editContract, prefilledVehicl
       klant_adres: c?.klant_adres ?? "",
       bedrijf: c?.bedrijf ?? "",
       voertuig_id: c?.voertuig_id ?? prefilledVehicleId ?? "",
-      start_datum: c?.start_datum ?? prefilledStartDatum ?? "",
+      start_datum: c?.start_datum ?? prefilledStartDatum ?? new Date().toISOString().slice(0, 10),
       eind_datum: c?.eind_datum ?? prefilledEindDatum ?? "",
       maandprijs: c?.maandprijs ?? 0,
       borg: c?.borg ?? 0,
