@@ -95,6 +95,30 @@ export function OverdrachtenCenter() {
       const events: Array<{ contract: any; type: "ophalen" | "terugbrengen"; datum: string }> = [];
       (starts ?? []).forEach((c) => events.push({ contract: c, type: "ophalen", datum: c.start_datum }));
       (ends ?? []).forEach((c) => events.push({ contract: c, type: "terugbrengen", datum: c.eind_datum }));
+
+      // Voeg reserveringen toe die vandaag starten of eindigen
+      const { data: reserveringen } = await supabase
+        .from("reserveringen")
+        .select("id, voertuig_id, klant_id, start_datum, eind_datum, status, klanten:klant_id(voornaam, achternaam, email)")
+        .or(`start_datum.eq.${today},eind_datum.eq.${today},eind_datum.eq.${tomorrow}`)
+        .in("status", ["bevestigd", "aangevraagd", "actief", "lopend"]);
+      (reserveringen ?? []).forEach((r: any) => {
+        const k = r.klanten;
+        const naam = k ? `${k.voornaam ?? ""} ${k.achternaam ?? ""}`.trim() : "Reservering";
+        const base = {
+          id: `res-${r.id}`,
+          reservering_id: r.id,
+          voertuig_id: r.voertuig_id,
+          klant_naam: naam || "Reservering",
+          klant_email: k?.email ?? null,
+          start_datum: r.start_datum,
+          eind_datum: r.eind_datum,
+        };
+        if (r.start_datum === today) events.push({ contract: base, type: "ophalen", datum: today });
+        if (r.eind_datum === today || r.eind_datum === tomorrow) {
+          events.push({ contract: base, type: "terugbrengen", datum: r.eind_datum });
+        }
+      });
       return events;
     },
     enabled: !!user,
@@ -102,17 +126,29 @@ export function OverdrachtenCenter() {
 
   const createOverdrachtMutation = useMutation({
     mutationFn: async ({ contract, type, datum }: { contract: any; type: "ophalen" | "terugbrengen"; datum: string }) => {
-      const { data: existing } = await supabase
-        .from("overdrachten").select("id")
-        .eq("contract_id", contract.id).eq("type", type).eq("datum", datum)
-        .maybeSingle();
-      if (existing) return;
+      const isReservering = !!contract.reservering_id;
+      // Dedupe: contracten op contract_id, reserveringen op voertuig+klant+type+datum
+      if (isReservering) {
+        const { data: existing } = await supabase
+          .from("overdrachten").select("id")
+          .eq("voertuig_id", contract.voertuig_id ?? "")
+          .eq("klant_naam", contract.klant_naam)
+          .eq("type", type).eq("datum", datum)
+          .maybeSingle();
+        if (existing) return;
+      } else {
+        const { data: existing } = await supabase
+          .from("overdrachten").select("id")
+          .eq("contract_id", contract.id).eq("type", type).eq("datum", datum)
+          .maybeSingle();
+        if (existing) return;
+      }
       const { data: vehicle } = await supabase
         .from("voertuigen").select("kenteken, merk, model")
         .eq("id", contract.voertuig_id ?? "").maybeSingle();
       const { error } = await supabase.from("overdrachten").insert({
         user_id: user!.id,
-        contract_id: contract.id,
+        contract_id: isReservering ? null : contract.id,
         voertuig_id: contract.voertuig_id ?? "",
         voertuig_kenteken: vehicle?.kenteken ?? "Onbekend",
         voertuig_naam: vehicle ? `${vehicle.merk} ${vehicle.model}` : "Onbekend",
