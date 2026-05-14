@@ -89,7 +89,7 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
     queryFn: async () => {
       const { data } = await supabase
         .from("organisaties")
-        .select("naam")
+        .select("naam, standaard_handtekening")
         .eq("id", organisatieId!)
         .maybeSingle();
       return data;
@@ -154,6 +154,7 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
     `€ ${Number(n ?? 0).toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const orgNaam = organisatie?.naam ?? "FleeFlo";
+  const bedrijfHandtekening = (organisatie as any)?.standaard_handtekening ?? null;
   const logoSrc = `${window.location.origin}${logoUrl}`;
 
   const handlePrint = () => {
@@ -371,9 +372,10 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
           <section class="sigs">
             <div class="sig">
               <div class="role">Verhuurder</div>
+              ${bedrijfHandtekening ? `<img src="${bedrijfHandtekening}" alt="Bedrijfshandtekening" style="max-height:60px;display:block;margin-bottom:4px;" />` : ""}
               <div class="line"></div>
               <div class="name">${escapeHtml(orgNaam)}</div>
-              <div class="meta">Datum: _____________________</div>
+              <div class="meta">Datum: ${bedrijfHandtekening ? today : "_____________________"}</div>
             </div>
             <div class="sig">
               <div class="role">Huurder | Leasenemer</div>
@@ -547,9 +549,13 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
           <div className="grid grid-cols-2 gap-16 mt-12 pt-4">
             <div>
               <p className="text-xs text-muted-foreground mb-1">Verhuurder / Leasemaatschappij</p>
-              <div className="border-b border-foreground h-16 mb-2" />
-              <p className="text-sm font-medium">FleeFlo B.V.</p>
-              <p className="text-xs text-muted-foreground">Datum: _______________</p>
+              <div className="border-b border-foreground h-16 mb-2 flex items-end justify-center">
+                {bedrijfHandtekening && (
+                  <img src={bedrijfHandtekening} alt="Bedrijfshandtekening" className="max-h-14 object-contain" />
+                )}
+              </div>
+              <p className="text-sm font-medium">{orgNaam}</p>
+              <p className="text-xs text-muted-foreground">Datum: {bedrijfHandtekening ? today : "_______________"}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">Leasenemer / Huurder</p>
@@ -559,7 +565,7 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
                 )}
               </div>
               <p className="text-sm font-medium">{contract.klant_naam}</p>
-              <p className="text-xs text-muted-foreground">Datum: _______________</p>
+              <p className="text-xs text-muted-foreground">Datum: {klantHandtekening ? today : "_______________"}</p>
             </div>
           </div>
 
