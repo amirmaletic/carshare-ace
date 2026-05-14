@@ -1315,6 +1315,7 @@ export type Database = {
           portaal_welkomtekst: string | null
           postcode: string | null
           slug: string | null
+          standaard_handtekening: string | null
           telefoon: string | null
           trial_ends_at: string | null
         }
@@ -1337,6 +1338,7 @@ export type Database = {
           portaal_welkomtekst?: string | null
           postcode?: string | null
           slug?: string | null
+          standaard_handtekening?: string | null
           telefoon?: string | null
           trial_ends_at?: string | null
         }
@@ -1359,6 +1361,7 @@ export type Database = {
           portaal_welkomtekst?: string | null
           postcode?: string | null
           slug?: string | null
+          standaard_handtekening?: string | null
           telefoon?: string | null
           trial_ends_at?: string | null
         }

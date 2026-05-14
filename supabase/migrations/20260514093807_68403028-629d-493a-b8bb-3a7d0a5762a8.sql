@@ -1,0 +1,1 @@
+ALTER TABLE public.organisaties ADD COLUMN IF NOT EXISTS standaard_handtekening text;
