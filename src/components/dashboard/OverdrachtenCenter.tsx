@@ -8,11 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Car, CheckCircle, Clock, PenLine, RotateCcw, CalendarClock, AlertTriangle, ChevronDown } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Car, CheckCircle, Clock, PenLine, RotateCcw, CalendarClock, AlertTriangle, ChevronDown, ShieldCheck } from "lucide-react";
 import { format, addDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import { toast } from "sonner";
 import { useBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
+import { VehicleDamageSketch, type DamagePoint } from "@/components/VehicleDamageSketch";
 
 interface Overdracht {
   id: string;
@@ -38,8 +41,8 @@ export function OverdrachtenCenter() {
   const [signature, setSignature] = useState<string | null>(null);
   const [kilometerstand, setKilometerstand] = useState("");
   const [opmerkingen, setOpmerkingen] = useState("");
-  const [schadeMelden, setSchadeMelden] = useState(false);
-  const [schadeBeschrijving, setSchadeBeschrijving] = useState("");
+  const [schadePunten, setSchadePunten] = useState<DamagePoint[]>([]);
+  const [schadevrij, setSchadevrij] = useState(false);
   const [toonDetails, setToonDetails] = useState(false);
   const [tab, setTab] = useState("vandaag");
 
@@ -182,8 +185,14 @@ export function OverdrachtenCenter() {
   const signMutation = useMutation({
     mutationFn: async () => {
       if (!selectedOverdracht || !signature) return;
+      const heeftSchade = !schadevrij && schadePunten.length > 0;
       const samengevoegdeOpmerkingen = [
-        schadeMelden && schadeBeschrijving ? `⚠️ Schade gemeld: ${schadeBeschrijving}` : null,
+        heeftSchade
+          ? `⚠️ ${schadePunten.length} schade${schadePunten.length === 1 ? "punt" : "punten"} gemeld:\n` +
+            schadePunten
+              .map((p, i) => `${i + 1}. ${p.label || "(geen omschrijving)"} — ernst: ${p.ernst}, grootte: ${p.grootte}`)
+              .join("\n")
+          : null,
         opmerkingen || null,
       ].filter(Boolean).join("\n\n") || null;
       const { error } = await supabase
@@ -194,6 +203,7 @@ export function OverdrachtenCenter() {
           ondertekend_op: new Date().toISOString(),
           kilometerstand: kilometerstand ? parseInt(kilometerstand) : null,
           opmerkingen: samengevoegdeOpmerkingen,
+          schade_punten: schadevrij ? [] : (schadePunten as any),
         })
         .eq("id", selectedOverdracht.id);
       if (error) throw error;
@@ -252,8 +262,8 @@ export function OverdrachtenCenter() {
       setSignature(null);
       setKilometerstand("");
       setOpmerkingen("");
-      setSchadeMelden(false);
-      setSchadeBeschrijving("");
+      setSchadePunten([]);
+      setSchadevrij(false);
       setToonDetails(false);
     },
     onError: () => toast.error("Er ging iets mis bij het opslaan"),
@@ -264,8 +274,8 @@ export function OverdrachtenCenter() {
     setKilometerstand(o.kilometerstand?.toString() ?? "");
     setOpmerkingen(o.opmerkingen ?? "");
     setSignature(null);
-    setSchadeMelden(false);
-    setSchadeBeschrijving("");
+    setSchadePunten([]);
+    setSchadevrij(false);
     setToonDetails(false);
   };
 
@@ -354,86 +364,125 @@ export function OverdrachtenCenter() {
       </div>
 
       <Dialog open={!!selectedOverdracht} onOpenChange={(open) => !open && setSelectedOverdracht(null)}>
-        <DialogContent className="max-w-[420px]">
-          <DialogHeader>
+        <DialogContent className="max-w-[480px] w-[calc(100vw-1.5rem)] max-h-[92vh] p-0 gap-0 overflow-hidden flex flex-col">
+          <DialogHeader className="px-5 pt-5 pb-3 border-b border-border shrink-0">
             <DialogTitle>
               {selectedOverdracht?.type === "ophalen" ? "Ophaaloverdracht" : "Terugbrengoverdracht"} ondertekenen
             </DialogTitle>
           </DialogHeader>
 
-          {selectedOverdracht && (
-            <div className="space-y-4">
-              <div className="p-3 rounded-lg bg-muted/50 space-y-1">
-                <p className="text-sm font-medium text-foreground">{selectedOverdracht.voertuig_naam}</p>
-                <p className="text-xs text-muted-foreground">Kenteken: {selectedOverdracht.voertuig_kenteken}</p>
-                <p className="text-xs text-muted-foreground">Klant: {selectedOverdracht.klant_naam}</p>
-              </div>
-              <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
-                <p className="text-sm text-foreground italic leading-relaxed">"{getConfirmationText(selectedOverdracht)}"</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Handtekening klant</label>
-                <SignaturePad onSignatureChange={setSignature} width={370} height={160} />
-              </div>
-
-              {/* Schade snel melden */}
-              <div className="rounded-lg border border-border">
-                <button
-                  type="button"
-                  onClick={() => setSchadeMelden((v) => !v)}
-                  className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-sm font-medium ${schadeMelden ? "text-destructive" : "text-foreground"}`}
-                >
-                  <span className="flex items-center gap-2">
-                    <AlertTriangle className={`w-4 h-4 ${schadeMelden ? "text-destructive" : "text-muted-foreground"}`} />
-                    Schade melden
-                  </span>
-                  <span className="text-xs text-muted-foreground">{schadeMelden ? "Aan" : "Uit"}</span>
-                </button>
-                {schadeMelden && (
-                  <div className="px-3 pb-3">
-                    <Textarea
-                      placeholder="Beschrijf de schade (locatie, ernst, foto's volgen)..."
-                      value={schadeBeschrijving}
-                      onChange={(e) => setSchadeBeschrijving(e.target.value)}
-                      rows={3}
-                    />
+          {selectedOverdracht && (() => {
+            const heeftOnvolledigeSchade = !schadevrij && schadePunten.length > 0 && schadePunten.some(p => !p.label.trim());
+            const schadeKeuzeOntbreekt = !schadevrij && schadePunten.length === 0;
+            const disabled =
+              !signature ||
+              signMutation.isPending ||
+              schadeKeuzeOntbreekt ||
+              heeftOnvolledigeSchade;
+            return (
+              <>
+                <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+                  <div className="p-3 rounded-lg bg-muted/50 space-y-1">
+                    <p className="text-sm font-medium text-foreground">{selectedOverdracht.voertuig_naam}</p>
+                    <p className="text-xs text-muted-foreground">Kenteken: {selectedOverdracht.voertuig_kenteken}</p>
+                    <p className="text-xs text-muted-foreground">Klant: {selectedOverdracht.klant_naam}</p>
                   </div>
-                )}
-              </div>
-
-              {/* Optionele extra details */}
-              <button
-                type="button"
-                onClick={() => setToonDetails((v) => !v)}
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
-              >
-                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${toonDetails ? "rotate-180" : ""}`} />
-                {toonDetails ? "Verberg" : "Voeg"} kilometerstand & opmerkingen {toonDetails ? "" : "toe"}
-              </button>
-              {toonDetails && (
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">Kilometerstand</label>
-                    <Input type="number" placeholder="bijv. 45230" value={kilometerstand} onChange={(e) => setKilometerstand(e.target.value)} />
+                  <div className="p-3 rounded-lg bg-primary/5 border border-primary/10">
+                    <p className="text-sm text-foreground italic leading-relaxed">"{getConfirmationText(selectedOverdracht)}"</p>
                   </div>
+
+                  {/* Schade-inspectie zoals bij terugmelden */}
+                  <div className="space-y-3">
+                    <div className={`flex items-start gap-3 p-3 rounded-lg border-2 ${
+                      schadevrij ? "border-green-500/30 bg-green-50/50 dark:bg-green-950/20" : "border-border bg-muted/30"
+                    }`}>
+                      <Checkbox
+                        id="schadevrij-overdracht"
+                        checked={schadevrij}
+                        onCheckedChange={(checked) => {
+                          setSchadevrij(!!checked);
+                          if (checked) setSchadePunten([]);
+                        }}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1 space-y-1">
+                        <Label htmlFor="schadevrij-overdracht" className="flex items-center gap-2 cursor-pointer font-medium">
+                          <ShieldCheck className="w-4 h-4 text-green-600" />
+                          Geen nieuwe schade waargenomen
+                        </Label>
+                        <p className="text-xs text-muted-foreground">
+                          Vink aan om te bevestigen dat er geen schade is, of markeer schade hieronder
+                        </p>
+                      </div>
+                    </div>
+
+                    {!schadevrij && (
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <AlertTriangle className="w-4 h-4 text-destructive" />
+                          Schadeschets
+                        </Label>
+                        <p className="text-xs text-muted-foreground">Markeer de schade op de auto, of vink hierboven aan dat er geen schade is</p>
+                        <VehicleDamageSketch points={schadePunten} onChange={setSchadePunten} uploadFolder="overdracht" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Optionele extra details */}
+                  <button
+                    type="button"
+                    onClick={() => setToonDetails((v) => !v)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                  >
+                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${toonDetails ? "rotate-180" : ""}`} />
+                    {toonDetails ? "Verberg" : "Voeg"} kilometerstand & opmerkingen {toonDetails ? "" : "toe"}
+                  </button>
+                  {toonDetails && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">Kilometerstand</label>
+                        <Input type="number" placeholder="bijv. 45230" value={kilometerstand} onChange={(e) => setKilometerstand(e.target.value)} />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-foreground mb-1.5 block">Opmerkingen</label>
+                        <Textarea
+                          placeholder="Eventuele opmerkingen over de staat van het voertuig..."
+                          value={opmerkingen} onChange={(e) => setOpmerkingen(e.target.value)} rows={2}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   <div>
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">Opmerkingen</label>
-                    <Textarea
-                      placeholder="Eventuele opmerkingen over de staat van het voertuig..."
-                      value={opmerkingen} onChange={(e) => setOpmerkingen(e.target.value)} rows={2}
-                    />
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">Handtekening klant</label>
+                    <div className="w-full overflow-hidden rounded-lg border border-border">
+                      <SignaturePad onSignatureChange={setSignature} />
+                    </div>
                   </div>
                 </div>
-              )}
 
-              <p className="text-[11px] text-muted-foreground text-center">
-                Door te ondertekenen gaat u akkoord met bovenstaande verklaring
-              </p>
-              <Button className="w-full" disabled={!signature || signMutation.isPending || (schadeMelden && !schadeBeschrijving.trim())} onClick={() => signMutation.mutate()}>
-                {signMutation.isPending ? "Opslaan..." : "Bevestig overdracht"}
-              </Button>
-            </div>
-          )}
+                {/* Sticky footer met opslaan-knop */}
+                <div className="shrink-0 border-t border-border bg-background px-5 py-3 space-y-2">
+                  {schadeKeuzeOntbreekt && (
+                    <p className="text-xs text-amber-600 dark:text-amber-500 text-center">
+                      Markeer schade op de schets of vink 'geen schade' aan
+                    </p>
+                  )}
+                  {heeftOnvolledigeSchade && (
+                    <p className="text-xs text-amber-600 dark:text-amber-500 text-center">
+                      Vul bij elke gemarkeerde schade een beschrijving in
+                    </p>
+                  )}
+                  <p className="text-[11px] text-muted-foreground text-center">
+                    Door te ondertekenen gaat u akkoord met bovenstaande verklaring
+                  </p>
+                  <Button className="w-full" disabled={disabled} onClick={() => signMutation.mutate()}>
+                    {signMutation.isPending ? "Opslaan..." : "Bevestig overdracht"}
+                  </Button>
+                </div>
+              </>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </>
