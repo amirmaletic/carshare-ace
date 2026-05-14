@@ -56,6 +56,16 @@ export function SchadeVergelijkingDialog({ open, onOpenChange, vergelijking, isL
 
             <div className="p-4 rounded-lg bg-muted/50 border border-border">
               <p className="text-sm text-foreground font-medium">{vergelijking.ai_resultaat.samenvatting}</p>
+              {(vergelijking.ai_resultaat.geschatte_herstelkosten ?? 0) > 0 && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Geschatte herstelkosten: <span className="font-semibold text-foreground">€ {vergelijking.ai_resultaat.geschatte_herstelkosten?.toFixed(0)}</span>
+                </p>
+              )}
+              {vergelijking.ai_resultaat.aanbeveling && (
+                <p className="text-xs text-foreground mt-2 p-2 rounded bg-primary/10 border border-primary/20">
+                  <span className="font-semibold">Aanbeveling: </span>{vergelijking.ai_resultaat.aanbeveling}
+                </p>
+              )}
             </div>
 
             <div>
@@ -98,6 +108,7 @@ export function SchadeVergelijkingDialog({ open, onOpenChange, vergelijking, isL
                 <div className="space-y-1.5">
                   {vergelijking.ai_resultaat.reeds_bestaande.map((s, i) => (
                     <div key={i} className="p-2.5 rounded-lg bg-muted/50 text-xs text-muted-foreground">
+                      {s.bron && <span className="font-medium text-foreground">{s.bron}: </span>}
                       {s.uitleg}
                     </div>
                   ))}
