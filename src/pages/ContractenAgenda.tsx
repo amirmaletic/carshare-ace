@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useContracts, type ContractWithInvoices } from "@/hooks/useContracts";
 import { cn } from "@/lib/utils";
 
-type Mode = "komend" | "vandaag" | "archief";
+type Mode = "komend" | "vandaag" | "archief" | "alle";
 
 function daysBetween(a: string, b: string) {
   const ms = new Date(b).getTime() - new Date(a).getTime();
@@ -120,12 +120,13 @@ export default function ContractenAgenda() {
     const map = new Map<string, DagItem>();
 
     const inRange = (datum: string) => {
+      if (mode === "alle") return true;
       const d = new Date(datum);
       d.setHours(0, 0, 0, 0);
       const diff = daysBetween(isoDate(today), isoDate(d));
       if (mode === "vandaag") return diff === 0;
-      if (mode === "komend") return diff >= 0 && diff <= 60;
-      return diff < 0 && diff >= -180; // archief: laatste 6 maanden
+      if (mode === "komend") return diff >= 0;
+      return diff < 0; // archief: alles in het verleden
     };
 
     for (const c of contracts) {
@@ -169,11 +170,12 @@ export default function ContractenAgenda() {
         <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
           <TabsList>
             <TabsTrigger value="vandaag">Vandaag</TabsTrigger>
-            <TabsTrigger value="komend">Komende 60 dagen</TabsTrigger>
+            <TabsTrigger value="komend">Komend</TabsTrigger>
             <TabsTrigger value="archief">
               <Archive className="w-3.5 h-3.5 mr-1.5" />
               Archief
             </TabsTrigger>
+            <TabsTrigger value="alle">Alle</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
