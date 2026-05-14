@@ -258,6 +258,21 @@ export default function SettingsPage() {
                   <SignaturePad onSignatureChange={(d) => setBedrijf({ ...bedrijf, standaard_handtekening: d })} />
                 )}
               </div>
+              <Separator />
+              <div className="space-y-2">
+                <Label htmlFor="overdracht-kopie">Kopie ondertekende overdracht naar</Label>
+                <Input
+                  id="overdracht-kopie"
+                  type="email"
+                  value={bedrijf.overdracht_kopie_email}
+                  onChange={(e) => setBedrijf({ ...bedrijf, overdracht_kopie_email: e.target.value })}
+                  placeholder="overdrachten@bedrijf.nl"
+                  disabled={!isBeheerder}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Bij elke ondertekende overdracht (incl. eventuele schade-melding) gaat een kopie naar dit e-mailadres.
+                </p>
+              </div>
               <div className="flex justify-end pt-2">
                 <Button onClick={handleSaveBedrijf} disabled={!isBeheerder || saveBedrijf.isPending} className="gap-2">
                   <Save className="w-4 h-4" /> {saveBedrijf.isPending ? "Opslaan..." : "Opslaan"}

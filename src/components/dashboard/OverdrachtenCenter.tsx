@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Car, CheckCircle, Clock, PenLine, RotateCcw, CalendarClock } from "lucide-react";
+import { Car, CheckCircle, Clock, PenLine, RotateCcw, CalendarClock, AlertTriangle, ChevronDown } from "lucide-react";
 import { format, addDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import { toast } from "sonner";
+import { useBedrijfsgegevens } from "@/hooks/useBedrijfsgegevens";
 
 interface Overdracht {
   id: string;
@@ -32,10 +33,14 @@ interface Overdracht {
 export function OverdrachtenCenter() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const { data: bedrijf } = useBedrijfsgegevens();
   const [selectedOverdracht, setSelectedOverdracht] = useState<Overdracht | null>(null);
   const [signature, setSignature] = useState<string | null>(null);
   const [kilometerstand, setKilometerstand] = useState("");
   const [opmerkingen, setOpmerkingen] = useState("");
+  const [schadeMelden, setSchadeMelden] = useState(false);
+  const [schadeBeschrijving, setSchadeBeschrijving] = useState("");
+  const [toonDetails, setToonDetails] = useState(false);
   const [tab, setTab] = useState("vandaag");
 
   const today = format(new Date(), "yyyy-MM-dd");
@@ -177,6 +182,10 @@ export function OverdrachtenCenter() {
   const signMutation = useMutation({
     mutationFn: async () => {
       if (!selectedOverdracht || !signature) return;
+      const samengevoegdeOpmerkingen = [
+        schadeMelden && schadeBeschrijving ? `⚠️ Schade gemeld: ${schadeBeschrijving}` : null,
+        opmerkingen || null,
+      ].filter(Boolean).join("\n\n") || null;
       const { error } = await supabase
         .from("overdrachten")
         .update({
@@ -184,33 +193,53 @@ export function OverdrachtenCenter() {
           status: "ondertekend",
           ondertekend_op: new Date().toISOString(),
           kilometerstand: kilometerstand ? parseInt(kilometerstand) : null,
-          opmerkingen: opmerkingen || null,
+          opmerkingen: samengevoegdeOpmerkingen,
         })
         .eq("id", selectedOverdracht.id);
       if (error) throw error;
 
-      // Stuur kopie naar klant
+      // Bouw template-data 1x op
+      const templateData = {
+        klant_naam: selectedOverdracht.klant_naam,
+        voertuig_naam: selectedOverdracht.voertuig_naam,
+        voertuig_kenteken: selectedOverdracht.voertuig_kenteken,
+        type: selectedOverdracht.type,
+        datum: format(new Date(), "d MMMM yyyy", { locale: nl }),
+        kilometerstand: kilometerstand || null,
+        opmerkingen: samengevoegdeOpmerkingen,
+        bevestiging: getConfirmationText(selectedOverdracht),
+        handtekening: signature,
+      };
+
+      // 1) Kopie naar klant
       if (selectedOverdracht.klant_email) {
         try {
           await supabase.functions.invoke("send-transactional-email", {
             body: {
               templateName: "contract-ondertekend",
               recipientEmail: selectedOverdracht.klant_email,
-              templateData: {
-                klant_naam: selectedOverdracht.klant_naam,
-                voertuig_naam: selectedOverdracht.voertuig_naam,
-                voertuig_kenteken: selectedOverdracht.voertuig_kenteken,
-                type: selectedOverdracht.type,
-                datum: format(new Date(), "d MMMM yyyy", { locale: nl }),
-                kilometerstand: kilometerstand || null,
-                opmerkingen: opmerkingen || null,
-                bevestiging: getConfirmationText(selectedOverdracht),
-                handtekening: signature,
-              },
+              idempotencyKey: `overdracht-klant-${selectedOverdracht.id}`,
+              templateData,
             },
           });
         } catch (e) {
-          console.warn("Kon e-mail niet versturen:", e);
+          console.warn("Kon klant-e-mail niet versturen:", e);
+        }
+      }
+
+      // 2) Kopie naar bedrijf-mailbox (indien ingesteld)
+      if (bedrijf?.overdracht_kopie_email) {
+        try {
+          await supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "contract-ondertekend",
+              recipientEmail: bedrijf.overdracht_kopie_email,
+              idempotencyKey: `overdracht-kopie-${selectedOverdracht.id}`,
+              templateData,
+            },
+          });
+        } catch (e) {
+          console.warn("Kon kopie-e-mail niet versturen:", e);
         }
       }
     },
@@ -223,6 +252,9 @@ export function OverdrachtenCenter() {
       setSignature(null);
       setKilometerstand("");
       setOpmerkingen("");
+      setSchadeMelden(false);
+      setSchadeBeschrijving("");
+      setToonDetails(false);
     },
     onError: () => toast.error("Er ging iets mis bij het opslaan"),
   });
@@ -232,6 +264,9 @@ export function OverdrachtenCenter() {
     setKilometerstand(o.kilometerstand?.toString() ?? "");
     setOpmerkingen(o.opmerkingen ?? "");
     setSignature(null);
+    setSchadeMelden(false);
+    setSchadeBeschrijving("");
+    setToonDetails(false);
   };
 
   const getConfirmationText = (o: Overdracht) => {
@@ -337,26 +372,64 @@ export function OverdrachtenCenter() {
                 <p className="text-sm text-foreground italic leading-relaxed">"{getConfirmationText(selectedOverdracht)}"</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Kilometerstand</label>
-                <Input type="number" placeholder="bijv. 45230" value={kilometerstand} onChange={(e) => setKilometerstand(e.target.value)} />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-foreground mb-1.5 block">Opmerkingen</label>
-                <Textarea
-                  placeholder={selectedOverdracht.type === "terugbrengen"
-                    ? "Staat van het voertuig, eventuele schade, tankinhoud..."
-                    : "Eventuele opmerkingen over de staat van het voertuig..."}
-                  value={opmerkingen} onChange={(e) => setOpmerkingen(e.target.value)} rows={2}
-                />
-              </div>
-              <div>
                 <label className="text-sm font-medium text-foreground mb-1.5 block">Handtekening klant</label>
                 <SignaturePad onSignatureChange={setSignature} width={370} height={160} />
               </div>
+
+              {/* Schade snel melden */}
+              <div className="rounded-lg border border-border">
+                <button
+                  type="button"
+                  onClick={() => setSchadeMelden((v) => !v)}
+                  className={`w-full flex items-center justify-between gap-2 px-3 py-2 text-sm font-medium ${schadeMelden ? "text-destructive" : "text-foreground"}`}
+                >
+                  <span className="flex items-center gap-2">
+                    <AlertTriangle className={`w-4 h-4 ${schadeMelden ? "text-destructive" : "text-muted-foreground"}`} />
+                    Schade melden
+                  </span>
+                  <span className="text-xs text-muted-foreground">{schadeMelden ? "Aan" : "Uit"}</span>
+                </button>
+                {schadeMelden && (
+                  <div className="px-3 pb-3">
+                    <Textarea
+                      placeholder="Beschrijf de schade (locatie, ernst, foto's volgen)..."
+                      value={schadeBeschrijving}
+                      onChange={(e) => setSchadeBeschrijving(e.target.value)}
+                      rows={3}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Optionele extra details */}
+              <button
+                type="button"
+                onClick={() => setToonDetails((v) => !v)}
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+              >
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform ${toonDetails ? "rotate-180" : ""}`} />
+                {toonDetails ? "Verberg" : "Voeg"} kilometerstand & opmerkingen {toonDetails ? "" : "toe"}
+              </button>
+              {toonDetails && (
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">Kilometerstand</label>
+                    <Input type="number" placeholder="bijv. 45230" value={kilometerstand} onChange={(e) => setKilometerstand(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-foreground mb-1.5 block">Opmerkingen</label>
+                    <Textarea
+                      placeholder="Eventuele opmerkingen over de staat van het voertuig..."
+                      value={opmerkingen} onChange={(e) => setOpmerkingen(e.target.value)} rows={2}
+                    />
+                  </div>
+                </div>
+              )}
+
               <p className="text-[11px] text-muted-foreground text-center">
                 Door te ondertekenen gaat u akkoord met bovenstaande verklaring
               </p>
-              <Button className="w-full" disabled={!signature || signMutation.isPending} onClick={() => signMutation.mutate()}>
+              <Button className="w-full" disabled={!signature || signMutation.isPending || (schadeMelden && !schadeBeschrijving.trim())} onClick={() => signMutation.mutate()}>
                 {signMutation.isPending ? "Opslaan..." : "Bevestig overdracht"}
               </Button>
             </div>
