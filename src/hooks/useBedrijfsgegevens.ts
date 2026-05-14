@@ -12,11 +12,13 @@ export interface Bedrijfsgegevens {
   telefoon: string;
   email: string;
   standaard_handtekening: string | null;
+  overdracht_kopie_email: string;
 }
 
 const empty: Bedrijfsgegevens = {
   bedrijfsnaam: "", kvk_nummer: "", btw_nummer: "", adres: "",
   postcode: "", plaats: "", telefoon: "", email: "", standaard_handtekening: null,
+  overdracht_kopie_email: "",
 };
 
 export function useBedrijfsgegevens() {
@@ -29,7 +31,7 @@ export function useBedrijfsgegevens() {
     queryFn: async (): Promise<Bedrijfsgegevens> => {
       const { data, error } = await supabase
         .from("organisaties")
-        .select("naam, kvk_nummer, btw_nummer, adres, postcode, plaats, telefoon, email, standaard_handtekening")
+        .select("naam, kvk_nummer, btw_nummer, adres, postcode, plaats, telefoon, email, standaard_handtekening, overdracht_kopie_email")
         .eq("id", organisatieId!)
         .maybeSingle();
       if (error) throw error;
@@ -43,6 +45,7 @@ export function useBedrijfsgegevens() {
         telefoon: data?.telefoon ?? "",
         email: data?.email ?? "",
         standaard_handtekening: (data as any)?.standaard_handtekening ?? null,
+        overdracht_kopie_email: (data as any)?.overdracht_kopie_email ?? "",
       };
     },
   });
@@ -62,6 +65,7 @@ export function useBedrijfsgegevens() {
           telefoon: b.telefoon || null,
           email: b.email || null,
           standaard_handtekening: b.standaard_handtekening || null,
+          overdracht_kopie_email: b.overdracht_kopie_email || null,
         })
         .eq("id", organisatieId);
       if (error) throw error;
