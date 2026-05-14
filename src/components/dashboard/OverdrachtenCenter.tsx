@@ -455,8 +455,8 @@ export function OverdrachtenCenter() {
 
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">Handtekening klant</label>
-                    <div className="w-full overflow-hidden rounded-lg border border-border">
-                      <SignaturePad onSignatureChange={setSignature} />
+                    <div className="w-full overflow-hidden">
+                      <SignaturePad onSignatureChange={setSignature} width={320} height={150} />
                     </div>
                   </div>
                 </div>
