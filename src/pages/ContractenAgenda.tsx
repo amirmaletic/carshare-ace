@@ -9,8 +9,19 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useContracts, type ContractWithInvoices } from "@/hooks/useContracts";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 type Mode = "alle" | "vandaag" | "komend" | "archief";
+
+interface AgendaItem {
+  id: string;
+  bron: "contract" | "reservering";
+  titel: string;
+  subtitel: string;
+  prijsLabel?: string;
+  link: string;
+}
 
 function daysBetween(a: string, b: string) {
   return Math.round((new Date(b).getTime() - new Date(a).getTime()) / 86400000);
@@ -31,12 +42,48 @@ function isoDate(d: Date) {
 
 interface DagItem {
   datum: string;
-  starts: ContractWithInvoices[];
-  eindes: ContractWithInvoices[];
+  starts: AgendaItem[];
+  eindes: AgendaItem[];
+}
+
+function AgendaRow({ item }: { item: AgendaItem }) {
+  return (
+    <li className="rounded-lg border bg-card p-3 text-sm">
+      <Link to={item.link} className="block">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="font-medium truncate flex items-center gap-1.5">
+              {item.titel}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
+                {item.bron === "contract" ? "Contract" : "Reservering"}
+              </Badge>
+            </p>
+            <p className="text-xs text-muted-foreground truncate">{item.subtitel}</p>
+          </div>
+          {item.prijsLabel && (
+            <Badge variant="outline" className="text-xs whitespace-nowrap">
+              {item.prijsLabel}
+            </Badge>
+          )}
+        </div>
+      </Link>
+    </li>
+  );
 }
 
 export default function ContractenAgenda() {
   const { data: contracts = [], isLoading } = useContracts();
+  const { data: reserveringen = [], isLoading: resLoading } = useQuery({
+    queryKey: ["reserveringen-agenda"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("reserveringen")
+        .select("id, start_datum, eind_datum, status, totaalprijs, dagprijs, klanten(voornaam, achternaam), voertuigen(merk, model, kenteken)")
+        .order("start_datum", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
   const [mode, setMode] = useState<Mode>("alle");
   const [openDagen, setOpenDagen] = useState<Record<string, boolean>>({});
 
@@ -60,17 +107,49 @@ export default function ContractenAgenda() {
       return diff < 0;
     };
 
+    const addStart = (key: string, item: AgendaItem) => {
+      if (!map.has(key)) map.set(key, { datum: key, starts: [], eindes: [] });
+      map.get(key)!.starts.push(item);
+    };
+    const addEinde = (key: string, item: AgendaItem) => {
+      if (!map.has(key)) map.set(key, { datum: key, starts: [], eindes: [] });
+      map.get(key)!.eindes.push(item);
+    };
+
     for (const c of contracts) {
+      const item: AgendaItem = {
+        id: `c-${c.id}`,
+        bron: "contract",
+        titel: c.klant_naam,
+        subtitel: `${c.contract_nummer} · ${c.type}`,
+        prijsLabel: `€${Number(c.maandprijs).toFixed(0)}/mnd`,
+        link: "/contracten",
+      };
       if (inRange(c.start_datum)) {
-        const key = c.start_datum;
-        if (!map.has(key)) map.set(key, { datum: key, starts: [], eindes: [] });
-        map.get(key)!.starts.push(c);
+        addStart(c.start_datum, item);
       }
       if (inRange(c.eind_datum)) {
-        const key = c.eind_datum;
-        if (!map.has(key)) map.set(key, { datum: key, starts: [], eindes: [] });
-        map.get(key)!.eindes.push(c);
+        addEinde(c.eind_datum, item);
       }
+    }
+
+    for (const r of reserveringen as any[]) {
+      const klantNaam = r.klanten
+        ? `${r.klanten.voornaam ?? ""} ${r.klanten.achternaam ?? ""}`.trim() || "Onbekende klant"
+        : "Onbekende klant";
+      const voertuig = r.voertuigen
+        ? `${r.voertuigen.merk ?? ""} ${r.voertuigen.model ?? ""} · ${r.voertuigen.kenteken ?? ""}`.trim()
+        : "Voertuig";
+      const item: AgendaItem = {
+        id: `r-${r.id}`,
+        bron: "reservering",
+        titel: klantNaam,
+        subtitel: `Reservering · ${voertuig} · ${r.status}`,
+        prijsLabel: r.totaalprijs ? `€${Number(r.totaalprijs).toFixed(0)}` : undefined,
+        link: "/reserveringen",
+      };
+      if (inRange(r.start_datum)) addStart(r.start_datum, item);
+      if (inRange(r.eind_datum)) addEinde(r.eind_datum, item);
     }
 
     const arr = Array.from(map.values());
@@ -80,7 +159,7 @@ export default function ContractenAgenda() {
         : a.datum.localeCompare(b.datum),
     );
     return arr;
-  }, [contracts, mode, today]);
+  }, [contracts, reserveringen, mode, today]);
 
   const totalStarts = dagen.reduce((s, d) => s + d.starts.length, 0);
   const totalEindes = dagen.reduce((s, d) => s + d.eindes.length, 0);
@@ -206,22 +285,8 @@ export default function ContractenAgenda() {
                           <p className="text-sm text-muted-foreground italic">Geen</p>
                         ) : (
                           <ul className="space-y-2">
-                            {dag.starts.map((c) => (
-                              <li key={`s-${c.id}`} className="rounded-lg border bg-card p-3 text-sm">
-                                <Link to="/contracten" className="block">
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div className="min-w-0">
-                                      <p className="font-medium truncate">{c.klant_naam}</p>
-                                      <p className="text-xs text-muted-foreground truncate">
-                                        {c.contract_nummer} · {c.type}
-                                      </p>
-                                    </div>
-                                    <Badge variant="outline" className="text-xs whitespace-nowrap">
-                                      €{Number(c.maandprijs).toFixed(0)}/mnd
-                                    </Badge>
-                                  </div>
-                                </Link>
-                              </li>
+                            {dag.starts.map((it) => (
+                              <AgendaRow key={`s-${it.id}`} item={it} />
                             ))}
                           </ul>
                         )}
@@ -235,22 +300,8 @@ export default function ContractenAgenda() {
                           <p className="text-sm text-muted-foreground italic">Geen</p>
                         ) : (
                           <ul className="space-y-2">
-                            {dag.eindes.map((c) => (
-                              <li key={`e-${c.id}`} className="rounded-lg border bg-card p-3 text-sm">
-                                <Link to="/contracten" className="block">
-                                  <div className="flex items-start justify-between gap-2">
-                                    <div className="min-w-0">
-                                      <p className="font-medium truncate">{c.klant_naam}</p>
-                                      <p className="text-xs text-muted-foreground truncate">
-                                        {c.contract_nummer} · {c.type}
-                                      </p>
-                                    </div>
-                                    <Badge variant="outline" className="text-xs whitespace-nowrap">
-                                      €{Number(c.maandprijs).toFixed(0)}/mnd
-                                    </Badge>
-                                  </div>
-                                </Link>
-                              </li>
+                            {dag.eindes.map((it) => (
+                              <AgendaRow key={`e-${it.id}`} item={it} />
                             ))}
                           </ul>
                         )}
