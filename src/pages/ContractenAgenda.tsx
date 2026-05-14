@@ -85,9 +85,9 @@ function berekenVerlengingskans(
     redenen.push("Stipt betaalgedrag");
   }
 
-  if (contract.status === "opgezegd" || contract.status === "geannuleerd") {
+  if (contract.status === "verlopen") {
     kans = Math.min(kans, 10);
-    redenen.push("Reeds opgezegd");
+    redenen.push("Reeds verlopen");
   }
 
   kans = Math.max(5, Math.min(95, kans));
