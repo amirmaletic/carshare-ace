@@ -23,6 +23,7 @@ import {
   ChevronDown,
   Send,
   Sparkles,
+  CalendarDays,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -70,6 +71,7 @@ const navSections: NavSection[] = [
     icon: FileText,
     items: [
       { icon: FileText, label: "Contracten", path: "/contracten" },
+      { icon: CalendarDays, label: "Contracten agenda", path: "/contracten/agenda" },
       { icon: UserPlus, label: "Klanten", path: "/klanten" },
       { icon: IdCard, label: "Rijbewijzen", path: "/rijbewijzen" },
     ],
