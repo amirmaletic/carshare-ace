@@ -208,6 +208,17 @@ export function OverdrachtenCenter() {
         .eq("id", selectedOverdracht.id);
       if (error) throw error;
 
+      // Haal contractgegevens op om mee te sturen in de e-mail
+      let contractData: any = null;
+      if (selectedOverdracht.contract_id) {
+        const { data: c } = await supabase
+          .from("contracts")
+          .select("contract_nummer, type, start_datum, eind_datum, maandprijs, borg, km_per_jaar, inclusief, klant_adres, klant_telefoon, bedrijf, bedrijf_adres, kvk_nummer, boeteclausule, notities")
+          .eq("id", selectedOverdracht.contract_id)
+          .maybeSingle();
+        contractData = c;
+      }
+
       // Bouw template-data 1x op
       const templateData = {
         klant_naam: selectedOverdracht.klant_naam,
@@ -219,6 +230,7 @@ export function OverdrachtenCenter() {
         opmerkingen: samengevoegdeOpmerkingen,
         bevestiging: getConfirmationText(selectedOverdracht),
         handtekening: signature,
+        contract: contractData,
       };
 
       // 1) Kopie naar klant

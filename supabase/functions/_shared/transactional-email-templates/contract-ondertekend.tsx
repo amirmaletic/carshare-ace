@@ -16,12 +16,38 @@ interface Props {
   opmerkingen?: string | null
   bevestiging?: string
   handtekening?: string
+  contract?: {
+    contract_nummer?: string
+    type?: string
+    start_datum?: string
+    eind_datum?: string
+    maandprijs?: number | null
+    borg?: number | null
+    km_per_jaar?: number | null
+    inclusief?: string[]
+    klant_adres?: string | null
+    klant_telefoon?: string | null
+    bedrijf?: string | null
+    bedrijf_adres?: string | null
+    kvk_nummer?: string | null
+    boeteclausule?: string | null
+    notities?: string | null
+  } | null
 }
 
 const ContractOndertekendEmail = ({
-  klant_naam, voertuig_naam, voertuig_kenteken, type, datum, kilometerstand, opmerkingen, bevestiging, handtekening,
+  klant_naam, voertuig_naam, voertuig_kenteken, type, datum, kilometerstand, opmerkingen, bevestiging, handtekening, contract,
 }: Props) => {
   const titel = type === 'terugbrengen' ? 'Bevestiging terugbrengen voertuig' : 'Bevestiging ophalen voertuig'
+  const fmtEur = (n?: number | null) =>
+    typeof n === 'number' ? `€ ${n.toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : null
+  const fmtDatum = (d?: string) => {
+    if (!d) return null
+    try {
+      const [y, m, day] = d.split('-')
+      return `${parseInt(day)}-${parseInt(m)}-${y}`
+    } catch { return d }
+  }
   return (
     <Html lang="nl" dir="ltr">
       <Head />
@@ -41,6 +67,27 @@ const ContractOndertekendEmail = ({
             {kilometerstand ? <Text style={infoItem}><strong>Kilometerstand:</strong> {kilometerstand} km</Text> : null}
             {opmerkingen ? <Text style={infoItem}><strong>Opmerkingen:</strong> {opmerkingen}</Text> : null}
           </Section>
+          {contract ? (
+            <Section style={contractBox}>
+              <Text style={contractTitle}>Contractgegevens</Text>
+              {contract.contract_nummer ? <Text style={infoItem}><strong>Contractnummer:</strong> {contract.contract_nummer}</Text> : null}
+              {contract.type ? <Text style={infoItem}><strong>Type:</strong> {contract.type}</Text> : null}
+              {contract.start_datum ? <Text style={infoItem}><strong>Startdatum:</strong> {fmtDatum(contract.start_datum)}</Text> : null}
+              {contract.eind_datum ? <Text style={infoItem}><strong>Einddatum:</strong> {fmtDatum(contract.eind_datum)}</Text> : null}
+              {contract.maandprijs ? <Text style={infoItem}><strong>Maandprijs:</strong> {fmtEur(contract.maandprijs)}</Text> : null}
+              {contract.borg ? <Text style={infoItem}><strong>Borg:</strong> {fmtEur(contract.borg)}</Text> : null}
+              {contract.km_per_jaar ? <Text style={infoItem}><strong>Kilometers per jaar:</strong> {contract.km_per_jaar.toLocaleString('nl-NL')} km</Text> : null}
+              {contract.inclusief && contract.inclusief.length > 0 ? (
+                <Text style={infoItem}><strong>Inclusief:</strong> {contract.inclusief.join(', ')}</Text>
+              ) : null}
+              {contract.klant_adres ? <Text style={infoItem}><strong>Adres klant:</strong> {contract.klant_adres}</Text> : null}
+              {contract.klant_telefoon ? <Text style={infoItem}><strong>Telefoon klant:</strong> {contract.klant_telefoon}</Text> : null}
+              {contract.bedrijf ? <Text style={infoItem}><strong>Verhuurder:</strong> {contract.bedrijf}{contract.kvk_nummer ? ` (KvK ${contract.kvk_nummer})` : ''}</Text> : null}
+              {contract.bedrijf_adres ? <Text style={infoItem}><strong>Adres verhuurder:</strong> {contract.bedrijf_adres}</Text> : null}
+              {contract.boeteclausule ? <Text style={infoItem}><strong>Boeteclausule:</strong> {contract.boeteclausule}</Text> : null}
+              {contract.notities ? <Text style={infoItem}><strong>Notities:</strong> {contract.notities}</Text> : null}
+            </Section>
+          ) : null}
           {bevestiging ? (
             <Section style={quoteBox}>
               <Text style={quote}>&ldquo;{bevestiging}&rdquo;</Text>
@@ -86,6 +133,8 @@ const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: 'hsl(215, 25%
 const text = { fontSize: '14px', color: 'hsl(215, 14%, 30%)', lineHeight: '1.6', margin: '0 0 16px' }
 const infoBox = { background: 'hsl(215, 100%, 97%)', border: '1px solid hsl(215, 90%, 90%)', borderRadius: '10px', padding: '16px 18px', margin: '20px 0' }
 const infoItem = { fontSize: '13px', color: 'hsl(215, 14%, 30%)', margin: '0 0 6px', lineHeight: '1.5' }
+const contractBox = { background: '#FAFAFA', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '16px 18px', margin: '20px 0' }
+const contractTitle = { fontSize: '14px', fontWeight: 'bold' as const, color: 'hsl(215, 25%, 15%)', margin: '0 0 10px' }
 const quoteBox = { background: '#F8FAFC', borderLeft: '3px solid #3B82F6', padding: '12px 16px', margin: '16px 0', borderRadius: '4px' }
 const quote = { fontSize: '13px', color: '#334155', fontStyle: 'italic' as const, margin: 0, lineHeight: '1.6' }
 const sigBox = { margin: '20px 0', padding: '14px', border: '1px solid #E2E8F0', borderRadius: '10px', background: '#fff' }
