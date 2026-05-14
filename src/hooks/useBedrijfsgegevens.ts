@@ -11,11 +11,12 @@ export interface Bedrijfsgegevens {
   plaats: string;
   telefoon: string;
   email: string;
+  standaard_handtekening: string | null;
 }
 
 const empty: Bedrijfsgegevens = {
   bedrijfsnaam: "", kvk_nummer: "", btw_nummer: "", adres: "",
-  postcode: "", plaats: "", telefoon: "", email: "",
+  postcode: "", plaats: "", telefoon: "", email: "", standaard_handtekening: null,
 };
 
 export function useBedrijfsgegevens() {
@@ -28,7 +29,7 @@ export function useBedrijfsgegevens() {
     queryFn: async (): Promise<Bedrijfsgegevens> => {
       const { data, error } = await supabase
         .from("organisaties")
-        .select("naam, kvk_nummer, btw_nummer, adres, postcode, plaats, telefoon, email")
+        .select("naam, kvk_nummer, btw_nummer, adres, postcode, plaats, telefoon, email, standaard_handtekening")
         .eq("id", organisatieId!)
         .maybeSingle();
       if (error) throw error;
@@ -41,6 +42,7 @@ export function useBedrijfsgegevens() {
         plaats: data?.plaats ?? "",
         telefoon: data?.telefoon ?? "",
         email: data?.email ?? "",
+        standaard_handtekening: (data as any)?.standaard_handtekening ?? null,
       };
     },
   });
@@ -59,6 +61,7 @@ export function useBedrijfsgegevens() {
           plaats: b.plaats || null,
           telefoon: b.telefoon || null,
           email: b.email || null,
+          standaard_handtekening: b.standaard_handtekening || null,
         })
         .eq("id", organisatieId);
       if (error) throw error;
