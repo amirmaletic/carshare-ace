@@ -22,6 +22,8 @@ import PortaalTab from "@/components/settings/PortaalTab";
 import IntegratiesTab from "@/components/settings/IntegratiesTab";
 import ApiWebhooksTab from "@/components/settings/ApiWebhooksTab";
 import EmailTemplatesTab from "@/components/settings/EmailTemplatesTab";
+import { SignaturePad } from "@/components/SignaturePad";
+import { Eraser } from "lucide-react";
 
 type TabDef = { value: string; label: string; icon: any; description: string; group: string };
 const tabs: TabDef[] = [
@@ -227,6 +229,34 @@ export default function SettingsPage() {
                   <Label htmlFor="bedrijf-email">E-mail</Label>
                   <Input id="bedrijf-email" type="email" value={bedrijf.email} onChange={(e) => setBedrijf({ ...bedrijf, email: e.target.value })} placeholder="info@bedrijf.nl" />
                 </div>
+              </div>
+              <Separator />
+              <div className="space-y-3">
+                <div>
+                  <Label>Standaard bedrijfshandtekening</Label>
+                  <p className="text-xs text-muted-foreground">Wordt automatisch ingevuld als verhuurder-handtekening op overdrachten en contracten.</p>
+                </div>
+                {bedrijf.standaard_handtekening ? (
+                  <div className="space-y-2">
+                    <div className="inline-block rounded-xl border bg-muted/30 p-3">
+                      <img src={bedrijf.standaard_handtekening} alt="Bedrijfshandtekening" className="h-24 object-contain" />
+                    </div>
+                    <div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setBedrijf({ ...bedrijf, standaard_handtekening: null })}
+                        className="text-muted-foreground"
+                        disabled={!isBeheerder}
+                      >
+                        <Eraser className="w-4 h-4 mr-1" /> Verwijderen en opnieuw tekenen
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <SignaturePad onSignatureChange={(d) => setBedrijf({ ...bedrijf, standaard_handtekening: d })} />
+                )}
               </div>
               <div className="flex justify-end pt-2">
                 <Button onClick={handleSaveBedrijf} disabled={!isBeheerder || saveBedrijf.isPending} className="gap-2">
