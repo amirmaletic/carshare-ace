@@ -60,19 +60,69 @@ Deno.serve(async (req) => {
     const ophaalPunten: DamagePoint[] = (ophaal?.schade_punten as DamagePoint[]) ?? [];
     const terugPunten: DamagePoint[] = (terug.schade_punten as DamagePoint[]) ?? [];
 
+    // Verzamel volledige schade-historie van het voertuig (alles vóór deze terugmelding)
+    const [prevTerugRes, allOverRes, schadeRapRes] = await Promise.all([
+      supabase
+        .from("terugmeldingen")
+        .select("id, datum, schade_punten")
+        .eq("voertuig_id", terug.voertuig_id)
+        .neq("id", terug.id)
+        .lte("datum", terug.datum)
+        .order("datum", { ascending: false })
+        .limit(10),
+      supabase
+        .from("overdrachten")
+        .select("id, type, datum, schade_punten")
+        .eq("voertuig_id", terug.voertuig_id)
+        .lte("datum", terug.datum)
+        .order("datum", { ascending: false })
+        .limit(10),
+      supabase
+        .from("schade_rapporten")
+        .select("id, datum, omschrijving, schade_punten, ernst")
+        .eq("voertuig_id", terug.voertuig_id)
+        .lte("datum", terug.datum)
+        .order("datum", { ascending: false })
+        .limit(20),
+    ]);
+
+    type Hist = { bron: string; datum: string; punten: DamagePoint[] };
+    const historie: Hist[] = [];
+    (allOverRes.data ?? []).forEach((o: any) => {
+      const pts = Array.isArray(o.schade_punten) ? o.schade_punten : [];
+      if (pts.length) historie.push({ bron: `overdracht-${o.type}`, datum: o.datum, punten: pts });
+    });
+    (prevTerugRes.data ?? []).forEach((t: any) => {
+      const pts = Array.isArray(t.schade_punten) ? t.schade_punten : [];
+      if (pts.length) historie.push({ bron: "vorige-terugmelding", datum: t.datum, punten: pts });
+    });
+    (schadeRapRes.data ?? []).forEach((s: any) => {
+      const pts = Array.isArray(s.schade_punten) ? s.schade_punten : [];
+      if (pts.length) historie.push({ bron: `rapport: ${s.omschrijving ?? ""}`, datum: s.datum, punten: pts });
+    });
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) return json({ error: "LOVABLE_API_KEY ontbreekt" }, 500);
 
     // Bouw multimodale prompt
     const userParts: any[] = [
-      { type: "text", text: buildPrompt(ophaalPunten, terugPunten) },
+      { type: "text", text: buildPrompt(ophaalPunten, terugPunten, historie) },
     ];
 
-    // Voeg ophaal-foto's toe (gelabeld)
+    // Voeg ophaal-foto's toe (gelabeld) — referentie voor begin verhuur
     for (const p of ophaalPunten) {
       for (const url of p.fotos ?? []) {
         userParts.push({ type: "text", text: `[OPHAAL punt "${p.label}" @ ${Math.round(p.x)},${Math.round(p.y)}]` });
         userParts.push({ type: "image_url", image_url: { url } });
+      }
+    }
+    // Voeg historische schade-foto's toe (eerder bekend)
+    for (const h of historie) {
+      for (const p of h.punten) {
+        for (const url of (p.fotos ?? []).slice(0, 2)) {
+          userParts.push({ type: "text", text: `[HISTORIE ${h.bron} ${h.datum} punt "${p.label}" @ ${Math.round(p.x)},${Math.round(p.y)}]` });
+          userParts.push({ type: "image_url", image_url: { url } });
+        }
       }
     }
     for (const p of terugPunten) {
@@ -91,7 +141,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-2.5-pro",
         messages: [
-          { role: "system", content: "Je bent een expert voertuigschade-inspecteur. Je vergelijkt schade voor en na verhuur en bepaalt welke schade NIEUW is. Wees voorzichtig en eerlijk: alleen markeren als nieuw als je het echt ziet of als de positie significant verschilt. Negeer verschillen in licht, vuil of cameraperspectief.", },
+          { role: "system", content: "Je bent een senior voertuigschade-expert. Je vergelijkt de huidige inlever-inspectie met (1) de meest recente ophaal-inspectie en (2) de volledige schade-historie van het voertuig. Bepaal per inlever-punt of het NIEUW is of REEDS BESTAAND (zat al op een eerdere overdracht, terugmelding of schaderapport). Wees streng maar eerlijk: alleen NIEUW als positie/ernst duidelijk afwijkt of als er geen historisch equivalent is. Negeer licht-, vuil-, en perspectief-verschillen. Geef voor elk punt een korte uitleg met verwijzing naar de bron (bv. 'al gezien op overdracht 12-03').", },
           { role: "user", content: userParts },
         ],
         tools: [{
@@ -124,11 +174,14 @@ Deno.serve(async (req) => {
                     type: "object",
                     properties: {
                       terugmeld_punt_id: { type: "string" },
-                      uitleg: { type: "string" },
+                      uitleg: { type: "string", description: "Verwijs naar bron en datum" },
+                      bron: { type: "string", description: "Bijv 'overdracht-ophalen 2024-03-12' of 'schaderapport'" },
                     },
                     required: ["uitleg"],
                   },
                 },
+                geschatte_herstelkosten: { type: "number", description: "Indicatie totale herstelkosten in euro voor alle nieuwe schade" },
+                aanbeveling: { type: "string", description: "Korte actie-aanbeveling: borg inhouden, schaderapport opstellen, etc." },
               },
               required: ["samenvatting", "nieuwe_schades", "reeds_bestaande"],
             },
