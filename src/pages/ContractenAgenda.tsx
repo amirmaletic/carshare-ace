@@ -46,6 +46,31 @@ interface DagItem {
   eindes: AgendaItem[];
 }
 
+function AgendaRow({ item }: { item: AgendaItem }) {
+  return (
+    <li className="rounded-lg border bg-card p-3 text-sm">
+      <Link to={item.link} className="block">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="font-medium truncate flex items-center gap-1.5">
+              {item.titel}
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 font-normal">
+                {item.bron === "contract" ? "Contract" : "Reservering"}
+              </Badge>
+            </p>
+            <p className="text-xs text-muted-foreground truncate">{item.subtitel}</p>
+          </div>
+          {item.prijsLabel && (
+            <Badge variant="outline" className="text-xs whitespace-nowrap">
+              {item.prijsLabel}
+            </Badge>
+          )}
+        </div>
+      </Link>
+    </li>
+  );
+}
+
 export default function ContractenAgenda() {
   const { data: contracts = [], isLoading } = useContracts();
   const { data: reserveringen = [], isLoading: resLoading } = useQuery({
