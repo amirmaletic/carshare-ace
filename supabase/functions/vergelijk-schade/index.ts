@@ -234,19 +234,30 @@ Deno.serve(async (req) => {
   }
 });
 
-function buildPrompt(ophaal: DamagePoint[], terug: DamagePoint[]): string {
+function buildPrompt(ophaal: DamagePoint[], terug: DamagePoint[], historie: { bron: string; datum: string; punten: DamagePoint[] }[] = []): string {
   const fmt = (p: DamagePoint, prefix: string) =>
     `- ${prefix} #${p.id.slice(0, 6)} @ (${Math.round(p.x)}%, ${Math.round(p.y)}%) ernst=${p.ernst}, beschrijving: "${p.label}", foto's: ${p.fotos?.length ?? 0}`;
   return [
-    "Vergelijk de schade-inspectie van OPHALEN met die van INLEVEREN. Bepaal welke schades NIEUW zijn ontstaan tijdens deze verhuurperiode.",
+    "Vergelijk de INLEVER-inspectie met de OPHAAL-inspectie EN de volledige schade-historie van het voertuig. Bepaal per inlever-punt of het NIEUW is in deze verhuurperiode of REEDS BESTAAND (al ergens eerder vastgelegd).",
     "",
     "OPHALEN-punten (begin van verhuur):",
     ophaal.length === 0 ? "(geen schade gemarkeerd bij ophalen)" : ophaal.map(p => fmt(p, "ophaal")).join("\n"),
     "",
+    "HISTORISCHE schade-punten (eerdere overdrachten, terugmeldingen, rapporten):",
+    historie.length === 0
+      ? "(geen historie beschikbaar)"
+      : historie
+          .map((h) => `[${h.bron} @ ${h.datum}]\n` + h.punten.map((p) => fmt(p, "hist")).join("\n"))
+          .join("\n\n"),
+    "",
     "INLEVEREN-punten (eind van verhuur):",
     terug.length === 0 ? "(geen schade gemarkeerd bij inleveren)" : terug.map(p => fmt(p, "inlever")).join("\n"),
     "",
-    "Gebruik de coördinaten en de foto's hieronder om te bepalen of een inlever-punt overeenkomt met een ophaal-punt (= reeds bestaand) of nieuw is. Als een inlever-punt op vergelijkbare positie ligt (binnen ~10% afwijking) als een ophaal-punt en de foto's tonen vergelijkbare schade, beschouw het als reeds bestaand.",
+    "Match-regels:",
+    "1. Een inlever-punt = REEDS BESTAAND als positie binnen ~10% ligt van een ophaal- óf historisch punt en de schade visueel/qua type overeenkomt.",
+    "2. NIEUW als geen enkel historisch of ophaal-punt overeenkomt, of als ernst aantoonbaar zwaarder is geworden (bv. licht→zwaar = nieuw onderdeel meenemen).",
+    "3. Geef bij REEDS BESTAAND altijd de bron + datum aan in 'bron' en 'uitleg'.",
+    "4. Schat realistische herstelkosten in EUR per nieuwe schade-categorie (kras licht ~150, deuk middel ~450, paneel zwaar ~900+).",
     "Roep daarna de tool rapporteer_vergelijking aan met je conclusie.",
   ].join("\n");
 }
