@@ -1,0 +1,1 @@
+ALTER TABLE public.organisaties ADD COLUMN IF NOT EXISTS overdracht_kopie_email text;
