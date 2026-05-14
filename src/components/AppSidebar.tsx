@@ -70,6 +70,7 @@ const navSections: NavSection[] = [
     icon: FileText,
     items: [
       { icon: FileText, label: "Contracten", path: "/contracten" },
+      { icon: CalendarIcon, label: "Contracten agenda", path: "/contracten/agenda" },
       { icon: UserPlus, label: "Klanten", path: "/klanten" },
       { icon: IdCard, label: "Rijbewijzen", path: "/rijbewijzen" },
     ],
