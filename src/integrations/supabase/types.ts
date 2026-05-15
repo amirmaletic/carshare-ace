@@ -2751,6 +2751,16 @@ export type Database = {
           status: Database["public"]["Enums"]["rijbewijs_status"]
         }[]
       }
+      get_uitnodiging_info: {
+        Args: { _token: string }
+        Returns: {
+          email: string
+          expires_at: string
+          organisatie_naam: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+        }[]
+      }
       get_user_organisatie_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
