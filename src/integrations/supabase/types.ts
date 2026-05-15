@@ -2855,7 +2855,11 @@ export type Database = {
         }[]
       }
       get_publiek_aanbod: {
-        Args: { _organisatie_id: string }
+        Args: {
+          _eind_datum?: string
+          _organisatie_id: string
+          _start_datum?: string
+        }
         Returns: {
           bouwjaar: number
           brandstof: string
