@@ -1,71 +1,56 @@
 ## Doel
 
-Aanvragen worden niet langer omgezet naar een losse reservering, maar naar een volwaardig **concept-contract**. Daarnaast komt er een lichtgewicht "planning-blokje" zodat je in de Gantt naast contracten ook eigen blokken (eigen gebruik, gereserveerd voor X, blokkade) kunt plaatsen met eigen titel en kleur.
+Een conceptcontract krijgt een duidelijke "compleetheid"-status met checklist. Beheerder kan met één klik een aanvulverzoek mailen naar de klant; klant vult zelf NAW, geboortedatum en rijbewijs aan via een unieke link. De bestaande "Onderteken"-knop blijft de definitieve overgang naar `actief`, maar wordt pas klikbaar zodra de checklist 100% is.
 
----
+## Checklist (definitie "compleet")
 
-## Wijzigingen
+1. **Klantgegevens**: `klant_naam`, `klant_email`, `klant_telefoon`, en op de gekoppelde `klanten`-rij ook `adres`, `postcode`, `woonplaats`, `geboortedatum`.
+2. **Rijbewijs op orde**: gekoppelde klant heeft `rijbewijs_nummer`, `rijbewijs_geldig_tot` in de toekomst, en (indien aanwezig) `rijbewijs_geverifieerd = true`.
+3. **Voertuig, prijs & periode**: `voertuig_id` gevuld, `start_datum` & `eind_datum` geldig, `dagprijs > 0` (verhuur) of `maandprijs > 0` (lease).
 
-### 1. Database
+Ontbrekende velden worden zichtbaar als checklist in het contract-detail.
 
-**Nieuwe RPC `bevestig_aanvraag_naar_contract`**
-- Input: `_aanvraag_id`, `_voertuig_id`, `_type` (verhuur of lease), optioneel `_dagprijs` of `_maandprijs`.
-- Logica:
-  - Klant ophalen of aanmaken (zoals `bevestig_aanvraag` nu doet).
-  - Contractnummer genereren (`VC-YYYY-###` voor verhuur, `LC-YYYY-###` voor lease).
-  - Periode: `gewenste_periode_start` t/m `gewenste_periode_eind`, fallback vandaag + 7 dagen.
-  - Bedrag: bij verhuur `dagprijs * dagen` als maandprijs-veld of dagprijs in notities, bij lease `maandprijs` direct.
-  - Insert in `contracts` met `status = 'concept'`. De bestaande trigger `auto_create_overdrachten_for_contract` maakt automatisch ophaal- en terugbreng-overdrachten.
-  - Aanvraag op `omgezet`, koppel `gekoppeld_voertuig_id`.
-  - Activiteiten-log entry.
-- Returns: `contract_id`.
+## Database
 
-**Nieuwe tabel `planning_blokken`**
-- Velden: `voertuig_id` (uuid), `start_datum`, `eind_datum`, `titel`, `kleur` (hex), `notitie`, plus `organisatie_id`, `user_id`, `created_at`.
-- RLS: org-leden mogen aanmaken, lezen, updaten, verwijderen binnen eigen organisatie (zelfde patroon als `locaties`).
+Nieuwe tabel `contract_aanvul_verzoeken`:
+- `id`, `contract_id`, `organisatie_id`, `klant_email`
+- `token text unique` (32-byte hex via `extensions.gen_random_bytes`)
+- `status` (`open` / `ingevuld` / `verlopen`)
+- `verzonden_op`, `expires_at` (default 14 dagen), `ingevuld_op`
+- RLS: org-leden kunnen lezen/aanmaken voor eigen org; publieke `SELECT` alleen via security-definer RPC `get_aanvul_verzoek(_token)` die contract + ontbrekende velden teruggeeft zonder gevoelige data.
+- Tweede RPC `update_aanvul_verzoek(_token, _payload jsonb)` schrijft naar `klanten` + `contracts` (alleen toegestane kolommen) en zet status op `ingevuld`.
 
-### 2. Frontend: aanvraag-conversie
+Geen automatische statuswijziging op `contracts` — ondertekening blijft de trigger naar `actief`.
 
-**`src/pages/AanvragenPlanning.tsx`**
-- Voeg `Select` toe voor contracttype (verhuur / lease) naast de "Bevestig"-knop.
-- Vervang `supabase.rpc("bevestig_aanvraag", ...)` door `supabase.rpc("bevestig_aanvraag_naar_contract", ...)`.
-- Toast met actie "Open contract" → navigeert naar `/contracts?open={id}`.
-- Invalideer queries: `aanvragen`, `contracts`, `gantt-contracten`.
+## Backend / e-mail
 
-**`src/pages/Contracts.tsx`**
-- Lees `?open=<id>` uit URL en open contract-detail/wizard om aanvulling/ondertekening te faciliteren.
+- Nieuwe transactional template `contract-aanvulverzoek` (React Email): begroeting, lijst van wat ontbreekt (in de mail al concreet benoemd), grote knop naar `https://<app>/contract-aanvullen/<token>`, vervaldatum.
+- Bestaande `send-transactional-email` edge function gebruiken; idempotency-key = `aanvulverzoek-<verzoek_id>`.
+- Verzonden via bestaande `notify.fleeflo.nl`-infra.
 
-### 3. Frontend: planning-blokjes
+## Frontend (beheerder)
 
-**Nieuwe hook `src/hooks/usePlanningBlokken.ts`**
-- TanStack Query CRUD op `planning_blokken` (lijst, add, update, delete).
+In het contract-detail (`src/pages/Contracts.tsx`) bij conceptcontracten:
+- **ChecklistCard** met de drie blokken; per item ✓/✗ en het ontbrekende veld benoemd.
+- Knop **"Stuur aanvulverzoek per mail"** — disabled als checklist al 100%; toont laatst verzonden datum als er een open verzoek is. Bij klik: maak rij in `contract_aanvul_verzoeken`, roep `send-transactional-email` aan, log activiteit.
+- Bestaande knop **"Onderteken & activeer"** wordt disabled met tooltip "Checklist nog niet compleet" zolang niet 100%.
+- Statusbadge "Concept · 4/6 compleet".
 
-**Nieuw component `src/components/planning/PlanningBlokDialog.tsx`**
-- Velden: voertuig (Select), periode (start + eind), titel (Input), kleur (color-picker met 6 voorgestelde kleuren + custom), notitie (Textarea).
+## Frontend (klant, publiek)
 
-**`src/components/VehicleGantt.tsx`**
-- Extra query `gantt-blokken` op `planning_blokken` binnen zichtbare periode.
-- Render blokken met `background: blok.kleur` en label `blok.titel`.
-- Context-menu op een lege cel krijgt extra item "Blokje plaatsen" → opent `PlanningBlokDialog` met voor-ingevulde voertuig/datum.
-- Klik op een blok opent dezelfde dialog in edit-modus (met "Verwijderen"-knop).
+Nieuwe publieke route `/contract-aanvullen/:token` (geen auth, zoals `/boeken`):
+- Haalt verzoek op via RPC. Toont contractnummer + voertuig + verhuurder.
+- Formulier met alleen de velden die nog ontbreken (NAW, geboortedatum, rijbewijsnummer + geldig tot + foto-upload naar bestaande `rijbewijs`-bucket).
+- Submit roept `update_aanvul_verzoek` RPC aan; succespagina "Bedankt, je verhuurder neemt het verder op".
+- Verlopen/al-ingevuld tokens tonen vriendelijke melding.
 
-### 4. Backwards compatibility
+## Activiteiten-log
 
-- Oude `bevestig_aanvraag` blijft bestaan en wordt niet meer aangeroepen vanuit de UI (publieke booking-flow gebruikt een ander pad).
-- Bestaande reserveringen blijven zichtbaar en functioneel; alleen nieuwe aanvragen volgen de contract-flow.
+Via `useLogActiviteit`: `aanvulverzoek_verzonden`, `aanvulverzoek_ingevuld` (entiteit = contract).
 
----
+## Niet in scope
 
-## Technische details
-
-- Contractnummer-functie: SQL `format('VC-%s-%s', extract(year from now()), lpad((select count(*)+1 from contracts where ...)::text, 3, '0'))`. Eenvoudig en uniek-genoeg voor concept; admin kan handmatig aanpassen.
-- `planning_blokken.kleur` standaard `#3B82F6` (brand-primary), opgeslagen als hex string.
-- Geen overlap-validatie op blokken; ze zijn puur visueel en staan los van beschikbaarheid (wel zichtbaar in Gantt zodat planner conflicts ziet).
-
----
-
-## Wat we niet doen (nu)
-
-- Geen automatische factuur bij contract-aanmaak (blijft handmatig in concept-flow).
-- Geen e-mail naar klant bij omzetten (kan later via bestaande contract-mail).
-- Blokjes komen niet in publieke beschikbaarheids-API; alleen intern in Gantt.
+- Geen automatische status-overgang naar `actief` (jouw keuze: alleen ondertekening).
+- Geen SMS-variant.
+- Geen herinneringsmail-cadans (kan later, knop is nu handmatig opnieuw te versturen).
+- Geen wijzigingen aan ondertekenings-/overdrachtsflow zelf.
