@@ -218,8 +218,8 @@ Deno.serve(async (req) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${SERVICE_ROLE}`,
-        apikey: SERVICE_ROLE,
+        Authorization: auth,
+        apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       },
       body: JSON.stringify({
         templateName: 'contract-pdf',
