@@ -236,7 +236,8 @@ Deno.serve(async (req) => {
         'X-Connection-Api-Key': RESEND_API_KEY,
       },
       body: JSON.stringify({
-        from: `${orgNaam} <noreply@notify.fleeflo.nl>`,
+        from: `${orgNaam} <onboarding@resend.dev>`,
+        reply_to: org?.email ? [org.email] : undefined,
         to: [contract.klant_email],
         subject: `Uw huurcontract ${contract.contract_nummer}`,
         html,
