@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTenantPortaal } from "@/hooks/useTenantPortaal";
-import { Car, CalendarRange, FileText, User, LogOut, Menu, LogIn } from "lucide-react";
+import { Car, CalendarRange, FileText, User, LogOut, Menu, LogIn, Home, IdCard } from "lucide-react";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -41,10 +41,12 @@ export function TenantPortaalLayout({ children }: { children: React.ReactNode })
 
   const base = slug ? `/t/${slug}` : "";
   const navItems = [
+    ...(user ? [{ to: `${base}/home`, icon: Home, label: "Overzicht" }] : []),
     { to: `${base}`, icon: Car, label: "Aanbod", end: true },
-    { to: `${base}/reserveringen`, icon: CalendarRange, label: "Mijn reserveringen" },
-    { to: `${base}/facturen`, icon: FileText, label: "Mijn facturen" },
-    { to: `${base}/profiel`, icon: User, label: "Mijn profiel" },
+    { to: `${base}/reserveringen`, icon: CalendarRange, label: "Mijn huur" },
+    { to: `${base}/facturen`, icon: FileText, label: "Facturen" },
+    { to: `${base}/documenten`, icon: IdCard, label: "Documenten" },
+    { to: `${base}/profiel`, icon: User, label: "Profiel" },
   ];
 
   const handleSignOut = async () => {
