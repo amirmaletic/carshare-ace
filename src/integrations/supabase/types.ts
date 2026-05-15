@@ -3009,7 +3009,12 @@ export type Database = {
         | "betaald"
         | "mislukt"
         | "verlopen"
-      contract_status: "actief" | "verlopen" | "opgezegd" | "concept"
+      contract_status:
+        | "actief"
+        | "verlopen"
+        | "opgezegd"
+        | "concept"
+        | "geannuleerd"
       contract_type: "lease" | "verhuur" | "fietslease" | "ev-lease"
       invoice_status:
         | "betaald"
@@ -3165,7 +3170,13 @@ export const Constants = {
         "mislukt",
         "verlopen",
       ],
-      contract_status: ["actief", "verlopen", "opgezegd", "concept"],
+      contract_status: [
+        "actief",
+        "verlopen",
+        "opgezegd",
+        "concept",
+        "geannuleerd",
+      ],
       contract_type: ["lease", "verhuur", "fietslease", "ev-lease"],
       invoice_status: [
         "betaald",
