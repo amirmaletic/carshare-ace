@@ -282,6 +282,9 @@ function ContractDetail({
 
   if (!contract) return null;
   const vehicle = contract.voertuig_id ? voertuigen.find(v => v.id === contract.voertuig_id) : null;
+  const { data: contractKlant } = useContractKlant(contract?.klant_email);
+  const checklist = buildContractChecklist(contract, contractKlant);
+  const isCompleet = checklistComplete(checklist);
 
   const handleCancel = async () => {
     try {
@@ -341,9 +344,26 @@ function ContractDetail({
             {contract.status !== "opgezegd" && contract.status !== "verlopen" && (
               <>
                 {!contract.ondertekend && (
-                  <Button size="sm" variant="default" className="gap-1.5" onClick={handleSign}>
-                    <Shield className="w-3.5 h-3.5" /> Ondertekenen
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span>
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="gap-1.5"
+                            onClick={handleSign}
+                            disabled={!isCompleet}
+                          >
+                            <Shield className="w-3.5 h-3.5" /> Ondertekenen
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      {!isCompleet && (
+                        <TooltipContent>Checklist nog niet compleet</TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
                 <Button size="sm" variant="outline" className="gap-1.5" onClick={() => onEdit(contract)}>
                   <Edit className="w-3.5 h-3.5" /> Bewerken
@@ -356,6 +376,9 @@ function ContractDetail({
           </div>
 
           <div className="space-y-4">
+            {contract.status === "concept" && (
+              <ContractChecklistCard contract={contract} />
+            )}
             {/* Klantgegevens */}
             <div className="p-4 rounded-xl bg-muted/30 border border-border/50 space-y-2">
               <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Klantgegevens</h4>
