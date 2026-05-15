@@ -281,9 +281,10 @@ function ContractDetail({
   const [invoiceFormOpen, setInvoiceFormOpen] = useState(false);
   const [documentOpen, setDocumentOpen] = useState(false);
 
+  const { data: contractKlant } = useContractKlant(contract?.klant_email);
+
   if (!contract) return null;
   const vehicle = contract.voertuig_id ? voertuigen.find(v => v.id === contract.voertuig_id) : null;
-  const { data: contractKlant } = useContractKlant(contract?.klant_email);
   const checklist = buildContractChecklist(contract, contractKlant);
   const isCompleet = checklistComplete(checklist);
 
