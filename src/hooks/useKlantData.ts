@@ -51,16 +51,22 @@ export function useKlantReserveringen() {
         .maybeSingle();
       if (!klant) return [];
 
-      const { data, error } = await supabase
+      const { data: rs, error } = await supabase
         .from("reserveringen")
-        .select(
-          `id, start_datum, eind_datum, dagprijs, totaalprijs, status, notities, created_at, voertuig_id,
-           voertuig:voertuigen(id, merk, model, kenteken, image_url, brandstof, categorie, kleur)`
-        )
+        .select("id, start_datum, eind_datum, dagprijs, totaalprijs, status, notities, created_at, voertuig_id")
         .eq("klant_id", klant.id)
         .order("start_datum", { ascending: false });
       if (error) throw error;
-      return data ?? [];
+      const ids = Array.from(new Set((rs ?? []).map((r) => r.voertuig_id).filter(Boolean)));
+      let voertuigenById: Record<string, any> = {};
+      if (ids.length > 0) {
+        const { data: vs } = await supabase
+          .from("voertuigen")
+          .select("id, merk, model, kenteken, image_url, brandstof, categorie, kleur")
+          .in("id", ids as string[]);
+        voertuigenById = Object.fromEntries((vs ?? []).map((v) => [v.id, v]));
+      }
+      return (rs ?? []).map((r) => ({ ...r, voertuig: voertuigenById[r.voertuig_id as string] ?? null }));
     },
   });
 }
