@@ -505,6 +505,66 @@ export type Database = {
           },
         ]
       }
+      contract_aanvul_verzoeken: {
+        Row: {
+          contract_id: string
+          created_at: string
+          expires_at: string
+          id: string
+          ingevuld_op: string | null
+          ingevuld_payload: Json | null
+          klant_email: string
+          organisatie_id: string
+          status: Database["public"]["Enums"]["aanvul_verzoek_status"]
+          token: string
+          updated_at: string
+          verzonden_op: string
+        }
+        Insert: {
+          contract_id: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ingevuld_op?: string | null
+          ingevuld_payload?: Json | null
+          klant_email: string
+          organisatie_id: string
+          status?: Database["public"]["Enums"]["aanvul_verzoek_status"]
+          token: string
+          updated_at?: string
+          verzonden_op?: string
+        }
+        Update: {
+          contract_id?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          ingevuld_op?: string | null
+          ingevuld_payload?: Json | null
+          klant_email?: string
+          organisatie_id?: string
+          status?: Database["public"]["Enums"]["aanvul_verzoek_status"]
+          token?: string
+          updated_at?: string
+          verzonden_op?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_aanvul_verzoeken_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contract_aanvul_verzoeken_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contracts: {
         Row: {
           bedrijf: string | null
@@ -2721,6 +2781,7 @@ export type Database = {
         Args: { _event: string; _org_id: string; _payload: Json }
         Returns: number
       }
+      get_aanvul_verzoek: { Args: { _token: string }; Returns: Json }
       get_betaal_verzoek: {
         Args: { _token: string }
         Returns: {
@@ -2837,6 +2898,13 @@ export type Database = {
         }
         Returns: string
       }
+      maak_aanvul_verzoek: {
+        Args: { _contract_id: string }
+        Returns: {
+          id: string
+          token: string
+        }[]
+      }
       maak_notificatie: {
         Args: {
           _bericht: string
@@ -2881,6 +2949,10 @@ export type Database = {
         }[]
       }
       revoke_api_key: { Args: { _id: string }; Returns: undefined }
+      submit_aanvul_verzoek: {
+        Args: { _payload: Json; _token: string }
+        Returns: Json
+      }
       touch_api_key: { Args: { _id: string; _ip: string }; Returns: undefined }
       update_rijbewijs_ai_resultaat: {
         Args: {
@@ -2908,6 +2980,7 @@ export type Database = {
       }
     }
     Enums: {
+      aanvul_verzoek_status: "open" | "ingevuld" | "verlopen"
       app_role:
         | "beheerder"
         | "medewerker"
@@ -3061,6 +3134,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      aanvul_verzoek_status: ["open", "ingevuld", "verlopen"],
       app_role: [
         "beheerder",
         "medewerker",
