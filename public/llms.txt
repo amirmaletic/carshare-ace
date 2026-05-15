@@ -1,0 +1,19 @@
+# Fleeflo
+
+> Fleeflo is een Nederlands platform voor autoverhuur en wagenparkbeheer. Beheer voertuigen, contracten, reserveringen, overdrachten, schade en facturatie vanuit één omgeving, met een klantportaal en publieke boekingsmodule.
+
+## Pages
+
+- [Home](/): Overzicht van Fleeflo voor autoverhuurbedrijven en wagenparkbeheerders.
+- [Functionaliteiten](/functionaliteiten): Modules voor vloot, contracten, planning, schade en facturatie.
+- [Prijzen](/prijzen): Abonnementen en proefperiode van 30 dagen.
+- [Over ons](/over-ons): Achtergrond en missie van Fleeflo.
+- [Contact](/contact): Neem contact op met het Fleeflo team.
+- [Boeken](/boeken): Publieke boekingsmodule voor klanten van aangesloten verhuurders.
+- [Klantportaal](/portaal): Self-service omgeving voor huurders met contracten, facturen en rijbewijsstatus.
+- [Inloggen](/auth): Inloggen of account aanmaken voor beheerders en medewerkers.
+
+## Resources
+
+- [Sitemap](/sitemap.xml): Volledige lijst van indexeerbare pagina's.
+- [Robots](/robots.txt): Crawl-instructies voor zoekmachines.
