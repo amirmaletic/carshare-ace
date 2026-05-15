@@ -213,31 +213,50 @@ Deno.serve(async (req) => {
       av_url = avSigned?.signedUrl ?? null
     }
 
-    // Verstuur via Lovable email infra (notify.fleeflo.nl)
-    const sendResp = await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
+    // Verstuur via Resend (connector gateway)
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+    if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY ontbreekt')
+    if (!RESEND_API_KEY) throw new Error('RESEND_API_KEY ontbreekt (Resend connector niet gekoppeld)')
+
+    const fromAddress = `${orgNaam} <noreply@fleeflo.nl>`
+    const replyTo = org?.email || undefined
+    const html = `
+      <div style="font-family:Arial,sans-serif;color:#0f172a;max-width:560px;margin:0 auto;padding:24px">
+        <h2 style="color:#3b82f6;margin:0 0 12px">Uw huurcontract</h2>
+        <p>Beste ${contract.klant_naam ?? 'klant'},</p>
+        <p>In de bijlage vindt u uw huurcontract${contract.contract_nummer ? ` <strong>${contract.contract_nummer}</strong>` : ''} van ${orgNaam}.</p>
+        <p>U kunt het contract ook online bekijken via <a href="${contract_url}" style="color:#3b82f6">deze link</a>.</p>
+        ${av_url ? `<p>Onze algemene voorwaarden vindt u <a href="${av_url}" style="color:#3b82f6">hier</a>.</p>` : ''}
+        <p style="margin-top:24px">Met vriendelijke groet,<br/>${orgNaam}</p>
+      </div>
+    `
+
+    const sendResp = await fetch('https://connector-gateway.lovable.dev/resend/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: auth,
-        apikey: Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        'X-Connection-Api-Key': RESEND_API_KEY,
       },
       body: JSON.stringify({
-        templateName: 'contract-pdf',
-        recipientEmail: contract.klant_email,
-        idempotencyKey: `contract-pdf-${contract.id}-${Date.now()}`,
-        templateData: {
-          klant_naam: contract.klant_naam ?? 'klant',
-          contract_nummer: contract.contract_nummer ?? '',
-          org_naam: orgNaam,
-          contract_url,
-          av_url,
-        },
+        from: fromAddress,
+        to: [contract.klant_email],
+        ...(replyTo ? { reply_to: replyTo } : {}),
+        subject: `Uw huurcontract${contract.contract_nummer ? ` ${contract.contract_nummer}` : ''} - ${orgNaam}`,
+        html,
+        attachments: [
+          {
+            filename: `contract-${contract.contract_nummer ?? contract.id}.pdf`,
+            content: contractPdfBase64,
+          },
+        ],
       }),
     })
     const sendText = await sendResp.text()
     if (!sendResp.ok) {
-      console.error('send-transactional-email failed', sendResp.status, sendText)
-      throw new Error(`E-mail versturen mislukt (${sendResp.status}): ${sendText}`)
+      console.error('Resend failed', sendResp.status, sendText)
+      throw new Error(`Resend [${sendResp.status}]: ${sendText}`)
     }
     let sendRes: any = null
     try { sendRes = JSON.parse(sendText) } catch { sendRes = sendText }
