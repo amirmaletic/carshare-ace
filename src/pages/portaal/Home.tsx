@@ -2,11 +2,13 @@ import { Link, useParams } from "react-router-dom";
 import { format, differenceInDays, parseISO } from "date-fns";
 import { nl } from "date-fns/locale";
 import {
-  Car, CalendarRange, FileText, AlertTriangle, IdCard, ArrowRight, CheckCircle2, Clock,
+  Car, CalendarRange, FileText, AlertTriangle, IdCard, ArrowRight, CheckCircle2, Clock, MapPin,
 } from "lucide-react";
 import {
   useKlantProfiel, useLopendeHuur, useKlantFacturen, useRijbewijsStatus,
 } from "@/hooks/useKlantData";
+import { usePortaalLocaties } from "@/hooks/usePortaalLocaties";
+import { useTenantPortaal } from "@/hooks/useTenantPortaal";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +21,8 @@ export default function PortaalHome() {
   const { lopend, komend, isLoading } = useLopendeHuur();
   const { data: facturen = [] } = useKlantFacturen();
   const { data: rijbewijs } = useRijbewijsStatus();
+  const { tenant } = useTenantPortaal();
+  const { data: locaties = [] } = usePortaalLocaties(tenant?.id);
 
   const openstaand = facturen
     .filter((f: any) => f.status === "openstaand" || f.status === "te_laat" || f.status === "herinnering_verstuurd")
@@ -82,6 +86,27 @@ export default function PortaalHome() {
           <ActionCard to={`${base}/reserveringen`} icon={CalendarRange} titel="Mijn huur" beschrijving="Lopend, komend en historie" />
         </div>
       </div>
+
+      {locaties.length > 0 && (
+        <div>
+          <h2 className="text-sm font-medium text-muted-foreground mb-3">Onze locaties</h2>
+          <Card className="p-4 border-border">
+            <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {locaties.map((l) => (
+                <li
+                  key={l.id}
+                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-muted/40"
+                >
+                  <div className="w-8 h-8 rounded-md bg-primary/10 text-primary flex items-center justify-center flex-shrink-0">
+                    <MapPin className="w-4 h-4" />
+                  </div>
+                  <span className="text-sm font-medium text-foreground truncate">{l.naam}</span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
