@@ -308,6 +308,7 @@ export default function Auth() {
             </div>
           )}
           {!invite && (
+          <>
           <Button
             variant="outline"
             className="w-full gap-2"
@@ -334,6 +335,7 @@ export default function Auth() {
             <span className="text-xs text-muted-foreground">of</span>
             <Separator className="flex-1" />
           </div>
+          </>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
