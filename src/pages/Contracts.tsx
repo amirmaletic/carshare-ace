@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { ContractDocument } from "@/components/ContractDocument";
 import { InvoicePdfButton } from "@/components/InvoicePdfExport";
 import { KilometerTab } from "@/components/KilometerTab";
@@ -40,6 +41,20 @@ export default function Contracts() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editContract, setEditContract] = useState<ContractWithInvoices | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const openId = searchParams.get("open");
+    if (!openId || !contracts.length) return;
+    const found = contracts.find((c) => c.id === openId);
+    if (found) {
+      setSelectedContract(found);
+      setDetailOpen(true);
+      const next = new URLSearchParams(searchParams);
+      next.delete("open");
+      setSearchParams(next, { replace: true });
+    }
+  }, [contracts, searchParams, setSearchParams]);
 
   const activeContracts = contracts.filter((c) => c.status === "actief");
   const totalMonthlyRevenue = activeContracts.reduce((sum, c) => sum + Number(c.maandprijs), 0);
