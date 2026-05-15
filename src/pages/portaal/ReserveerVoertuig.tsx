@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Car, Calendar, Check } from "lucide-react";
-import { differenceInDays, format, isAfter, isBefore, parseISO } from "date-fns";
+import { differenceInDays, format } from "date-fns";
 import { nl } from "date-fns/locale";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect } from "react";
+import { useBezetteVoertuigen } from "@/hooks/useBezetteVoertuigen";
 
 export default function ReserveerVoertuig() {
   const { user } = useAuth();
@@ -39,9 +40,11 @@ export default function ReserveerVoertuig() {
 
   const dagen = startDatum && eindDatum ? Math.max(differenceInDays(new Date(eindDatum), new Date(startDatum)), 1) : 0;
 
+  const { data: bezetSet } = useBezetteVoertuigen(startDatum, eindDatum);
+
   // Fetch available vehicles
   const { data: voertuigen = [], isLoading } = useQuery({
-    queryKey: ["beschikbare-voertuigen", startDatum, eindDatum],
+    queryKey: ["beschikbare-voertuigen", startDatum, eindDatum, bezetSet ? Array.from(bezetSet).sort().join(",") : ""],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("voertuigen")
@@ -53,27 +56,11 @@ export default function ReserveerVoertuig() {
 
       if (!startDatum || !eindDatum) return data ?? [];
 
-      // Filter out vehicles with overlapping reservations
-      const { data: reserveringen } = await supabase
-        .from("reserveringen")
-        .select("voertuig_id, start_datum, eind_datum")
-        .in("status", ["aangevraagd", "bevestigd", "actief"]);
-
-      const bezet = new Set(
-        (reserveringen ?? [])
-          .filter((r) => {
-            const rStart = parseISO(r.start_datum);
-            const rEnd = parseISO(r.eind_datum);
-            const sStart = parseISO(startDatum);
-            const sEnd = parseISO(eindDatum);
-            return !(isAfter(sStart, rEnd) || isBefore(sEnd, rStart));
-          })
-          .map((r) => r.voertuig_id)
-      );
-
+      // Filter op bezette voertuigen (reserveringen + contracten + planning blokken)
+      const bezet = bezetSet ?? new Set<string>();
       return (data ?? []).filter((v) => !bezet.has(v.id));
     },
-    enabled: !!user,
+    enabled: !!user && (!startDatum || !eindDatum || bezetSet !== undefined),
   });
 
   // Get or create klant
