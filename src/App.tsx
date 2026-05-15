@@ -41,6 +41,9 @@ const MijnReserveringen = lazy(() => import("./pages/portaal/MijnReserveringen")
 const ReserveerVoertuig = lazy(() => import("./pages/portaal/ReserveerVoertuig"));
 const MijnFacturen = lazy(() => import("./pages/portaal/MijnFacturen"));
 const MijnProfiel = lazy(() => import("./pages/portaal/MijnProfiel"));
+const PortaalHome = lazy(() => import("./pages/portaal/Home"));
+const PortaalDocumenten = lazy(() => import("./pages/portaal/Documenten"));
+const PortaalSchadeMelden = lazy(() => import("./pages/portaal/SchadeMelden"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
@@ -237,9 +240,12 @@ const App = () => (
           {/* White-label tenant portal (per organisatie) */}
           <Route path="/t/:slug" element={<TenantPortaalLayout><TenantAanbod /></TenantPortaalLayout>} />
           <Route path="/t/:slug/inloggen" element={<TenantInloggen />} />
+          <Route path="/t/:slug/home" element={<KlantProtectedRoute><TenantPortaalLayout><PortaalHome /></TenantPortaalLayout></KlantProtectedRoute>} />
           <Route path="/t/:slug/reserveringen" element={<KlantProtectedRoute><TenantPortaalLayout><MijnReserveringen /></TenantPortaalLayout></KlantProtectedRoute>} />
           <Route path="/t/:slug/reserveren" element={<TenantPortaalLayout><TenantReserveren /></TenantPortaalLayout>} />
           <Route path="/t/:slug/facturen" element={<KlantProtectedRoute><TenantPortaalLayout><MijnFacturen /></TenantPortaalLayout></KlantProtectedRoute>} />
+          <Route path="/t/:slug/documenten" element={<KlantProtectedRoute><TenantPortaalLayout><PortaalDocumenten /></TenantPortaalLayout></KlantProtectedRoute>} />
+          <Route path="/t/:slug/schade-melden" element={<KlantProtectedRoute><TenantPortaalLayout><PortaalSchadeMelden /></TenantPortaalLayout></KlantProtectedRoute>} />
           <Route path="/t/:slug/profiel" element={<KlantProtectedRoute><TenantPortaalLayout><MijnProfiel /></TenantPortaalLayout></KlantProtectedRoute>} />
 
           {/* FleeFlo super-admin */}
