@@ -15,6 +15,7 @@ import { template as borgVerificatie } from './borg-verificatie.tsx'
 import { template as contractOndertekend } from './contract-ondertekend.tsx'
 import { template as factuurAangemaakt } from './factuur-aangemaakt.tsx'
 import { template as contractVerloopt } from './contract-verloopt.tsx'
+import { template as contractAanvulverzoek } from './contract-aanvulverzoek.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'team-invite': teamInvite,
@@ -23,4 +24,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'contract-ondertekend': contractOndertekend,
   'factuur-aangemaakt': factuurAangemaakt,
   'contract-verloopt': contractVerloopt,
+  'contract-aanvulverzoek': contractAanvulverzoek,
 }
