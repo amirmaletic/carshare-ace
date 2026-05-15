@@ -274,6 +274,8 @@ export default function SettingsPage() {
                   Bij elke ondertekende overdracht (incl. eventuele schade-melding) gaat een kopie naar dit e-mailadres.
                 </p>
               </div>
+              <Separator />
+              <AlgemeneVoorwaardenUpload disabled={!isBeheerder} />
               <div className="flex justify-end pt-2">
                 <Button onClick={handleSaveBedrijf} disabled={!isBeheerder || saveBedrijf.isPending} className="gap-2">
                   <Save className="w-4 h-4" /> {saveBedrijf.isPending ? "Opslaan..." : "Opslaan"}
