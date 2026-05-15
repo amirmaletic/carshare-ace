@@ -2640,6 +2640,14 @@ export type Database = {
       }
     }
     Functions: {
+      accept_uitnodiging: {
+        Args: { _token: string }
+        Returns: {
+          organisatie_id: string
+          organisatie_naam: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
       admin_delete_organisatie: {
         Args: { _org_id: string }
         Returns: undefined
