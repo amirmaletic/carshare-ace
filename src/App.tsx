@@ -55,6 +55,7 @@ const WaaromFleeflo = lazy(() => import("./pages/marketing/WaaromFleeflo"));
 const Roadmap = lazy(() => import("./pages/marketing/Roadmap"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const ContractAanvullen = lazy(() => import("./pages/ContractAanvullen"));
 const Updates = lazy(() => import("./pages/Updates"));
 const AdminPlatform = lazy(() => import("./pages/AdminPlatform"));
 const TenantAanbod = lazy(() => import("./pages/tenant/TenantAanbod"));
@@ -203,6 +204,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/unsubscribe" element={<Unsubscribe />} />
+          <Route path="/contract-aanvullen/:token" element={<ContractAanvullen />} />
           {/* Admin/staff routes */}
           <Route path="/dashboard" element={<ProtectedRoute><PermissionGuard><AppLayout><Dashboard /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/voertuigen" element={<ProtectedRoute><PermissionGuard><AppLayout><Vehicles /></AppLayout></PermissionGuard></ProtectedRoute>} />
