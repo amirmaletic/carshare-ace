@@ -1358,6 +1358,7 @@ export type Database = {
       organisaties: {
         Row: {
           adres: string | null
+          algemene_voorwaarden_pad: string | null
           btw_nummer: string | null
           created_at: string
           eigenaar_id: string
@@ -1382,6 +1383,7 @@ export type Database = {
         }
         Insert: {
           adres?: string | null
+          algemene_voorwaarden_pad?: string | null
           btw_nummer?: string | null
           created_at?: string
           eigenaar_id: string
@@ -1406,6 +1408,7 @@ export type Database = {
         }
         Update: {
           adres?: string | null
+          algemene_voorwaarden_pad?: string | null
           btw_nummer?: string | null
           created_at?: string
           eigenaar_id?: string
