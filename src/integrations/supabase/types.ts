@@ -116,7 +116,7 @@ export type Database = {
           id: string
           metadata: Json | null
           organisatie_id: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           actie: string
@@ -127,7 +127,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           organisatie_id?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           actie?: string
@@ -138,7 +138,7 @@ export type Database = {
           id?: string
           metadata?: Json | null
           organisatie_id?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
