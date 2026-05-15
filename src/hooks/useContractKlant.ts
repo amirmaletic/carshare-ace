@@ -19,11 +19,15 @@ export function useContractKlant(email: string | null | undefined) {
     queryFn: async (): Promise<ContractKlant | null> => {
       const { data, error } = await supabase
         .from("klanten")
-        .select("id, voornaam, achternaam, email, telefoon, adres, rijbewijs_nummer, rijbewijs_verloopt")
+        .select("id, voornaam, achternaam, email, telefoon, adres, rijbewijs_nummer, rijbewijs_verloopt, updated_at")
         .ilike("email", (email ?? "").trim())
-        .maybeSingle();
+        .order("updated_at", { ascending: false, nullsFirst: false })
+        .limit(10);
       if (error) throw error;
-      return (data as ContractKlant) ?? null;
+      const rows = (data ?? []) as (ContractKlant & { updated_at?: string | null })[];
+      // Voorkeur: de meest recent bijgewerkte rij die rijbewijsgegevens bevat
+      const best = rows.find((r) => r.rijbewijs_nummer) ?? rows[0] ?? null;
+      return best;
     },
   });
 }
