@@ -39,6 +39,7 @@ export default function AanvragenPlanning() {
   const [search, setSearch] = useState("");
   const [chosenVoertuigId, setChosenVoertuigId] = useState<string | null>(null);
   const [bevestigen, setBevestigen] = useState(false);
+  const [contractType, setContractType] = useState<"verhuur" | "lease">("verhuur");
 
   // Realtime: nieuwe aanvragen meteen tonen
   useEffect(() => {
@@ -95,21 +96,24 @@ export default function AanvragenPlanning() {
     if (!selected || !huidigeKeuze) return;
     setBevestigen(true);
     try {
-      const { data, error } = await supabase.rpc("bevestig_aanvraag", {
+      const { data, error } = await supabase.rpc("bevestig_aanvraag_naar_contract", {
         _aanvraag_id: selected.id,
         _voertuig_id: huidigeKeuze.id,
-        _dagprijs: huidigeKeuze.dagprijs,
+        _type: contractType,
+        _prijs: huidigeKeuze.dagprijs,
       });
       if (error) throw error;
-      toast.success("Reservering aangemaakt", {
+      const contractId = data as unknown as string;
+      toast.success(`Concept-${contractType === "lease" ? "leasecontract" : "huurcontract"} aangemaakt`, {
         description: `${huidigeKeuze.merk} ${huidigeKeuze.model} (${huidigeKeuze.kenteken})`,
         action: {
-          label: "Bekijk",
-          onClick: () => navigate("/reserveringen"),
+          label: "Open contract",
+          onClick: () => navigate(`/contracts?open=${contractId}`),
         },
       });
       queryClient.invalidateQueries({ queryKey: ["aanvragen"] });
-      queryClient.invalidateQueries({ queryKey: ["reserveringen-page"] });
+      queryClient.invalidateQueries({ queryKey: ["contracts"] });
+      queryClient.invalidateQueries({ queryKey: ["gantt-contracten"] });
       setSelectedId(null);
     } catch (e: any) {
       toast.error("Bevestigen mislukt: " + e.message);
@@ -313,6 +317,13 @@ export default function AanvragenPlanning() {
 
             {/* Acties */}
             <div className="flex flex-wrap gap-2 pt-3 border-t border-border">
+              <Select value={contractType} onValueChange={(v) => setContractType(v as "verhuur" | "lease")}>
+                <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="verhuur">Huurcontract</SelectItem>
+                  <SelectItem value="lease">Leasecontract</SelectItem>
+                </SelectContent>
+              </Select>
               <Button
                 size="lg"
                 className="gap-2 flex-1 sm:flex-none"
@@ -320,7 +331,7 @@ export default function AanvragenPlanning() {
                 onClick={handleBevestigen}
               >
                 <CheckCircle2 className="w-4 h-4" />
-                {bevestigen ? "Bezig..." : "Bevestigen"}
+                {bevestigen ? "Bezig..." : "Omzetten naar contract"}
               </Button>
               <Button variant="outline" onClick={handleAfwijzen} className="gap-2">
                 <X className="w-4 h-4" />Afwijzen
