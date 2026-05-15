@@ -219,9 +219,8 @@ Deno.serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY ontbreekt')
     if (!RESEND_API_KEY) throw new Error('RESEND_API_KEY ontbreekt (Resend connector niet gekoppeld)')
 
-    // Resend vereist een geverifieerd domein. Fallback naar onboarding@resend.dev
-    // zolang fleeflo.nl niet geverifieerd is in Resend.
-    const RESEND_FROM = Deno.env.get('RESEND_FROM') || `${orgNaam} <onboarding@resend.dev>`
+    // fleeflo.nl is geverifieerd in Resend.
+    const RESEND_FROM = Deno.env.get('RESEND_FROM') || `${orgNaam} <noreply@fleeflo.nl>`
     const fromAddress = RESEND_FROM
     const replyTo = org?.email || undefined
     const html = `
