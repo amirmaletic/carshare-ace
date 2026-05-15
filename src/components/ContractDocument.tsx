@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer, Download, IdCard, ShieldCheck, Loader2 } from "lucide-react";
+import { Mail } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
@@ -27,6 +28,23 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
   const queryClient = useQueryClient();
   const [sendingRijbewijs, setSendingRijbewijs] = useState(false);
   const [sendingBorg, setSendingBorg] = useState(false);
+  const [sendingMail, setSendingMail] = useState(false);
+
+  const stuurContractMail = async () => {
+    if (!contract) return;
+    setSendingMail(true);
+    try {
+      const { error } = await supabase.functions.invoke("verstuur-contract-mail", {
+        body: { contract_id: contract.id },
+      });
+      if (error) throw error;
+      toast({ title: "Contract verzonden", description: `Mail met PDF naar ${contract.klant_email}` });
+    } catch (e: any) {
+      toast({ title: "Versturen mislukt", description: e.message, variant: "destructive" });
+    } finally {
+      setSendingMail(false);
+    }
+  };
 
   const { data: verificaties } = useQuery({
     queryKey: ["contract-verificaties", contract?.id],
@@ -423,6 +441,10 @@ export function ContractDocument({ contract, open, onOpenChange }: ContractDocum
           <Button size="sm" variant="outline" className="gap-1.5" onClick={stuurBorg} disabled={sendingBorg}>
             {sendingBorg ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
             Stuur borg-verificatie
+          </Button>
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={stuurContractMail} disabled={sendingMail || !contract.klant_email}>
+            {sendingMail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Mail className="w-3.5 h-3.5" />}
+            Mail naar klant
           </Button>
         </div>
 
