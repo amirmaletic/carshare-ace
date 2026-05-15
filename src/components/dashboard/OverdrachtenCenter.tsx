@@ -264,6 +264,19 @@ export function OverdrachtenCenter() {
           console.warn("Kon kopie-e-mail niet versturen:", e);
         }
       }
+
+      // 3) Stuur het volledige huurcontract als PDF-bijlage (incl. AV) naar de klant
+      if (selectedOverdracht.contract_id && selectedOverdracht.klant_email) {
+        try {
+          const { error: pdfErr } = await supabase.functions.invoke("verstuur-contract-mail", {
+            body: { contract_id: selectedOverdracht.contract_id },
+          });
+          if (pdfErr) throw pdfErr;
+        } catch (e) {
+          console.warn("Kon contract-PDF niet versturen:", e);
+          toast.error("Contract-PDF mailen mislukt — stuur handmatig vanuit het contract.");
+        }
+      }
     },
     onSuccess: () => {
       toast.success("Overdracht ondertekend en kopie verstuurd!");
