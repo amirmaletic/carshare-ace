@@ -9,7 +9,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { getStatusColor } from "@/data/mockData";
 import {
   ChevronLeft, ChevronRight, Eye, FileText, RotateCcw, Filter, Search, ZoomIn, ZoomOut,
-  Calendar as CalendarIcon, UserPlus, CalendarPlus, Wrench, ShieldAlert, Copy,
+  Calendar as CalendarIcon, UserPlus, CalendarPlus, Wrench, ShieldAlert, Copy, Square, Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,8 +29,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "@/hooks/use-toast";
+import { usePlanningBlokken, type PlanningBlok } from "@/hooks/usePlanningBlokken";
+import { PlanningBlokDialog } from "@/components/planning/PlanningBlokDialog";
 
-type BlockType = "contract" | "reservation" | "onderhoud";
+type BlockType = "contract" | "reservation" | "onderhoud" | "blok";
 
 interface GanttBlock {
   id: string;
@@ -41,6 +43,7 @@ interface GanttBlock {
   sub?: string;
   type: BlockType;
   status?: string;
+  kleur?: string;
   meta?: Record<string, any>;
 }
 
@@ -96,6 +99,11 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
   const [showContracts, setShowContracts] = useState(true);
   const [showReserveringen, setShowReserveringen] = useState(true);
   const [showOnderhoud, setShowOnderhoud] = useState(true);
+  const [showBlokken, setShowBlokken] = useState(true);
+  const [blokDialogOpen, setBlokDialogOpen] = useState(false);
+  const [editingBlok, setEditingBlok] = useState<PlanningBlok | null>(null);
+  const [prefillBlok, setPrefillBlok] = useState<{ voertuigId?: string; start?: string; eind?: string }>({});
+  const { blokken: planningBlokken } = usePlanningBlokken();
 
   const zoom = ZOOM_PRESETS.find((z) => z.id === zoomId)!;
   const DAYS_VISIBLE = zoom.days;
@@ -240,8 +248,33 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
         });
       });
     }
+    if (showBlokken) {
+      planningBlokken.forEach((b) => {
+        const s = parseISO(b.start_datum);
+        const e = parseISO(b.eind_datum);
+        if (!isValid(s) || !isValid(e)) return;
+        if (e < startDate || s > endDate) return;
+        result.push({
+          id: `blk-${b.id}`,
+          vehicleId: b.voertuig_id,
+          start: s,
+          end: e,
+          label: b.titel,
+          sub: b.notitie ?? undefined,
+          type: "blok",
+          kleur: b.kleur,
+          meta: b,
+        });
+      });
+    }
     return result;
-  }, [dbContracts, dbReserveringen, dbOnderhoud, showContracts, showReserveringen, showOnderhoud]);
+  }, [dbContracts, dbReserveringen, dbOnderhoud, planningBlokken, showContracts, showReserveringen, showOnderhoud, showBlokken, startDate, endDate]);
+
+  const openBlokDialog = (opts?: { blok?: PlanningBlok | null; voertuigId?: string; start?: string; eind?: string }) => {
+    setEditingBlok(opts?.blok ?? null);
+    setPrefillBlok({ voertuigId: opts?.voertuigId, start: opts?.start, eind: opts?.eind });
+    setBlokDialogOpen(true);
+  };
 
   const getDateForX = (x: number): Date => {
     const idx = Math.max(0, Math.min(DAYS_VISIBLE - 1, Math.floor(x / CELL_WIDTH)));
@@ -460,6 +493,7 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
                           const left = clampedStart * CELL_WIDTH;
                           const width = (clampedEnd - clampedStart + 1) * CELL_WIDTH - 4;
                           const isOnderhoud = block.type === "onderhoud";
+                          const isBlok = block.type === "blok";
                           return (
                             <ContextMenu key={block.id}>
                               <ContextMenuTrigger asChild>
@@ -469,10 +503,12 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         if (block.type === "contract") onSelectVehicle?.(v);
+                                        if (isBlok) openBlokDialog({ blok: block.meta as PlanningBlok });
                                       }}
                                       className={cn(
                                         "absolute rounded-md border text-[10px] font-medium px-1.5 flex items-center truncate z-[2] shadow-sm hover:shadow-md transition-all",
-                                        getBlockStyles(block.type, block.status),
+                                        !isBlok && getBlockStyles(block.type, block.status),
+                                        isBlok && "text-white border-transparent",
                                         isOnderhoud && "rounded-full",
                                       )}
                                       style={{
@@ -480,6 +516,7 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
                                         left: left + 2,
                                         width: Math.max(width, isOnderhoud ? CELL_WIDTH - 6 : 18),
                                         height: ROW_HEIGHT - (dense ? 8 : 12),
+                                        ...(isBlok && block.kleur ? { background: block.kleur, borderColor: block.kleur } : {}),
                                       }}
                                     >
                                       {isOnderhoud ? <Wrench className="w-3 h-3" /> : <span className="truncate">{block.label}</span>}
@@ -498,7 +535,7 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
                                   </TooltipContent>
                                 </Tooltip>
                               </ContextMenuTrigger>
-                              <BlockContextMenu block={block} vehicle={v} onSelectVehicle={onSelectVehicle} />
+                              <BlockContextMenu block={block} vehicle={v} onSelectVehicle={onSelectVehicle} onEditBlok={(b) => openBlokDialog({ blok: b })} />
                             </ContextMenu>
                           );
                         })}
@@ -511,6 +548,7 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
                       onCreateContract={onCreateContract}
                       onCreateKlant={onCreateKlant}
                       onReturnVehicle={onReturnVehicle}
+                      onCreateBlok={(d) => openBlokDialog({ voertuigId: v.id, start: format(d, "yyyy-MM-dd"), eind: format(d, "yyyy-MM-dd") })}
                     />
                   </ContextMenu>
                 );
@@ -533,6 +571,14 @@ export function VehicleGantt({ onSelectVehicle, onReturnVehicle, onCreateContrac
           <span>Rechtermuisknop voor meer acties.</span>
         </div>
       </div>
+      <PlanningBlokDialog
+        open={blokDialogOpen}
+        onOpenChange={setBlokDialogOpen}
+        blok={editingBlok}
+        prefillVoertuigId={prefillBlok.voertuigId ?? null}
+        prefillStart={prefillBlok.start ?? null}
+        prefillEind={prefillBlok.eind ?? null}
+      />
     </TooltipProvider>
   );
 }
@@ -579,7 +625,7 @@ function VehicleContextMenu({
 }
 
 function RowContextMenu({
-  vehicle, getDate, onSelectVehicle, onCreateContract, onCreateKlant, onReturnVehicle,
+  vehicle, getDate, onSelectVehicle, onCreateContract, onCreateKlant, onReturnVehicle, onCreateBlok,
 }: {
   vehicle: Vehicle;
   getDate: (x: number) => Date;
@@ -587,6 +633,7 @@ function RowContextMenu({
   onCreateContract?: (v: Vehicle, opts?: { startDate?: Date; endDate?: Date }) => void;
   onCreateKlant?: (v: Vehicle) => void;
   onReturnVehicle?: (v: Vehicle) => void;
+  onCreateBlok?: (date: Date) => void;
 }) {
   // Achterhaal de datum waarop is geklikt via een data-attribute zou ideaal zijn,
   // maar context menu's geven geen eventcoords. We bieden snelle datumkeuzes aan.
@@ -608,14 +655,15 @@ function RowContextMenu({
       <ContextMenuItem onClick={() => onCreateKlant?.(vehicle)} className="gap-2"><UserPlus className="w-3.5 h-3.5" />Nieuwe klant aanmaken</ContextMenuItem>
       <ContextMenuItem onClick={() => onSelectVehicle?.(vehicle)} className="gap-2"><Eye className="w-3.5 h-3.5" />Voertuig openen</ContextMenuItem>
       <ContextMenuSeparator />
+      <ContextMenuItem onClick={() => onCreateBlok?.(today)} className="gap-2"><Square className="w-3.5 h-3.5" />Blokje plaatsen</ContextMenuItem>
       <ContextMenuItem onClick={() => onReturnVehicle?.(vehicle)} className="gap-2"><RotateCcw className="w-3.5 h-3.5" />Terugmelden</ContextMenuItem>
     </ContextMenuContent>
   );
 }
 
 function BlockContextMenu({
-  block, vehicle, onSelectVehicle,
-}: { block: GanttBlock; vehicle: Vehicle; onSelectVehicle?: (v: Vehicle) => void }) {
+  block, vehicle, onSelectVehicle, onEditBlok,
+}: { block: GanttBlock; vehicle: Vehicle; onSelectVehicle?: (v: Vehicle) => void; onEditBlok?: (b: PlanningBlok) => void }) {
   return (
     <ContextMenuContent className="w-56">
       <ContextMenuLabel className="text-[11px] truncate">{block.label}</ContextMenuLabel>
@@ -629,6 +677,9 @@ function BlockContextMenu({
       )}
       {block.type === "onderhoud" && (
         <ContextMenuItem onClick={() => window.location.href = "/onderhoud"} className="gap-2"><Wrench className="w-3.5 h-3.5" />Open onderhoud</ContextMenuItem>
+      )}
+      {block.type === "blok" && onEditBlok && (
+        <ContextMenuItem onClick={() => onEditBlok(block.meta as PlanningBlok)} className="gap-2"><Pencil className="w-3.5 h-3.5" />Blokje bewerken</ContextMenuItem>
       )}
     </ContextMenuContent>
   );

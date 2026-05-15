@@ -1448,6 +1448,48 @@ export type Database = {
           },
         ]
       }
+      planning_blokken: {
+        Row: {
+          created_at: string
+          eind_datum: string
+          id: string
+          kleur: string
+          notitie: string | null
+          organisatie_id: string
+          start_datum: string
+          titel: string
+          updated_at: string
+          user_id: string
+          voertuig_id: string
+        }
+        Insert: {
+          created_at?: string
+          eind_datum: string
+          id?: string
+          kleur?: string
+          notitie?: string | null
+          organisatie_id: string
+          start_datum: string
+          titel: string
+          updated_at?: string
+          user_id: string
+          voertuig_id: string
+        }
+        Update: {
+          created_at?: string
+          eind_datum?: string
+          id?: string
+          kleur?: string
+          notitie?: string | null
+          organisatie_id?: string
+          start_datum?: string
+          titel?: string
+          updated_at?: string
+          user_id?: string
+          voertuig_id?: string
+        }
+        Relationships: []
+      }
       portaal_domeinen: {
         Row: {
           created_at: string
@@ -2611,6 +2653,15 @@ export type Database = {
       }
       bevestig_aanvraag: {
         Args: { _aanvraag_id: string; _dagprijs?: number; _voertuig_id: string }
+        Returns: string
+      }
+      bevestig_aanvraag_naar_contract: {
+        Args: {
+          _aanvraag_id: string
+          _prijs?: number
+          _type?: Database["public"]["Enums"]["contract_type"]
+          _voertuig_id: string
+        }
         Returns: string
       }
       bijtelling_overzicht: {

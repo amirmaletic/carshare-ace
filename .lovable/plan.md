@@ -1,67 +1,71 @@
-## Klantportaal upgrade · plan
+## Doel
 
-Scope: alle `/t/:slug/*` schermen. Aanpak: in één slag, daarna per detail bijschaven indien nodig.
+Aanvragen worden niet langer omgezet naar een losse reservering, maar naar een volwaardig **concept-contract**. Daarnaast komt er een lichtgewicht "planning-blokje" zodat je in de Gantt naast contracten ook eigen blokken (eigen gebruik, gereserveerd voor X, blokkade) kunt plaatsen met eigen titel en kleur.
 
-### Doel
-Een Clean SaaS klantomgeving (licht, ruim, blauw accent) met een echt dashboard, sterkere boekflow, en self-service voor documenten en lopende huur.
+---
 
-### Huidige situatie
-- Layout: `TenantPortaalLayout` met simpele sidebar (Aanbod, Reserveringen, Facturen, Profiel).
-- Pagina's zijn lijst-only kaarten zonder filters, zonder detail, zonder acties.
-- Geen overzicht, geen documenten-sectie, geen acties op lopende huur.
+## Wijzigingen
 
-### Wat we bouwen
+### 1. Database
 
-**1. Layout opwaarderen**
-- Nieuwe `TenantPortaalLayout`: hogere top-bar met breadcrumb + accountmenu, sidebar met groepering (Algemeen / Mijn huur / Account), notificatiebel, sticky footer met support contact uit organisatie.
-- Mobile: bottom-tab bar (Home, Boeken, Huur, Documenten, Profiel) i.p.v. hamburger sheet.
-- Branding: portaalkleur als accent, fallback naar #3B82F6.
+**Nieuwe RPC `bevestig_aanvraag_naar_contract`**
+- Input: `_aanvraag_id`, `_voertuig_id`, `_type` (verhuur of lease), optioneel `_dagprijs` of `_maandprijs`.
+- Logica:
+  - Klant ophalen of aanmaken (zoals `bevestig_aanvraag` nu doet).
+  - Contractnummer genereren (`VC-YYYY-###` voor verhuur, `LC-YYYY-###` voor lease).
+  - Periode: `gewenste_periode_start` t/m `gewenste_periode_eind`, fallback vandaag + 7 dagen.
+  - Bedrag: bij verhuur `dagprijs * dagen` als maandprijs-veld of dagprijs in notities, bij lease `maandprijs` direct.
+  - Insert in `contracts` met `status = 'concept'`. De bestaande trigger `auto_create_overdrachten_for_contract` maakt automatisch ophaal- en terugbreng-overdrachten.
+  - Aanvraag op `omgezet`, koppel `gekoppeld_voertuig_id`.
+  - Activiteiten-log entry.
+- Returns: `contract_id`.
 
-**2. Nieuwe `Home` pagina (`/t/:slug/home`)**
-- Welkom met voornaam.
-- Hero-card: "Lopende huur" als die er is (voertuig, periode, km-stand, dagen resterend, knoppen: verlengen, schade melden, terugbrengen).
-- Quick stats: openstaand bedrag, volgende reservering, status rijbewijs.
-- Action cards: Boek voertuig, Upload rijbewijs, Mijn documenten.
+**Nieuwe tabel `planning_blokken`**
+- Velden: `voertuig_id` (uuid), `start_datum`, `eind_datum`, `titel`, `kleur` (hex), `notitie`, plus `organisatie_id`, `user_id`, `created_at`.
+- RLS: org-leden mogen aanmaken, lezen, updaten, verwijderen binnen eigen organisatie (zelfde patroon als `locaties`).
 
-**3. Aanbod & boeken (`/t/:slug`)**
-- Behoud bestaande `TenantAanbod`, maar nieuwe filterbar (categorie, brandstof, prijsrange, beschikbaarheid op datum).
-- Voertuig-detailmodal met carousel, specs, dagprijs en directe "Reserveer" CTA.
+### 2. Frontend: aanvraag-conversie
 
-**4. Mijn huur (`/t/:slug/reserveringen`)**
-- Tabs: Lopend · Komend · Historie.
-- Per kaart: voertuigfoto, periode, status badge, totaalprijs.
-- Acties per status: Annuleren (komend), Verlengen (lopend), Terugbrengen melden (lopend), Factuur openen (historie).
-- Detailpagina `/t/:slug/reserveringen/:id` met timeline (aangevraagd → bevestigd → opgehaald → ingeleverd) en gekoppelde documenten/facturen.
+**`src/pages/AanvragenPlanning.tsx`**
+- Voeg `Select` toe voor contracttype (verhuur / lease) naast de "Bevestig"-knop.
+- Vervang `supabase.rpc("bevestig_aanvraag", ...)` door `supabase.rpc("bevestig_aanvraag_naar_contract", ...)`.
+- Toast met actie "Open contract" → navigeert naar `/contracts?open={id}`.
+- Invalideer queries: `aanvragen`, `contracts`, `gantt-contracten`.
 
-**5. Facturen (`/t/:slug/facturen`)**
-- Filter op status (openstaand/betaald), totaal openstaand bovenaan.
-- Per factuur: omschrijving, voertuig (indien gekoppeld), bedrag, status, knop "PDF" en "Online betalen" (link naar bestaande Stripe payment link in invoice).
+**`src/pages/Contracts.tsx`**
+- Lees `?open=<id>` uit URL en open contract-detail/wizard om aanvulling/ondertekening te faciliteren.
 
-**6. Documenten (`/t/:slug/documenten`)** — nieuw
-- Sectie Rijbewijs: status-badge, knop uploaden/vervangen (gebruikt bestaande `rijbewijs_verificaties` flow).
-- Sectie Overdrachten: lijst van getekende ophaal/inlever overdrachten met PDF-knop.
-- Sectie Schade: lijst eigen schade-rapporten + knop "Schade melden" (formulier met foto-upload, locatie, omschrijving → maakt `schade_rapporten` rij).
+### 3. Frontend: planning-blokjes
 
-**7. Profiel (`/t/:slug/profiel`)**
-- Splits in 3 cards: Persoon, Adres, Bedrijf (indien zakelijk). 
-- Aparte sectie "Account & beveiliging": email, wachtwoord wijzigen, uitloggen, account verwijderen.
-- Notificatie-voorkeuren (email aan/uit per type).
+**Nieuwe hook `src/hooks/usePlanningBlokken.ts`**
+- TanStack Query CRUD op `planning_blokken` (lijst, add, update, delete).
 
-**8. Visueel**
-- Clean SaaS: bg `#fafbfc`, cards `#ffffff` met `border-border`, primaire knoppen in portaalkleur, sub-headings in `text-muted-foreground`.
-- Consistentie: alle pagina's zelfde page-header pattern (titel + omschrijving + primaire actie rechts).
-- Skeleton loaders i.p.v. spinners.
-- Empty states met illustratie-iconen + heldere CTA.
+**Nieuw component `src/components/planning/PlanningBlokDialog.tsx`**
+- Velden: voertuig (Select), periode (start + eind), titel (Input), kleur (color-picker met 6 voorgestelde kleuren + custom), notitie (Textarea).
 
-### Technisch (kort)
-- Nieuwe pagina's: `pages/portaal/Home.tsx`, `Documenten.tsx`, `ReserveringDetail.tsx`, `SchadeMelden.tsx`.
-- Nieuwe componenten: `LopendeHuurCard`, `QuickStats`, `RijbewijsStatus`, `BottomTabBar`, `PortaalPageHeader`.
-- Routes uitbreiden in `src/App.tsx` voor `/home`, `/documenten`, `/reserveringen/:id`, `/schade-melden`.
-- Hooks: `useKlantProfiel`, `useLopendeHuur`, `useKlantDocumenten`, `useRijbewijsStatus`. Allemaal RLS-veilig (filteren via `klanten.auth_user_id = auth.uid()`).
-- Geen DB-migraties nodig; alle data is al aanwezig (`reserveringen`, `invoices`, `overdrachten`, `schade_rapporten`, `rijbewijs_verificaties`).
-- Bestaande `Mijn*`-pages worden vervangen, oude routes blijven werken.
+**`src/components/VehicleGantt.tsx`**
+- Extra query `gantt-blokken` op `planning_blokken` binnen zichtbare periode.
+- Render blokken met `background: blok.kleur` en label `blok.titel`.
+- Context-menu op een lege cel krijgt extra item "Blokje plaatsen" → opent `PlanningBlokDialog` met voor-ingevulde voertuig/datum.
+- Klik op een blok opent dezelfde dialog in edit-modus (met "Verwijderen"-knop).
 
-### Wat er NIET in zit (bewust)
-- Branding-uitbreidingen voor whitelabel (apart traject).
-- Live chat met verhuurder.
-- Documenten ondertekenen anders dan via bestaande overdracht-flow.
+### 4. Backwards compatibility
+
+- Oude `bevestig_aanvraag` blijft bestaan en wordt niet meer aangeroepen vanuit de UI (publieke booking-flow gebruikt een ander pad).
+- Bestaande reserveringen blijven zichtbaar en functioneel; alleen nieuwe aanvragen volgen de contract-flow.
+
+---
+
+## Technische details
+
+- Contractnummer-functie: SQL `format('VC-%s-%s', extract(year from now()), lpad((select count(*)+1 from contracts where ...)::text, 3, '0'))`. Eenvoudig en uniek-genoeg voor concept; admin kan handmatig aanpassen.
+- `planning_blokken.kleur` standaard `#3B82F6` (brand-primary), opgeslagen als hex string.
+- Geen overlap-validatie op blokken; ze zijn puur visueel en staan los van beschikbaarheid (wel zichtbaar in Gantt zodat planner conflicts ziet).
+
+---
+
+## Wat we niet doen (nu)
+
+- Geen automatische factuur bij contract-aanmaak (blijft handmatig in concept-flow).
+- Geen e-mail naar klant bij omzetten (kan later via bestaande contract-mail).
+- Blokjes komen niet in publieke beschikbaarheids-API; alleen intern in Gantt.
