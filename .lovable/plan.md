@@ -1,56 +1,60 @@
+
 ## Doel
+Zodra een beheerder op **Ondertekenen** klikt en het contract op `actief` springt, krijgt de klant automatisch een mail met het huurcontract en de algemene voorwaarden als echte PDF-bijlagen. De overdrachtsbon volgt later (bij de uitgifte) en valt buiten deze scope.
 
-Een conceptcontract krijgt een duidelijke "compleetheid"-status met checklist. Beheerder kan met één klik een aanvulverzoek mailen naar de klant; klant vult zelf NAW, geboortedatum en rijbewijs aan via een unieke link. De bestaande "Onderteken"-knop blijft de definitieve overgang naar `actief`, maar wordt pas klikbaar zodra de checklist 100% is.
+## Stappen
 
-## Checklist (definitie "compleet")
+### 1. Resend connector koppelen
+- Connect de **Resend** standard connector (API-key beheert Lovable, hoeft niet handmatig).
+- Resend ondersteunt PDF-bijlagen via base64 in het `attachments` veld.
 
-1. **Klantgegevens**: `klant_naam`, `klant_email`, `klant_telefoon`, en op de gekoppelde `klanten`-rij ook `adres`, `postcode`, `woonplaats`, `geboortedatum`.
-2. **Rijbewijs op orde**: gekoppelde klant heeft `rijbewijs_nummer`, `rijbewijs_geldig_tot` in de toekomst, en (indien aanwezig) `rijbewijs_geverifieerd = true`.
-3. **Voertuig, prijs & periode**: `voertuig_id` gevuld, `start_datum` & `eind_datum` geldig, `dagprijs > 0` (verhuur) of `maandprijs > 0` (lease).
+### 2. Algemene voorwaarden opslag
+- Nieuwe kolom `algemene_voorwaarden_url` op `organisaties`.
+- Nieuwe storage bucket `organisatie-documenten` (private, signed URL).
+- Nieuwe kaart in **Instellingen → Bedrijf**: upload veld voor AV-PDF (één bestand per organisatie). Bij upload bucket-pad opslaan in de kolom.
 
-Ontbrekende velden worden zichtbaar als checklist in het contract-detail.
+### 3. Contract-PDF client-side renderen
+- Bestaande `ContractDocument.tsx` rendert al de print-HTML. Hergebruik die HTML in een nieuwe util `generateContractPdf(contract)` die met **jsPDF + html2canvas** (al voor invoices gebruikt: `InvoicePdfExport.tsx`) een blob produceert.
+- Functie levert `{ filename, base64 }`.
 
-## Database
+### 4. Edge function `verstuur-contract-mail`
+- Input: `contract_id`, `contract_pdf_base64`, `voorwaarden_pdf_base64?`
+- Server-side:
+  - Auth-check via JWT, RLS-check op `organisatie_id`.
+  - Download AV-PDF uit storage (via service role) als die niet meegegeven is, en stuur naar base64.
+  - Stuur via Resend connector gateway naar `klant_email`:
+    - From: `notify@notify.fleeflo.nl` (bestaande Lovable Email blijft voor andere flows; deze ene mail gaat via Resend wegens bijlagen).
+    - Subject: `Uw huurcontract {contract_nummer}`
+    - HTML body: korte branded mail met link naar klantportaal en uitleg.
+    - Attachments: `[contract.pdf, algemene-voorwaarden.pdf]`.
+  - Log in `email_send_log` met `template_name = 'contract-ondertekend'`, en in `activiteiten_log` (`contract_mail_verzonden`).
+- `verify_jwt = true` (gewone authenticated call vanuit app).
 
-Nieuwe tabel `contract_aanvul_verzoeken`:
-- `id`, `contract_id`, `organisatie_id`, `klant_email`
-- `token text unique` (32-byte hex via `extensions.gen_random_bytes`)
-- `status` (`open` / `ingevuld` / `verlopen`)
-- `verzonden_op`, `expires_at` (default 14 dagen), `ingevuld_op`
-- RLS: org-leden kunnen lezen/aanmaken voor eigen org; publieke `SELECT` alleen via security-definer RPC `get_aanvul_verzoek(_token)` die contract + ontbrekende velden teruggeeft zonder gevoelige data.
-- Tweede RPC `update_aanvul_verzoek(_token, _payload jsonb)` schrijft naar `klanten` + `contracts` (alleen toegestane kolommen) en zet status op `ingevuld`.
+### 5. Trigger in `handleSign` (Contracts.tsx)
+```text
+1. updateContract → status actief
+2. await generateContractPdf(contract) op client
+3. supabase.functions.invoke('verstuur-contract-mail', { body: { contract_id, contract_pdf_base64 } })
+4. toast: "Contract ondertekend en verzonden naar {email}"
+```
+- Falende mail blokkeert de ondertekening niet — toon waarschuwingstoast met retry-knop "Mail opnieuw versturen" in `ContractDocument.tsx`.
 
-Geen automatische statuswijziging op `contracts` — ondertekening blijft de trigger naar `actief`.
+### 6. Handmatig opnieuw versturen
+- Knop **Stuur contract per mail** in `ContractDocument.tsx` (alleen zichtbaar als `ondertekend = true`) gebruikt dezelfde flow.
 
-## Backend / e-mail
+## Bestanden
 
-- Nieuwe transactional template `contract-aanvulverzoek` (React Email): begroeting, lijst van wat ontbreekt (in de mail al concreet benoemd), grote knop naar `https://<app>/contract-aanvullen/<token>`, vervaldatum.
-- Bestaande `send-transactional-email` edge function gebruiken; idempotency-key = `aanvulverzoek-<verzoek_id>`.
-- Verzonden via bestaande `notify.fleeflo.nl`-infra.
+**Nieuw**
+- `supabase/migrations/<ts>_av_kolom.sql` — kolom + bucket + RLS.
+- `supabase/functions/verstuur-contract-mail/index.ts`
+- `src/lib/contractPdf.ts` — helper voor client-side PDF generatie.
 
-## Frontend (beheerder)
+**Gewijzigd**
+- `src/pages/SettingsBedrijf.tsx` (of huidige bedrijfssettings) — AV upload veld.
+- `src/pages/Contracts.tsx` — `handleSign` triggert mail.
+- `src/components/ContractDocument.tsx` — knop "Mail naar klant".
 
-In het contract-detail (`src/pages/Contracts.tsx`) bij conceptcontracten:
-- **ChecklistCard** met de drie blokken; per item ✓/✗ en het ontbrekende veld benoemd.
-- Knop **"Stuur aanvulverzoek per mail"** — disabled als checklist al 100%; toont laatst verzonden datum als er een open verzoek is. Bij klik: maak rij in `contract_aanvul_verzoeken`, roep `send-transactional-email` aan, log activiteit.
-- Bestaande knop **"Onderteken & activeer"** wordt disabled met tooltip "Checklist nog niet compleet" zolang niet 100%.
-- Statusbadge "Concept · 4/6 compleet".
-
-## Frontend (klant, publiek)
-
-Nieuwe publieke route `/contract-aanvullen/:token` (geen auth, zoals `/boeken`):
-- Haalt verzoek op via RPC. Toont contractnummer + voertuig + verhuurder.
-- Formulier met alleen de velden die nog ontbreken (NAW, geboortedatum, rijbewijsnummer + geldig tot + foto-upload naar bestaande `rijbewijs`-bucket).
-- Submit roept `update_aanvul_verzoek` RPC aan; succespagina "Bedankt, je verhuurder neemt het verder op".
-- Verlopen/al-ingevuld tokens tonen vriendelijke melding.
-
-## Activiteiten-log
-
-Via `useLogActiviteit`: `aanvulverzoek_verzonden`, `aanvulverzoek_ingevuld` (entiteit = contract).
-
-## Niet in scope
-
-- Geen automatische status-overgang naar `actief` (jouw keuze: alleen ondertekening).
-- Geen SMS-variant.
-- Geen herinneringsmail-cadans (kan later, knop is nu handmatig opnieuw te versturen).
-- Geen wijzigingen aan ondertekenings-/overdrachtsflow zelf.
+## Buiten scope
+- Overdrachtsbon (komt later bij uitgifte-flow).
+- SMS, herinneringen, marketing.
+- Wijzigingen aan bestaande Lovable Emails / auth-mails.
