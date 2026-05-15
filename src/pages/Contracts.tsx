@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useContracts, useUpdateContract, type ContractWithInvoices } from "@/hooks/useContracts";
 import { useUpdateInvoice } from "@/hooks/useInvoices";
+import { supabase } from "@/integrations/supabase/client";
 import { ContractForm } from "@/components/ContractForm";
 import { InvoiceForm } from "@/components/InvoiceForm";
 import { getContractStatusColor, getContractTypeLabel, getContractTypeIcon, getInvoiceStatusColor } from "@/data/mockData";
@@ -306,6 +307,20 @@ function ContractDetail({
         status: "actief",
       });
       toast({ title: "Contract ondertekend en geactiveerd" });
+      // Verstuur contract per mail (niet-blokkerend)
+      try {
+        const { error } = await supabase.functions.invoke("verstuur-contract-mail", {
+          body: { contract_id: contract.id },
+        });
+        if (error) throw error;
+        toast({ title: "Contract verzonden", description: `Mail met PDF naar ${contract.klant_email}` });
+      } catch (mailErr: any) {
+        toast({
+          title: "Mailen mislukt",
+          description: mailErr.message ?? "Open het contract en klik 'Mail naar klant' om opnieuw te versturen.",
+          variant: "destructive",
+        });
+      }
     } catch (err: any) {
       toast({ title: "Fout", description: err.message, variant: "destructive" });
     }
