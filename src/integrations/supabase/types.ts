@@ -2884,6 +2884,7 @@ export type Database = {
       get_uitnodiging_info: {
         Args: { _token: string }
         Returns: {
+          account_exists: boolean
           email: string
           expires_at: string
           organisatie_naam: string
