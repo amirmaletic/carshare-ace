@@ -2,8 +2,6 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors'
 import { jsPDF } from 'npm:jspdf@2.5.1'
 
-const RESEND_GATEWAY = 'https://connector-gateway.lovable.dev/resend'
-
 function fmtDate(d?: string | null) {
   if (!d) return '-'
   try {
@@ -143,11 +141,8 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    if (!LOVABLE_API_KEY || !RESEND_API_KEY) throw new Error('Resend connector niet geconfigureerd')
 
     const auth = req.headers.get('Authorization') ?? ''
     if (!auth.startsWith('Bearer ')) return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
@@ -195,60 +190,45 @@ Deno.serve(async (req) => {
     const orgNaam = org?.naam ?? 'Verhuurder'
 
     const contractPdfBase64 = buildContractPdfBase64({ orgNaam, contract, vehicle })
+    // Upload contract-PDF naar storage en maak signed URL (30 dagen)
+    const pdfBytes = Uint8Array.from(atob(contractPdfBase64), (c) => c.charCodeAt(0))
+    const pdfPath = `contracten/${contract.organisatie_id}/${contract.id}-${Date.now()}.pdf`
+    const { error: upErr } = await admin.storage
+      .from('organisatie-documenten')
+      .upload(pdfPath, pdfBytes, { contentType: 'application/pdf', upsert: true })
+    if (upErr) throw new Error(`Upload mislukt: ${upErr.message}`)
 
-    const attachments: Array<{ filename: string; content: string }> = [
-      {
-        filename: `huurcontract-${contract.contract_nummer}.pdf`,
-        content: contractPdfBase64,
-      },
-    ]
+    const EXPIRES = 60 * 60 * 24 * 30 // 30 dagen
+    const { data: signed, error: signErr } = await admin.storage
+      .from('organisatie-documenten')
+      .createSignedUrl(pdfPath, EXPIRES)
+    if (signErr || !signed?.signedUrl) throw new Error(`Signed URL mislukt: ${signErr?.message}`)
+    const contract_url = signed.signedUrl
 
+    let av_url: string | null = null
     if (org?.algemene_voorwaarden_pad) {
-      const { data: avFile, error: avErr } = await admin.storage
+      const { data: avSigned } = await admin.storage
         .from('organisatie-documenten')
-        .download(org.algemene_voorwaarden_pad)
-      if (!avErr && avFile) {
-        const buf = new Uint8Array(await avFile.arrayBuffer())
-        attachments.push({
-          filename: 'algemene-voorwaarden.pdf',
-          content: bytesToBase64(buf),
-        })
-      } else {
-        console.warn('AV download mislukt:', avErr?.message)
-      }
+        .createSignedUrl(org.algemene_voorwaarden_pad, EXPIRES)
+      av_url = avSigned?.signedUrl ?? null
     }
 
-    const html = `
-      <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#111;">
-        <h2 style="color:#3B82F6;margin:0 0 12px;">Uw huurcontract is rond</h2>
-        <p>Beste ${contract.klant_naam ?? 'klant'},</p>
-        <p>Bij deze mail vindt u uw ondertekende huurcontract <strong>${contract.contract_nummer}</strong>${org?.algemene_voorwaarden_pad ? ' en de bijbehorende algemene voorwaarden' : ''} als bijlage.</p>
-        <p>Bewaar dit document zorgvuldig. U kunt ook altijd inloggen op het klantportaal voor uw documenten.</p>
-        <p style="margin-top:24px;">Met vriendelijke groet,<br/>${orgNaam}</p>
-      </div>
-    `
-
-    const resendRes = await fetch(`${RESEND_GATEWAY}/emails`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'X-Connection-Api-Key': RESEND_API_KEY,
+    // Verstuur via Lovable email infra (notify.fleeflo.nl)
+    const { data: sendRes, error: sendErr } = await admin.functions.invoke('send-transactional-email', {
+      body: {
+        templateName: 'contract-pdf',
+        recipientEmail: contract.klant_email,
+        idempotencyKey: `contract-pdf-${contract.id}-${Date.now()}`,
+        templateData: {
+          klant_naam: contract.klant_naam ?? 'klant',
+          contract_nummer: contract.contract_nummer ?? '',
+          org_naam: orgNaam,
+          contract_url,
+          av_url,
+        },
       },
-      body: JSON.stringify({
-        from: `${orgNaam} <onboarding@resend.dev>`,
-        reply_to: org?.email ? [org.email] : undefined,
-        to: [contract.klant_email],
-        subject: `Uw huurcontract ${contract.contract_nummer}`,
-        html,
-        attachments,
-      }),
     })
-    const resendData = await resendRes.json()
-    if (!resendRes.ok) {
-      console.error('Resend fout:', resendData)
-      throw new Error(`Resend [${resendRes.status}]: ${JSON.stringify(resendData)}`)
-    }
+    if (sendErr) throw new Error(`E-mail versturen mislukt: ${sendErr.message}`)
 
     // Activiteiten log
     await admin.from('activiteiten_log').insert({
@@ -257,10 +237,10 @@ Deno.serve(async (req) => {
       actie: 'contract_mail_verzonden',
       entiteit_type: 'contract',
       entiteit_id: contract.id,
-      details: { naar: contract.klant_email, met_av: attachments.length > 1 },
+      details: { naar: contract.klant_email, met_av: !!av_url, pdf_pad: pdfPath },
     }).then(() => {}, () => {})
 
-    return new Response(JSON.stringify({ success: true, message_id: resendData.id }), {
+    return new Response(JSON.stringify({ success: true, contract_url, av_url, send: sendRes }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   } catch (e: any) {
