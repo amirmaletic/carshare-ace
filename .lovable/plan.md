@@ -1,62 +1,67 @@
-## Doel
+## Klantportaal upgrade · plan
 
-Een nieuw planning-onderdeel waar alle inkomende aanvragen samenkomen. Per aanvraag wordt automatisch het beste beschikbare voertuig voor de gewenste periode voorgesteld (bijv. klant vraagt Polo → eerste vrije Polo in die periode). De gebruiker hoeft enkel "Bevestigen" te drukken en de reservering wordt direct aangemaakt.
+Scope: alle `/t/:slug/*` schermen. Aanpak: in één slag, daarna per detail bijschaven indien nodig.
 
-## Nieuwe pagina: Planning Aanvragen
+### Doel
+Een Clean SaaS klantomgeving (licht, ruim, blauw accent) met een echt dashboard, sterkere boekflow, en self-service voor documenten en lopende huur.
 
-Route: `/aanvragen-planning` (nieuwe sidebar-item onder Planning, naast Reserveringen).
+### Huidige situatie
+- Layout: `TenantPortaalLayout` met simpele sidebar (Aanbod, Reserveringen, Facturen, Profiel).
+- Pagina's zijn lijst-only kaarten zonder filters, zonder detail, zonder acties.
+- Geen overzicht, geen documenten-sectie, geen acties op lopende huur.
 
-Layout:
-- Bovenin: filterbalk (status: nieuw / gekoppeld / wacht op bevestiging / omgezet, zoekveld op klantnaam, periode-picker).
-- Linkerkolom: lijst met aanvraagkaarten, gesorteerd op aanvraagdatum (nieuwste eerst, urgent bovenaan).
-- Rechterkolom (detail): geselecteerde aanvraag met:
-  - klantgegevens
-  - gewenst type/categorie/brandstof/budget/periode/notitie
-  - **Voorgesteld voertuig** (groot, met foto, kenteken, dagprijs)
-  - dropdown "Andere keuze" met alle alternatieve beschikbare voertuigen voor die periode
-  - knoppen: **Bevestigen** (primair, groot), Wijzig periode, Andere klant, Afwijzen
+### Wat we bouwen
 
-## Slimme matching-logica
+**1. Layout opwaarderen**
+- Nieuwe `TenantPortaalLayout`: hogere top-bar met breadcrumb + accountmenu, sidebar met groepering (Algemeen / Mijn huur / Account), notificatiebel, sticky footer met support contact uit organisatie.
+- Mobile: bottom-tab bar (Home, Boeken, Huur, Documenten, Profiel) i.p.v. hamburger sheet.
+- Branding: portaalkleur als accent, fallback naar #3B82F6.
 
-Bij openen van de planning-pagina draait een matching per open aanvraag:
+**2. Nieuwe `Home` pagina (`/t/:slug/home`)**
+- Welkom met voornaam.
+- Hero-card: "Lopende huur" als die er is (voertuig, periode, km-stand, dagen resterend, knoppen: verlengen, schade melden, terugbrengen).
+- Quick stats: openstaand bedrag, volgende reservering, status rijbewijs.
+- Action cards: Boek voertuig, Upload rijbewijs, Mijn documenten.
 
-1. Filter alle voertuigen die voldoen aan harde criteria: `gewenst_type` (merk/model bevat), `gewenste_categorie`, `gewenste_brandstof`, optioneel `budget_max ≥ dagprijs`.
-2. Filter daarvan alle voertuigen die in de periode `gewenste_periode_start..eind` géén overlap hebben met:
-   - bestaande `reserveringen` (status ≠ geannuleerd)
-   - actieve `contracts` (start_datum..eind_datum overlap)
-   - geplande items in `service_historie` (onderhoud)
-   - `voertuigen.status` in {onderhoud, schade, verkocht}
-3. Sorteer kandidaten op: exacte modelmatch > zelfde categorie > prijs dichtst bij budget > minst recent verhuurd (eerlijke rotatie).
-4. De top-1 wordt voorstel; rest verschijnt in dropdown "Andere keuze".
-5. Resultaten worden gecached per aanvraag-id en automatisch geherevalueerd als de aanvraag wijzigt of als de planning verandert (realtime invalidate).
+**3. Aanbod & boeken (`/t/:slug`)**
+- Behoud bestaande `TenantAanbod`, maar nieuwe filterbar (categorie, brandstof, prijsrange, beschikbaarheid op datum).
+- Voertuig-detailmodal met carousel, specs, dagprijs en directe "Reserveer" CTA.
 
-## 1-klik bevestigen
+**4. Mijn huur (`/t/:slug/reserveringen`)**
+- Tabs: Lopend · Komend · Historie.
+- Per kaart: voertuigfoto, periode, status badge, totaalprijs.
+- Acties per status: Annuleren (komend), Verlengen (lopend), Terugbrengen melden (lopend), Factuur openen (historie).
+- Detailpagina `/t/:slug/reserveringen/:id` met timeline (aangevraagd → bevestigd → opgehaald → ingeleverd) en gekoppelde documenten/facturen.
 
-Knop "Bevestigen" doet in één RPC-call:
-- maakt klant aan als die nog niet bestaat (op basis van email/telefoon)
-- maakt `reserveringen` rij aan (status `bevestigd`, dagprijs uit voertuig, totaalprijs = dagen × dagprijs)
-- update aanvraag naar status `omgezet` met `gekoppeld_voertuig_id`
-- toont toast met link naar nieuwe reservering en optie "Direct contract opmaken"
+**5. Facturen (`/t/:slug/facturen`)**
+- Filter op status (openstaand/betaald), totaal openstaand bovenaan.
+- Per factuur: omschrijving, voertuig (indien gekoppeld), bedrag, status, knop "PDF" en "Online betalen" (link naar bestaande Stripe payment link in invoice).
 
-## Sidebar / navigatie
+**6. Documenten (`/t/:slug/documenten`)** — nieuw
+- Sectie Rijbewijs: status-badge, knop uploaden/vervangen (gebruikt bestaande `rijbewijs_verificaties` flow).
+- Sectie Overdrachten: lijst van getekende ophaal/inlever overdrachten met PDF-knop.
+- Sectie Schade: lijst eigen schade-rapporten + knop "Schade melden" (formulier met foto-upload, locatie, omschrijving → maakt `schade_rapporten` rij).
 
-- Nieuwe sidebar entry "Aanvragen" onder de Planning-sectie met badge die aantal open aanvragen toont (live via subscription op `aanvragen`).
-- De bestaande tab "Aanvragen" op `/reserveringen` blijft werken maar krijgt een banner "Bekijk in nieuwe Aanvragen-planning →".
+**7. Profiel (`/t/:slug/profiel`)**
+- Splits in 3 cards: Persoon, Adres, Bedrijf (indien zakelijk). 
+- Aparte sectie "Account & beveiliging": email, wachtwoord wijzigen, uitloggen, account verwijderen.
+- Notificatie-voorkeuren (email aan/uit per type).
 
-## Realtime
+**8. Visueel**
+- Clean SaaS: bg `#fafbfc`, cards `#ffffff` met `border-border`, primaire knoppen in portaalkleur, sub-headings in `text-muted-foreground`.
+- Consistentie: alle pagina's zelfde page-header pattern (titel + omschrijving + primaire actie rechts).
+- Skeleton loaders i.p.v. spinners.
+- Empty states met illustratie-iconen + heldere CTA.
 
-Supabase realtime subscription op `aanvragen` (insert/update) zodat nieuwe aanvragen direct in de lijst poppen, met subtiele toast-notificatie en geluidloze badge-update.
+### Technisch (kort)
+- Nieuwe pagina's: `pages/portaal/Home.tsx`, `Documenten.tsx`, `ReserveringDetail.tsx`, `SchadeMelden.tsx`.
+- Nieuwe componenten: `LopendeHuurCard`, `QuickStats`, `RijbewijsStatus`, `BottomTabBar`, `PortaalPageHeader`.
+- Routes uitbreiden in `src/App.tsx` voor `/home`, `/documenten`, `/reserveringen/:id`, `/schade-melden`.
+- Hooks: `useKlantProfiel`, `useLopendeHuur`, `useKlantDocumenten`, `useRijbewijsStatus`. Allemaal RLS-veilig (filteren via `klanten.auth_user_id = auth.uid()`).
+- Geen DB-migraties nodig; alle data is al aanwezig (`reserveringen`, `invoices`, `overdrachten`, `schade_rapporten`, `rijbewijs_verificaties`).
+- Bestaande `Mijn*`-pages worden vervangen, oude routes blijven werken.
 
-## Technische details
-
-- Nieuwe pagina `src/pages/AanvragenPlanning.tsx`.
-- Nieuwe hook `src/hooks/useAanvraagMatching.ts`: voor één aanvraag retourneert gesorteerde lijst beschikbare voertuigen, gebruikt bestaande availability-logica uit `VehicleGantt` (helper extraheren naar `src/lib/availability.ts`).
-- Nieuwe Supabase RPC `bevestig_aanvraag(_aanvraag_id, _voertuig_id, _dagprijs)` die transactioneel klant + reservering aanmaakt en aanvraag bijwerkt.
-- Sidebar wijziging in `src/components/AppSidebar.tsx` (of equivalent) met badge-count via `useAanvragen`.
-- Route toevoegen in `src/App.tsx`.
-- Realtime subscriptie via bestaand patroon (zie `useNotificaties` of `messages` voorbeeld).
-
-## Buiten scope
-
-- Geen wijzigingen aan publiek aanvraagformulier (`/boeken`).
-- Geen wijziging aan AI-matching edge function (`match-vehicle`); de nieuwe deterministische matcher draait clientside bovenop. AI-motivatie wordt indien aanwezig getoond als extra hint.
+### Wat er NIET in zit (bewust)
+- Branding-uitbreidingen voor whitelabel (apart traject).
+- Live chat met verhuurder.
+- Documenten ondertekenen anders dan via bestaande overdracht-flow.
