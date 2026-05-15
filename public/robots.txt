@@ -13,4 +13,4 @@ Allow: /
 User-agent: *
 Allow: /
 
-Sitemap: https://www.fleeflo.nl/sitemap.xml
+Sitemap: https://fleeflo.nl/sitemap.xml
