@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 
 export interface ParsedSheet {
   headers: string[];
@@ -24,18 +24,44 @@ export function FileDropzone({ onParsed }: Props) {
   const handleFile = async (file: File) => {
     setFileName(file.name);
     const buf = await file.arrayBuffer();
-    const wb = XLSX.read(buf, { type: "array", cellDates: true });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const aoa = XLSX.utils.sheet_to_json<unknown[]>(ws, { header: 1, raw: false, defval: "" });
-    if (aoa.length < 2) return;
-    const headers = (aoa[0] as unknown[]).map((h) => String(h ?? "").trim()).filter(Boolean);
+    const isCsv = /\.(csv|txt)$/i.test(file.name);
+    if (isCsv) {
+      const text = new TextDecoder().decode(buf);
+      const sep = text.includes("\t") ? "\t" : text.includes(";") ? ";" : ",";
+      const lines = text.split(/\r?\n/).filter((l) => l.trim());
+      if (lines.length < 2) return;
+      const headers = lines[0].split(sep).map((h) => h.trim().replace(/^["']|["']$/g, ""));
+      const rows: Record<string, unknown>[] = [];
+      for (let i = 1; i < lines.length; i++) {
+        const vals = lines[i].split(sep).map((v) => v.trim().replace(/^["']|["']$/g, ""));
+        const obj: Record<string, unknown> = {};
+        headers.forEach((h, idx) => { obj[h] = vals[idx] ?? ""; });
+        rows.push(obj);
+      }
+      onParsed({ headers, rows, fileName: file.name });
+      return;
+    }
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(buf);
+    const ws = wb.worksheets[0];
+    if (!ws || ws.rowCount < 2) return;
+    const headerRow = ws.getRow(1);
+    const headers: string[] = [];
+    headerRow.eachCell({ includeEmpty: false }, (cell) => {
+      headers.push(String(cell.value ?? "").trim());
+    });
     const rows: Record<string, unknown>[] = [];
-    for (let i = 1; i < aoa.length; i++) {
-      const row = aoa[i] as unknown[];
-      if (!row || row.every((v) => v === "" || v == null)) continue;
+    for (let r = 2; r <= ws.rowCount; r++) {
+      const row = ws.getRow(r);
       const obj: Record<string, unknown> = {};
-      headers.forEach((h, idx) => { obj[h] = row[idx] ?? ""; });
-      rows.push(obj);
+      let hasValue = false;
+      headers.forEach((h, idx) => {
+        const v = row.getCell(idx + 1).value as unknown;
+        const out = v && typeof v === "object" && "text" in (v as any) ? (v as any).text : v;
+        if (out !== "" && out != null) hasValue = true;
+        obj[h] = out ?? "";
+      });
+      if (hasValue) rows.push(obj);
     }
     onParsed({ headers, rows, fileName: file.name });
   };
