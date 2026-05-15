@@ -23,6 +23,10 @@ import { useVoertuigen } from "@/hooks/useVoertuigen";
 import { cn } from "@/lib/utils";
 import { VehicleTerugmeldingen } from "@/components/VehicleTerugmeldingen";
 import { VehicleSchadeOverzicht } from "@/components/VehicleSchadeOverzicht";
+import { ContractChecklistCard } from "@/components/contracts/ContractChecklistCard";
+import { buildContractChecklist, checklistComplete } from "@/lib/contractChecklist";
+import { useContractKlant } from "@/hooks/useContractKlant";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const typeFilters: { value: string; label: string; icon: React.ReactNode }[] = [
   { value: "Alle", label: "Alle", icon: <FileText className="w-3.5 h-3.5" /> },
