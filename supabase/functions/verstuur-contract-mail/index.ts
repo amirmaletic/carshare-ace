@@ -214,8 +214,14 @@ Deno.serve(async (req) => {
     }
 
     // Verstuur via Lovable email infra (notify.fleeflo.nl)
-    const { data: sendRes, error: sendErr } = await admin.functions.invoke('send-transactional-email', {
-      body: {
+    const sendResp = await fetch(`${SUPABASE_URL}/functions/v1/send-transactional-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${SERVICE_ROLE}`,
+        apikey: SERVICE_ROLE,
+      },
+      body: JSON.stringify({
         templateName: 'contract-pdf',
         recipientEmail: contract.klant_email,
         idempotencyKey: `contract-pdf-${contract.id}-${Date.now()}`,
@@ -226,9 +232,15 @@ Deno.serve(async (req) => {
           contract_url,
           av_url,
         },
-      },
+      }),
     })
-    if (sendErr) throw new Error(`E-mail versturen mislukt: ${sendErr.message}`)
+    const sendText = await sendResp.text()
+    if (!sendResp.ok) {
+      console.error('send-transactional-email failed', sendResp.status, sendText)
+      throw new Error(`E-mail versturen mislukt (${sendResp.status}): ${sendText}`)
+    }
+    let sendRes: any = null
+    try { sendRes = JSON.parse(sendText) } catch { sendRes = sendText }
 
     // Activiteiten log
     await admin.from('activiteiten_log').insert({
