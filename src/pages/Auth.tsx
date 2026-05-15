@@ -248,7 +248,7 @@ export default function Auth() {
     );
   }
 
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user && !inviteToken) return <Navigate to="/dashboard" replace />;
 
   if (showVerification) {
     return (
@@ -398,7 +398,7 @@ export default function Auth() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">
-                  {invite ? "Kies een wachtwoord" : "Wachtwoord"}
+                  {invite && !isLogin ? "Kies een wachtwoord" : "Wachtwoord"}
                 </Label>
                 {isLogin && (
                   <button
@@ -424,13 +424,27 @@ export default function Auth() {
               {submitting
                 ? "Bezig..."
                 : invite
-                ? "Account aanmaken & uitnodiging accepteren"
+                ? isLogin
+                  ? "Inloggen & uitnodiging accepteren"
+                  : "Account aanmaken & uitnodiging accepteren"
                 : isLogin
                 ? "Inloggen"
                 : "Account aanmaken"}
             </Button>
           </form>
-          {!invite && (
+          {invite ? (
+            <div className="text-center space-y-2">
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                {isLogin
+                  ? "Nog geen account? Maak er hier een aan"
+                  : "Heb je al een account? Log hier in"}
+              </button>
+            </div>
+          ) : (
           <div className="text-center space-y-2">
             <button
               type="button"
