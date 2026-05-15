@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
@@ -161,6 +161,7 @@ function ForgotPasswordScreen({
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user, loading, signIn, signUp } = useAuth();
   const inviteToken = searchParams.get("invite");
   const [isLogin, setIsLogin] = useState(
@@ -172,12 +173,14 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [bedrijfsnaam, setBedrijfsnaam] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [acceptingInvite, setAcceptingInvite] = useState(false);
   const [invite, setInvite] = useState<{
     email: string;
     role: string;
     organisatie_naam: string | null;
     status: string;
     expires_at: string;
+    account_exists?: boolean;
   } | null>(null);
   const [inviteLoading, setInviteLoading] = useState(!!inviteToken);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -206,11 +209,39 @@ export default function Auth() {
       }
       setInvite(inv);
       setEmail(inv.email);
-      setIsLogin(false);
+      setIsLogin(!!inv.account_exists);
     })();
   }, [inviteToken]);
 
-  if (loading || inviteLoading) {
+  useEffect(() => {
+    if (!user || !inviteToken || inviteLoading || inviteError) return;
+
+    let cancelled = false;
+
+    (async () => {
+      setAcceptingInvite(true);
+      const { error } = await supabase.rpc("accept_uitnodiging" as any, {
+        _token: inviteToken,
+      });
+
+      if (cancelled) return;
+
+      setAcceptingInvite(false);
+      if (error) {
+        toast({ title: "Fout", description: error.message, variant: "destructive" });
+        return;
+      }
+
+      toast({ title: "Uitnodiging geaccepteerd", description: "Je bent toegevoegd aan het team." });
+      navigate("/dashboard", { replace: true });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, inviteToken, inviteLoading, inviteError, navigate]);
+
+  if (loading || inviteLoading || acceptingInvite) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -218,7 +249,7 @@ export default function Auth() {
     );
   }
 
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user && !inviteToken) return <Navigate to="/dashboard" replace />;
 
   if (showVerification) {
     return (
@@ -284,7 +315,9 @@ export default function Auth() {
           </CardTitle>
           <CardDescription>
             {invite
-              ? `Maak je account aan om bij ${invite.organisatie_naam ?? "de organisatie"} te komen`
+              ? isLogin
+                ? `Log in om bij ${invite.organisatie_naam ?? "de organisatie"} te komen`
+                : `Maak je account aan om bij ${invite.organisatie_naam ?? "de organisatie"} te komen`
               : isLogin
               ? "Log in om je wagenpark te beheren"
               : "Start je gratis proefperiode van 30 dagen"}
@@ -368,7 +401,7 @@ export default function Auth() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">
-                  {invite ? "Kies een wachtwoord" : "Wachtwoord"}
+                  {invite && !isLogin ? "Kies een wachtwoord" : "Wachtwoord"}
                 </Label>
                 {isLogin && (
                   <button
@@ -394,13 +427,27 @@ export default function Auth() {
               {submitting
                 ? "Bezig..."
                 : invite
-                ? "Account aanmaken & uitnodiging accepteren"
+                ? isLogin
+                  ? "Inloggen & uitnodiging accepteren"
+                  : "Account aanmaken & uitnodiging accepteren"
                 : isLogin
                 ? "Inloggen"
                 : "Account aanmaken"}
             </Button>
           </form>
-          {!invite && (
+          {invite ? (
+            <div className="text-center space-y-2">
+              <button
+                type="button"
+                onClick={() => setIsLogin(!isLogin)}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                {isLogin
+                  ? "Nog geen account? Maak er hier een aan"
+                  : "Heb je al een account? Log hier in"}
+              </button>
+            </div>
+          ) : (
           <div className="text-center space-y-2">
             <button
               type="button"

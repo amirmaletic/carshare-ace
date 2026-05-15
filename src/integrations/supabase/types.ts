@@ -2640,6 +2640,14 @@ export type Database = {
       }
     }
     Functions: {
+      accept_uitnodiging: {
+        Args: { _token: string }
+        Returns: {
+          organisatie_id: string
+          organisatie_naam: string
+          role: Database["public"]["Enums"]["app_role"]
+        }[]
+      }
       admin_delete_organisatie: {
         Args: { _org_id: string }
         Returns: undefined
@@ -2876,6 +2884,7 @@ export type Database = {
       get_uitnodiging_info: {
         Args: { _token: string }
         Returns: {
+          account_exists: boolean
           email: string
           expires_at: string
           organisatie_naam: string
