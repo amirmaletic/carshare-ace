@@ -2710,6 +2710,13 @@ export type Database = {
           slug: string
         }[]
       }
+      get_portaal_locaties: {
+        Args: { _organisatie_id: string }
+        Returns: {
+          id: string
+          naam: string
+        }[]
+      }
       get_portaal_voertuigen: {
         Args: { _host: string }
         Returns: {
