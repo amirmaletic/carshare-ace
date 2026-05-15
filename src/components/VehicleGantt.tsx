@@ -625,7 +625,7 @@ function VehicleContextMenu({
 }
 
 function RowContextMenu({
-  vehicle, getDate, onSelectVehicle, onCreateContract, onCreateKlant, onReturnVehicle,
+  vehicle, getDate, onSelectVehicle, onCreateContract, onCreateKlant, onReturnVehicle, onCreateBlok,
 }: {
   vehicle: Vehicle;
   getDate: (x: number) => Date;
@@ -633,6 +633,7 @@ function RowContextMenu({
   onCreateContract?: (v: Vehicle, opts?: { startDate?: Date; endDate?: Date }) => void;
   onCreateKlant?: (v: Vehicle) => void;
   onReturnVehicle?: (v: Vehicle) => void;
+  onCreateBlok?: (date: Date) => void;
 }) {
   // Achterhaal de datum waarop is geklikt via een data-attribute zou ideaal zijn,
   // maar context menu's geven geen eventcoords. We bieden snelle datumkeuzes aan.
@@ -654,14 +655,15 @@ function RowContextMenu({
       <ContextMenuItem onClick={() => onCreateKlant?.(vehicle)} className="gap-2"><UserPlus className="w-3.5 h-3.5" />Nieuwe klant aanmaken</ContextMenuItem>
       <ContextMenuItem onClick={() => onSelectVehicle?.(vehicle)} className="gap-2"><Eye className="w-3.5 h-3.5" />Voertuig openen</ContextMenuItem>
       <ContextMenuSeparator />
+      <ContextMenuItem onClick={() => onCreateBlok?.(today)} className="gap-2"><Square className="w-3.5 h-3.5" />Blokje plaatsen</ContextMenuItem>
       <ContextMenuItem onClick={() => onReturnVehicle?.(vehicle)} className="gap-2"><RotateCcw className="w-3.5 h-3.5" />Terugmelden</ContextMenuItem>
     </ContextMenuContent>
   );
 }
 
 function BlockContextMenu({
-  block, vehicle, onSelectVehicle,
-}: { block: GanttBlock; vehicle: Vehicle; onSelectVehicle?: (v: Vehicle) => void }) {
+  block, vehicle, onSelectVehicle, onEditBlok,
+}: { block: GanttBlock; vehicle: Vehicle; onSelectVehicle?: (v: Vehicle) => void; onEditBlok?: (b: PlanningBlok) => void }) {
   return (
     <ContextMenuContent className="w-56">
       <ContextMenuLabel className="text-[11px] truncate">{block.label}</ContextMenuLabel>
@@ -675,6 +677,9 @@ function BlockContextMenu({
       )}
       {block.type === "onderhoud" && (
         <ContextMenuItem onClick={() => window.location.href = "/onderhoud"} className="gap-2"><Wrench className="w-3.5 h-3.5" />Open onderhoud</ContextMenuItem>
+      )}
+      {block.type === "blok" && onEditBlok && (
+        <ContextMenuItem onClick={() => onEditBlok(block.meta as PlanningBlok)} className="gap-2"><Pencil className="w-3.5 h-3.5" />Blokje bewerken</ContextMenuItem>
       )}
     </ContextMenuContent>
   );
