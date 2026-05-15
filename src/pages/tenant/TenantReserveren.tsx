@@ -30,14 +30,25 @@ export default function TenantReserveren() {
   const [success, setSuccess] = useState(false);
 
   const { data: voertuigen = [] } = useQuery({
-    queryKey: ["tenant-aanbod-min", tenant?.id],
+    queryKey: ["tenant-aanbod-min", tenant?.id, startDatum, eindDatum],
     enabled: !!tenant?.id,
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_publiek_aanbod", { _organisatie_id: tenant!.id });
+      const { data, error } = await supabase.rpc("get_publiek_aanbod", {
+        _organisatie_id: tenant!.id,
+        _start_datum: startDatum || null,
+        _eind_datum: eindDatum || null,
+      });
       if (error) throw error;
       return data ?? [];
     },
   });
+
+  // Als de gekozen voertuig in de gewenste periode niet meer beschikbaar is, deselecteren
+  useEffect(() => {
+    if (voertuigId && voertuigen.length > 0 && !(voertuigen as any[]).some((v) => v.id === voertuigId)) {
+      setVoertuigId(null);
+    }
+  }, [voertuigen, voertuigId]);
 
   const voertuig = useMemo(
     () => (voertuigen as any[]).find((v) => v.id === voertuigId) ?? null,
