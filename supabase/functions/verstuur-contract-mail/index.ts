@@ -300,8 +300,19 @@ Deno.serve(async (req) => {
 
     let vehicle: any = null
     if (contract.voertuig_id) {
-      const { data } = await admin.from('voertuigen').select('merk, model, kenteken, bouwjaar, brandstof, categorie').eq('id', contract.voertuig_id).maybeSingle()
+      const { data } = await admin.from('voertuigen').select('merk, model, kenteken, bouwjaar, brandstof, categorie, kleur').eq('id', contract.voertuig_id).maybeSingle()
       vehicle = data
+    }
+
+    let schades: any[] = []
+    if (contract.voertuig_id) {
+      const { data: sd } = await admin
+        .from('schade_rapporten')
+        .select('id, datum, omschrijving, locatie_schade, ernst, hersteld')
+        .eq('voertuig_id', contract.voertuig_id)
+        .eq('organisatie_id', contract.organisatie_id)
+        .order('datum', { ascending: false })
+      schades = sd ?? []
     }
 
     // Org info + AV pad
@@ -313,7 +324,7 @@ Deno.serve(async (req) => {
 
     const orgNaam = org?.naam ?? 'Verhuurder'
 
-    const contractPdfBase64 = buildContractPdfBase64({ orgNaam, contract, vehicle })
+    const contractPdfBase64 = buildContractPdfBase64({ orgNaam, contract, vehicle, schades, org })
     // Upload contract-PDF naar storage en maak signed URL (30 dagen)
     const pdfBytes = Uint8Array.from(atob(contractPdfBase64), (c) => c.charCodeAt(0))
     const pdfPath = `contracten/${contract.organisatie_id}/${contract.id}-${Date.now()}.pdf`
