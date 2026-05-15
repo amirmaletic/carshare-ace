@@ -25,113 +25,237 @@ function buildContractPdfBase64(input: {
   orgNaam: string
   contract: any
   vehicle: any | null
+  schades?: any[]
+  org?: any
 }): string {
-  const { orgNaam, contract, vehicle } = input
+  const { orgNaam, contract, vehicle, schades = [], org } = input
   const doc = new jsPDF({ unit: 'pt', format: 'a4' })
   const pageWidth = doc.internal.pageSize.getWidth()
-  let y = 56
+  const pageHeight = doc.internal.pageSize.getHeight()
   const left = 48
   const right = pageWidth - 48
+  const contentW = right - left
+  let y = 0
 
-  // Header band
-  doc.setFillColor(59, 130, 246)
-  doc.rect(0, 0, pageWidth, 8, 'F')
+  // Brand colors
+  const BRAND: [number, number, number] = [59, 130, 246]
+  const INK: [number, number, number] = [15, 23, 42]
+  const MUTED: [number, number, number] = [100, 116, 139]
+  const LINE: [number, number, number] = [226, 232, 240]
+  const SOFT: [number, number, number] = [248, 250, 252]
 
-  doc.setFont('helvetica', 'bold').setFontSize(20).setTextColor(15, 23, 42)
-  doc.text(orgNaam, left, y)
-  doc.setFont('helvetica', 'normal').setFontSize(10).setTextColor(100, 116, 139)
-  doc.text('Huurcontract', left, y + 16)
+  const ensureSpace = (needed: number) => {
+    if (y + needed > pageHeight - 80) {
+      drawFooter()
+      doc.addPage()
+      y = 56
+    }
+  }
 
-  doc.setFont('helvetica', 'bold').setFontSize(11).setTextColor(15, 23, 42)
-  doc.text(`Contract ${contract.contract_nummer ?? ''}`, right, y, { align: 'right' })
-  doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(100, 116, 139)
-  doc.text(`Datum: ${fmtDate(new Date().toISOString())}`, right, y + 14, { align: 'right' })
+  const drawFooter = () => {
+    const fy = pageHeight - 32
+    doc.setDrawColor(...LINE).line(left, fy - 14, right, fy - 14)
+    doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(...MUTED)
+    const footerLeft = `${orgNaam}${org?.email ? ' | ' + org.email : ''}`
+    doc.text(footerLeft, left, fy)
+    const pageNum = `Pagina ${doc.getCurrentPageInfo().pageNumber}`
+    doc.text(pageNum, right, fy, { align: 'right' })
+  }
 
-  y += 44
-  doc.setDrawColor(226, 232, 240).line(left, y, right, y)
-  y += 24
+  // ===== HEADER =====
+  doc.setFillColor(...BRAND).rect(0, 0, pageWidth, 96, 'F')
+  doc.setFont('helvetica', 'bold').setFontSize(22).setTextColor(255, 255, 255)
+  doc.text(orgNaam, left, 44)
+  doc.setFont('helvetica', 'normal').setFontSize(11).setTextColor(219, 234, 254)
+  doc.text('Huurcontract', left, 64)
+
+  doc.setFont('helvetica', 'bold').setFontSize(12).setTextColor(255, 255, 255)
+  doc.text(contract.contract_nummer ?? '', right, 44, { align: 'right' })
+  doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(219, 234, 254)
+  doc.text(`Opgemaakt op ${fmtDate(new Date().toISOString())}`, right, 60, { align: 'right' })
+  if (contract.status) {
+    doc.text(`Status: ${String(contract.status).toUpperCase()}`, right, 74, { align: 'right' })
+  }
+
+  y = 130
 
   const section = (title: string) => {
-    doc.setFont('helvetica', 'bold').setFontSize(11).setTextColor(59, 130, 246)
-    doc.text(title.toUpperCase(), left, y)
-    y += 6
-    doc.setDrawColor(226, 232, 240).line(left, y, right, y)
-    y += 16
-  }
-  const row = (label: string, value: string | null | undefined) => {
-    if (y > 760) { doc.addPage(); y = 56 }
-    doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(100, 116, 139)
-    doc.text(label, left, y)
-    doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(15, 23, 42)
-    doc.text(String(value ?? '-'), left + 140, y, { maxWidth: right - left - 140 })
+    ensureSpace(40)
+    doc.setFillColor(...BRAND).rect(left, y, 3, 12, 'F')
+    doc.setFont('helvetica', 'bold').setFontSize(11).setTextColor(...INK)
+    doc.text(title.toUpperCase(), left + 10, y + 9)
     y += 18
+    doc.setDrawColor(...LINE).line(left, y, right, y)
+    y += 14
   }
 
+  // Two-column info card
+  const twoColCard = (rows: Array<[string, string | null | undefined]>) => {
+    const filtered = rows.filter(([, v]) => v !== null && v !== undefined && String(v).trim() !== '' && String(v) !== '-')
+    const rowH = 22
+    const colW = (contentW - 12) / 2
+    const rowsCount = Math.ceil(filtered.length / 2)
+    const cardH = rowsCount * rowH + 16
+    ensureSpace(cardH + 8)
+    doc.setFillColor(...SOFT).roundedRect(left, y, contentW, cardH, 6, 6, 'F')
+    doc.setDrawColor(...LINE).roundedRect(left, y, contentW, cardH, 6, 6, 'S')
+    let cy = y + 16
+    filtered.forEach((pair, i) => {
+      const isLeft = i % 2 === 0
+      const cx = isLeft ? left + 14 : left + 14 + colW + 12
+      doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(...MUTED)
+      doc.text(pair[0].toUpperCase(), cx, cy)
+      doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(...INK)
+      doc.text(String(pair[1]), cx, cy + 11, { maxWidth: colW - 14 })
+      if (!isLeft) cy += rowH
+    })
+    y += cardH + 14
+  }
+
+  // ===== CONTRACT =====
   section('Contractgegevens')
-  row('Type', contract.type)
-  row('Status', contract.status)
-  row('Startdatum', fmtDate(contract.start_datum))
-  row('Einddatum', fmtDate(contract.eind_datum))
-  if (contract.maandprijs) row('Maandprijs', money(contract.maandprijs))
-  if (contract.dagprijs) row('Dagprijs', money(contract.dagprijs))
-  if (Number(contract.borg) > 0) row('Borg', money(contract.borg))
-  if (contract.km_per_jaar) row('Km per jaar', `${contract.km_per_jaar} km`)
+  twoColCard([
+    ['Type', contract.type],
+    ['Status', contract.status],
+    ['Startdatum', fmtDate(contract.start_datum)],
+    ['Einddatum', fmtDate(contract.eind_datum)],
+    contract.maandprijs ? ['Maandprijs', money(contract.maandprijs)] : ['', ''],
+    contract.dagprijs ? ['Dagprijs', money(contract.dagprijs)] : ['', ''],
+    Number(contract.borg) > 0 ? ['Borg', money(contract.borg)] : ['', ''],
+    contract.km_per_jaar ? ['Km per jaar', `${contract.km_per_jaar} km`] : ['', ''],
+  ].filter(([k]) => k !== '') as Array<[string, string | null | undefined]>)
 
-  y += 8
+  // ===== KLANT =====
   section('Klantgegevens')
-  row('Naam', contract.klant_naam)
-  row('E-mail', contract.klant_email)
-  if (contract.klant_telefoon) row('Telefoon', contract.klant_telefoon)
-  if (contract.klant_adres) row('Adres', contract.klant_adres)
-  if (contract.bedrijf) row('Bedrijf', contract.bedrijf)
-  if (contract.kvk_nummer) row('KVK-nummer', contract.kvk_nummer)
+  twoColCard([
+    ['Naam', contract.klant_naam],
+    ['E-mail', contract.klant_email],
+    ['Telefoon', contract.klant_telefoon],
+    ['Adres', contract.klant_adres],
+    ['Bedrijf', contract.bedrijf],
+    ['KVK-nummer', contract.kvk_nummer],
+  ])
 
+  // ===== VOERTUIG =====
   if (vehicle) {
-    y += 8
     section('Voertuig')
-    row('Merk en model', `${vehicle.merk ?? ''} ${vehicle.model ?? ''}`.trim())
-    row('Kenteken', vehicle.kenteken)
-    if (vehicle.bouwjaar) row('Bouwjaar', String(vehicle.bouwjaar))
-    if (vehicle.brandstof) row('Brandstof', vehicle.brandstof)
-    if (vehicle.categorie) row('Categorie', vehicle.categorie)
+    twoColCard([
+      ['Merk en model', `${vehicle.merk ?? ''} ${vehicle.model ?? ''}`.trim()],
+      ['Kenteken', vehicle.kenteken],
+      ['Bouwjaar', vehicle.bouwjaar ? String(vehicle.bouwjaar) : null],
+      ['Brandstof', vehicle.brandstof],
+      ['Categorie', vehicle.categorie],
+      ['Kleur', vehicle.kleur],
+    ])
   }
 
+  // ===== SCHADE =====
+  if (schades && schades.length > 0) {
+    section(`Bekende schade (${schades.length})`)
+    const ernstColor = (e: string): [number, number, number] => {
+      const v = (e || '').toLowerCase()
+      if (v.includes('zwaar') || v.includes('ernstig')) return [220, 38, 38]
+      if (v.includes('middel') || v.includes('matig')) return [234, 88, 12]
+      return [202, 138, 4]
+    }
+    schades.forEach((s) => {
+      const omschrijving = s.omschrijving ?? '-'
+      const lines = doc.splitTextToSize(String(omschrijving), contentW - 130)
+      const cardH = Math.max(56, 28 + lines.length * 11)
+      ensureSpace(cardH + 10)
+      doc.setFillColor(255, 255, 255).roundedRect(left, y, contentW, cardH, 6, 6, 'F')
+      doc.setDrawColor(...LINE).roundedRect(left, y, contentW, cardH, 6, 6, 'S')
+      // Ernst badge
+      const [er, eg, eb] = ernstColor(s.ernst)
+      const badgeText = (s.ernst ?? 'licht').toString().toUpperCase()
+      const badgeW = doc.getTextWidth(badgeText) + 14
+      doc.setFillColor(er, eg, eb).roundedRect(left + 12, y + 12, badgeW, 14, 7, 7, 'F')
+      doc.setFont('helvetica', 'bold').setFontSize(8).setTextColor(255, 255, 255)
+      doc.text(badgeText, left + 12 + badgeW / 2, y + 22, { align: 'center' })
+      // Datum
+      doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(...MUTED)
+      doc.text(fmtDate(s.datum), right - 12, y + 22, { align: 'right' })
+      // Locatie
+      if (s.locatie_schade) {
+        doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(...INK)
+        doc.text(String(s.locatie_schade), left + 12 + badgeW + 10, y + 22)
+      }
+      // Omschrijving
+      doc.setFont('helvetica', 'normal').setFontSize(10).setTextColor(...INK)
+      doc.text(lines, left + 12, y + 40)
+      // Hersteld indicator
+      if (s.hersteld) {
+        doc.setFont('helvetica', 'bold').setFontSize(8).setTextColor(22, 163, 74)
+        doc.text('HERSTELD', right - 12, y + 40, { align: 'right' })
+      }
+      y += cardH + 8
+    })
+    y += 6
+    doc.setFont('helvetica', 'italic').setFontSize(8).setTextColor(...MUTED)
+    const note = 'De huurder verklaart bekend te zijn met bovenstaande schade en is hier niet verantwoordelijk voor.'
+    doc.text(note, left, y)
+    y += 14
+  } else if (vehicle) {
+    section('Schade')
+    ensureSpace(40)
+    doc.setFillColor(...SOFT).roundedRect(left, y, contentW, 32, 6, 6, 'F')
+    doc.setDrawColor(...LINE).roundedRect(left, y, contentW, 32, 6, 6, 'S')
+    doc.setFont('helvetica', 'normal').setFontSize(10).setTextColor(...INK)
+    doc.text('Geen bekende schade geregistreerd op het voertuig bij aanvang van het contract.', left + 12, y + 20)
+    y += 44
+  }
+
+  // ===== INCLUSIEF =====
   if (Array.isArray(contract.inclusief) && contract.inclusief.length > 0) {
-    y += 8
     section('Inbegrepen services')
-    doc.setFont('helvetica', 'normal').setFontSize(10).setTextColor(15, 23, 42)
-    const text = contract.inclusief.join(', ')
-    const split = doc.splitTextToSize(text, right - left)
-    doc.text(split, left, y)
-    y += split.length * 14
+    ensureSpace(20)
+    doc.setFont('helvetica', 'normal').setFontSize(10).setTextColor(...INK)
+    contract.inclusief.forEach((item: string) => {
+      ensureSpace(14)
+      doc.setFillColor(...BRAND).circle(left + 4, y - 3, 1.8, 'F')
+      doc.text(String(item), left + 14, y)
+      y += 14
+    })
+    y += 6
   }
 
+  // ===== BIJZONDERHEDEN =====
   if (contract.notities) {
-    y += 8
     section('Bijzonderheden')
-    doc.setFont('helvetica', 'normal').setFontSize(10).setTextColor(15, 23, 42)
-    const split = doc.splitTextToSize(contract.notities, right - left)
-    doc.text(split, left, y)
-    y += split.length * 14
+    const split = doc.splitTextToSize(contract.notities, contentW - 24)
+    const h = split.length * 12 + 20
+    ensureSpace(h)
+    doc.setFillColor(...SOFT).roundedRect(left, y, contentW, h, 6, 6, 'F')
+    doc.setDrawColor(...LINE).roundedRect(left, y, contentW, h, 6, 6, 'S')
+    doc.setFont('helvetica', 'normal').setFontSize(10).setTextColor(...INK)
+    doc.text(split, left + 12, y + 14)
+    y += h + 10
   }
 
-  // Signatures
-  if (y > 660) { doc.addPage(); y = 56 }
-  y = Math.max(y + 32, 700)
-  const colW = (right - left - 40) / 2
-  doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(100, 116, 139)
+  // ===== HANDTEKENINGEN =====
+  ensureSpace(120)
+  y += 10
+  section('Ondertekening')
+  const colW = (contentW - 24) / 2
+  doc.setFont('helvetica', 'normal').setFontSize(9).setTextColor(...MUTED)
   doc.text('Verhuurder', left, y)
-  doc.text('Huurder', left + colW + 40, y)
-  doc.setDrawColor(15, 23, 42)
-  doc.line(left, y + 40, left + colW, y + 40)
-  doc.line(left + colW + 40, y + 40, right, y + 40)
-  doc.setFontSize(10).setTextColor(15, 23, 42)
-  doc.text(orgNaam, left, y + 56)
-  doc.text(contract.klant_naam ?? '', left + colW + 40, y + 56)
+  doc.text('Huurder', left + colW + 24, y)
+  doc.setDrawColor(...INK)
+  doc.line(left, y + 50, left + colW, y + 50)
+  doc.line(left + colW + 24, y + 50, right, y + 50)
+  doc.setFont('helvetica', 'bold').setFontSize(10).setTextColor(...INK)
+  doc.text(orgNaam, left, y + 64)
+  doc.text(contract.klant_naam ?? '', left + colW + 24, y + 64)
+  doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(...MUTED)
+  doc.text(`Plaats en datum: ${fmtDate(new Date().toISOString())}`, left, y + 78)
+  doc.text(`Plaats en datum: ${fmtDate(new Date().toISOString())}`, left + colW + 24, y + 78)
 
-  // Footer
-  doc.setFont('helvetica', 'normal').setFontSize(8).setTextColor(148, 163, 184)
-  doc.text(`Gegenereerd op ${fmtDate(new Date().toISOString())} - ${contract.contract_nummer ?? ''}`, pageWidth / 2, 820, { align: 'center' })
+  // Footer on all pages
+  const totalPages = doc.getNumberOfPages()
+  for (let p = 1; p <= totalPages; p++) {
+    doc.setPage(p)
+    drawFooter()
+  }
 
   const arr = doc.output('arraybuffer') as ArrayBuffer
   return bytesToBase64(new Uint8Array(arr))
