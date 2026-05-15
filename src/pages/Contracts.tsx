@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { useContracts, useUpdateContract, type ContractWithInvoices } from "@/hooks/useContracts";
 import { useUpdateInvoice } from "@/hooks/useInvoices";
+import { supabase } from "@/integrations/supabase/client";
 import { ContractForm } from "@/components/ContractForm";
 import { InvoiceForm } from "@/components/InvoiceForm";
 import { getContractStatusColor, getContractTypeLabel, getContractTypeIcon, getInvoiceStatusColor } from "@/data/mockData";
