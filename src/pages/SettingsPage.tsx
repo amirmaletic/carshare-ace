@@ -22,6 +22,7 @@ import PortaalTab from "@/components/settings/PortaalTab";
 import IntegratiesTab from "@/components/settings/IntegratiesTab";
 import ApiWebhooksTab from "@/components/settings/ApiWebhooksTab";
 import EmailTemplatesTab from "@/components/settings/EmailTemplatesTab";
+import { AlgemeneVoorwaardenUpload } from "@/components/settings/AlgemeneVoorwaardenUpload";
 import { SignaturePad } from "@/components/SignaturePad";
 import { Eraser } from "lucide-react";
 
