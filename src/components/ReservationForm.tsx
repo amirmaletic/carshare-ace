@@ -9,6 +9,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useKlanten } from "@/hooks/useKlanten";
 import { useVoertuigen } from "@/hooks/useVoertuigen";
+import { useBezetteVoertuigen } from "@/hooks/useBezetteVoertuigen";
 import { toast } from "sonner";
 import { differenceInDays } from "date-fns";
 
@@ -31,6 +32,13 @@ export function ReservationForm({ open, onOpenChange, prefilledVehicleId, prefil
   const [startDatum, setStartDatum] = useState<string>(prefilledStartDatum ?? "");
   const [eindDatum, setEindDatum] = useState<string>(prefilledEindDatum ?? "");
   const [notities, setNotities] = useState<string>("");
+
+  const { data: bezetSet } = useBezetteVoertuigen(startDatum, eindDatum);
+
+  const beschikbareVoertuigen = useMemo(() => {
+    if (!startDatum || !eindDatum || !bezetSet) return voertuigen;
+    return voertuigen.filter((v) => v.id === voertuigId || !bezetSet.has(v.id));
+  }, [voertuigen, bezetSet, startDatum, eindDatum, voertuigId]);
 
   // Sync wanneer dialog opnieuw geopend wordt met andere prefill
   useMemo(() => {
@@ -118,7 +126,10 @@ export function ReservationForm({ open, onOpenChange, prefilledVehicleId, prefil
             <Select value={voertuigId} onValueChange={setVoertuigId} disabled={!!prefilledVehicleId}>
               <SelectTrigger><SelectValue placeholder="Kies een voertuig" /></SelectTrigger>
               <SelectContent>
-                {voertuigen.map((v) => (
+                {beschikbareVoertuigen.length === 0 && (
+                  <div className="px-2 py-3 text-sm text-muted-foreground">Geen voertuigen beschikbaar in deze periode</div>
+                )}
+                {beschikbareVoertuigen.map((v) => (
                   <SelectItem key={v.id} value={v.id}>
                     {v.merk} {v.model} · {v.kenteken} · €{v.dagprijs}/dag
                   </SelectItem>
