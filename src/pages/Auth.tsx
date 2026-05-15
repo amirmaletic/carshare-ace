@@ -180,6 +180,7 @@ export default function Auth() {
     organisatie_naam: string | null;
     status: string;
     expires_at: string;
+    account_exists?: boolean;
   } | null>(null);
   const [inviteLoading, setInviteLoading] = useState(!!inviteToken);
   const [inviteError, setInviteError] = useState<string | null>(null);
@@ -208,7 +209,7 @@ export default function Auth() {
       }
       setInvite(inv);
       setEmail(inv.email);
-      setIsLogin(false);
+      setIsLogin(!!inv.account_exists);
     })();
   }, [inviteToken]);
 
@@ -314,7 +315,9 @@ export default function Auth() {
           </CardTitle>
           <CardDescription>
             {invite
-              ? `Maak je account aan om bij ${invite.organisatie_naam ?? "de organisatie"} te komen`
+              ? isLogin
+                ? `Log in om bij ${invite.organisatie_naam ?? "de organisatie"} te komen`
+                : `Maak je account aan om bij ${invite.organisatie_naam ?? "de organisatie"} te komen`
               : isLogin
               ? "Log in om je wagenpark te beheren"
               : "Start je gratis proefperiode van 30 dagen"}
