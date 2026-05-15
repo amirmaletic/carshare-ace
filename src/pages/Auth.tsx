@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
 import { supabase } from "@/integrations/supabase/client";
@@ -161,6 +161,7 @@ function ForgotPasswordScreen({
 
 export default function Auth() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const { user, loading, signIn, signUp } = useAuth();
   const inviteToken = searchParams.get("invite");
   const [isLogin, setIsLogin] = useState(
@@ -172,6 +173,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
   const [bedrijfsnaam, setBedrijfsnaam] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [acceptingInvite, setAcceptingInvite] = useState(false);
   const [invite, setInvite] = useState<{
     email: string;
     role: string;
@@ -210,7 +212,35 @@ export default function Auth() {
     })();
   }, [inviteToken]);
 
-  if (loading || inviteLoading) {
+  useEffect(() => {
+    if (!user || !inviteToken || inviteLoading || inviteError) return;
+
+    let cancelled = false;
+
+    (async () => {
+      setAcceptingInvite(true);
+      const { error } = await supabase.rpc("accept_uitnodiging" as any, {
+        _token: inviteToken,
+      });
+
+      if (cancelled) return;
+
+      setAcceptingInvite(false);
+      if (error) {
+        toast({ title: "Fout", description: error.message, variant: "destructive" });
+        return;
+      }
+
+      toast({ title: "Uitnodiging geaccepteerd", description: "Je bent toegevoegd aan het team." });
+      navigate("/dashboard", { replace: true });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, inviteToken, inviteLoading, inviteError, navigate]);
+
+  if (loading || inviteLoading || acceptingInvite) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
