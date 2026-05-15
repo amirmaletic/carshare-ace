@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { lovable } from "@/integrations/lovable/index";
@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "@/hooks/use-toast";
 import fleefloLogo from "@/assets/fleeflo-logo-blue.png";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Mail, CheckCircle2, UserPlus, AlertTriangle } from "lucide-react";
 
 function EmailVerificationScreen({ email, onBack }: { email: string; onBack: () => void }) {
   const [resending, setResending] = useState(false);
@@ -162,15 +162,55 @@ function ForgotPasswordScreen({
 export default function Auth() {
   const [searchParams] = useSearchParams();
   const { user, loading, signIn, signUp } = useAuth();
-  const [isLogin, setIsLogin] = useState(searchParams.get("mode") !== "signup");
+  const inviteToken = searchParams.get("invite");
+  const [isLogin, setIsLogin] = useState(
+    !inviteToken && searchParams.get("mode") !== "signup",
+  );
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [showVerification, setShowVerification] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [bedrijfsnaam, setBedrijfsnaam] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [invite, setInvite] = useState<{
+    email: string;
+    role: string;
+    organisatie_naam: string | null;
+    status: string;
+    expires_at: string;
+  } | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(!!inviteToken);
+  const [inviteError, setInviteError] = useState<string | null>(null);
 
-  if (loading) {
+  useEffect(() => {
+    if (!inviteToken) return;
+    (async () => {
+      setInviteLoading(true);
+      const { data, error } = await supabase.rpc("get_uitnodiging_info", {
+        _token: inviteToken,
+      });
+      setInviteLoading(false);
+      if (error || !data || data.length === 0) {
+        setInviteError("Deze uitnodigingslink is ongeldig of niet meer beschikbaar.");
+        return;
+      }
+      const inv = data[0] as any;
+      if (inv.status === "accepted") {
+        setInviteError("Deze uitnodiging is al geaccepteerd. Log gewoon in met je e-mailadres.");
+        setEmail(inv.email);
+        return;
+      }
+      if (inv.status !== "pending" || new Date(inv.expires_at) < new Date()) {
+        setInviteError("Deze uitnodiging is verlopen. Vraag de beheerder om een nieuwe.");
+        return;
+      }
+      setInvite(inv);
+      setEmail(inv.email);
+      setIsLogin(false);
+    })();
+  }, [inviteToken]);
+
+  if (loading || inviteLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -213,7 +253,12 @@ export default function Auth() {
         toast({ title: "Fout", description: error.message, variant: "destructive" });
       }
     } else {
-      const { error } = await signUp(email, password, bedrijfsnaam.trim());
+      // Bij invite: geen bedrijfsnaam (gebruiker komt bij bestaande org)
+      const { error } = await signUp(
+        email,
+        password,
+        invite ? "" : bedrijfsnaam.trim(),
+      );
       setSubmitting(false);
       if (error) {
         toast({ title: "Fout", description: error.message, variant: "destructive" });
@@ -231,15 +276,38 @@ export default function Auth() {
             <img src={fleefloLogo} alt="FleeFlo" className="w-16 h-16 object-contain" />
           </div>
           <CardTitle className="text-2xl">
-            {isLogin ? "Inloggen" : "Account aanmaken"}
+            {invite
+              ? "Uitnodiging accepteren"
+              : isLogin
+              ? "Inloggen"
+              : "Account aanmaken"}
           </CardTitle>
           <CardDescription>
-            {isLogin
+            {invite
+              ? `Maak je account aan om bij ${invite.organisatie_naam ?? "de organisatie"} te komen`
+              : isLogin
               ? "Log in om je wagenpark te beheren"
               : "Start je gratis proefperiode van 30 dagen"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {inviteError && (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/10 text-destructive text-sm">
+              <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+              <span>{inviteError}</span>
+            </div>
+          )}
+          {invite && (
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/10 text-sm">
+              <UserPlus className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
+              <span>
+                Je wordt toegevoegd aan{" "}
+                <strong>{invite.organisatie_naam ?? "de organisatie"}</strong> als{" "}
+                <strong>{invite.role}</strong>.
+              </span>
+            </div>
+          )}
+          {!invite && (
           <Button
             variant="outline"
             className="w-full gap-2"
@@ -266,9 +334,10 @@ export default function Auth() {
             <span className="text-xs text-muted-foreground">of</span>
             <Separator className="flex-1" />
           </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {!isLogin && (
+            {!isLogin && !invite && (
               <div className="space-y-2">
                 <Label htmlFor="bedrijfsnaam">Bedrijfsnaam</Label>
                 <Input
@@ -290,11 +359,15 @@ export default function Auth() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                readOnly={!!invite}
+                disabled={!!invite}
               />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Wachtwoord</Label>
+                <Label htmlFor="password">
+                  {invite ? "Kies een wachtwoord" : "Wachtwoord"}
+                </Label>
                 {isLogin && (
                   <button
                     type="button"
@@ -315,14 +388,17 @@ export default function Auth() {
                 minLength={6}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={submitting}>
+            <Button type="submit" className="w-full" disabled={submitting || !!inviteError}>
               {submitting
                 ? "Bezig..."
+                : invite
+                ? "Account aanmaken & uitnodiging accepteren"
                 : isLogin
                 ? "Inloggen"
                 : "Account aanmaken"}
             </Button>
           </form>
+          {!invite && (
           <div className="text-center space-y-2">
             <button
               type="button"
@@ -334,6 +410,7 @@ export default function Auth() {
                 : "Al een account? Log hier in"}
             </button>
           </div>
+          )}
 
         </CardContent>
       </Card>
