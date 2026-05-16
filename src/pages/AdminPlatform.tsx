@@ -15,6 +15,14 @@ import {
   useAdminRevokePlatformAdmin,
   useAdminImpersonate,
   useAdminSetModuleModus,
+  useAdminBulkExtendTrial,
+  useAdminBulkSetActive,
+  useAdminSignupsPerDag,
+  useAdminPromocodes,
+  useAdminCreatePromocode,
+  useAdminTogglePromocode,
+  useAdminDeletePromocode,
+  type PromocodeRow,
   type ModuleModus,
   type AdminOrgRow,
 } from "@/hooks/usePlatformAdmin";
@@ -30,11 +38,15 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { format, formatDistanceToNow, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import {
   Search, Building2, Users, Car, FileText, Activity, Calendar, Shield,
   AlertTriangle, CheckCircle2, XCircle, RefreshCw, Trash2, UserPlus, LogIn, UserMinus, ShieldOff,
+  Tag, TrendingUp, Pause, Play, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,7 +61,11 @@ export default function AdminPlatform() {
   const [selectedOrg, setSelectedOrg] = useState<AdminOrgRow | null>(null);
   const [grantOpen, setGrantOpen] = useState(false);
   const [grantEmail, setGrantEmail] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const grantMutation = useGrantPlatformAdmin();
+  const bulkExtend = useAdminBulkExtendTrial();
+  const bulkSetActive = useAdminBulkSetActive();
+  const { data: signupsData = [] } = useAdminSignupsPerDag(30);
 
   if (authLoading || roleLoading) {
     return (
@@ -107,6 +123,39 @@ export default function AdminPlatform() {
   const totaalInTrial = orgs.filter((o) => o.trial_ends_at && new Date(o.trial_ends_at) > new Date()).length;
   const totaalVerlopen = orgs.filter((o) => o.trial_ends_at && new Date(o.trial_ends_at) <= new Date()).length;
 
+  const toggleId = (id: string) => {
+    setSelectedIds((s) => {
+      const next = new Set(s);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleAll = () => {
+    setSelectedIds((s) => {
+      if (filtered.every((o) => s.has(o.id))) return new Set();
+      return new Set(filtered.map((o) => o.id));
+    });
+  };
+  const clearSelection = () => setSelectedIds(new Set());
+  const selectedIdsArr = Array.from(selectedIds);
+  const runBulkExtend = async (days: number) => {
+    try {
+      const n = await bulkExtend.mutateAsync({ org_ids: selectedIdsArr, days });
+      toast.success(`${n} omgevingen verlengd met ${days} dagen`);
+    } catch (e: any) { toast.error(e.message || "Mislukt"); }
+  };
+  const runBulkActive = async (is_active: boolean) => {
+    try {
+      const n = await bulkSetActive.mutateAsync({ org_ids: selectedIdsArr, is_active });
+      toast.success(`${n} omgevingen ${is_active ? "geactiveerd" : "gepauzeerd"}`);
+    } catch (e: any) { toast.error(e.message || "Mislukt"); }
+  };
+
+  const chartData = signupsData.map((r) => ({
+    datum: format(new Date(r.datum), "d MMM", { locale: nl }),
+    aantal: Number(r.aantal),
+  }));
+
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
@@ -136,6 +185,7 @@ export default function AdminPlatform() {
         <Tabs defaultValue="organisaties">
           <TabsList>
             <TabsTrigger value="organisaties">Organisaties</TabsTrigger>
+            <TabsTrigger value="promocodes">Promocodes</TabsTrigger>
             <TabsTrigger value="admins">Platform admins</TabsTrigger>
           </TabsList>
 
@@ -160,6 +210,29 @@ export default function AdminPlatform() {
           </CardContent></Card>
         </div>
 
+        {/* Groei chart */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-medium text-foreground">Nieuwe signups (laatste 30 dagen)</h2>
+            </div>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="datum" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} interval="preserveStartEnd" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 12, borderRadius: 8 }}
+                  />
+                  <Line type="monotone" dataKey="aantal" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -170,6 +243,30 @@ export default function AdminPlatform() {
             className="pl-9"
           />
         </div>
+
+        {/* Bulk actions bar */}
+        {selectedIds.size > 0 && (
+          <Card className="border-primary/50 bg-primary/5">
+            <CardContent className="p-3 flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-foreground mr-2">
+                {selectedIds.size} geselecteerd
+              </span>
+              <Button size="sm" variant="outline" onClick={() => runBulkExtend(7)} disabled={bulkExtend.isPending}>+7 dagen</Button>
+              <Button size="sm" variant="outline" onClick={() => runBulkExtend(30)} disabled={bulkExtend.isPending}>+30 dagen</Button>
+              <Button size="sm" variant="outline" onClick={() => runBulkExtend(90)} disabled={bulkExtend.isPending}>+90 dagen</Button>
+              <div className="w-px h-5 bg-border mx-1" />
+              <Button size="sm" variant="outline" onClick={() => runBulkActive(true)} disabled={bulkSetActive.isPending}>
+                <Play className="w-3 h-3 mr-1" /> Activeren
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => runBulkActive(false)} disabled={bulkSetActive.isPending}>
+                <Pause className="w-3 h-3 mr-1" /> Pauzeren
+              </Button>
+              <Button size="sm" variant="ghost" className="ml-auto" onClick={clearSelection}>
+                <X className="w-3 h-3 mr-1" /> Wissen
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Table */}
         <Card>
@@ -182,6 +279,12 @@ export default function AdminPlatform() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-8">
+                      <Checkbox
+                        checked={filtered.length > 0 && filtered.every((o) => selectedIds.has(o.id))}
+                        onCheckedChange={toggleAll}
+                      />
+                    </TableHead>
                     <TableHead>Organisatie</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Trial einddatum</TableHead>
@@ -203,6 +306,12 @@ export default function AdminPlatform() {
                         className="cursor-pointer"
                         onClick={() => setSelectedOrg(o)}
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()} className="w-8">
+                          <Checkbox
+                            checked={selectedIds.has(o.id)}
+                            onCheckedChange={() => toggleId(o.id)}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Building2 className="w-4 h-4 text-muted-foreground" />
@@ -253,6 +362,10 @@ export default function AdminPlatform() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="promocodes" className="mt-4">
+            <PromocodesTab orgs={orgs} />
           </TabsContent>
 
           <TabsContent value="admins" className="mt-4">
@@ -813,6 +926,175 @@ function PlatformAdminsTab({ currentUserId }: { currentUserId: string }) {
                         }}
                       >
                         <ShieldOff className="w-3.5 h-3.5 mr-1.5" /> Intrekken
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+function PromocodesTab({ orgs }: { orgs: AdminOrgRow[] }) {
+  const { data: codes = [], isLoading } = useAdminPromocodes();
+  const createMutation = useAdminCreatePromocode();
+  const toggleMutation = useAdminTogglePromocode();
+  const deleteMutation = useAdminDeletePromocode();
+
+  const [code, setCode] = useState("");
+  const [type, setType] = useState<"percent" | "vast">("percent");
+  const [waarde, setWaarde] = useState("10");
+  const [geldigTot, setGeldigTot] = useState("");
+  const [maxGebruik, setMaxGebruik] = useState("");
+  const [orgId, setOrgId] = useState<string>("");
+  const [notities, setNotities] = useState("");
+
+  const reset = () => {
+    setCode(""); setWaarde("10"); setGeldigTot(""); setMaxGebruik(""); setOrgId(""); setNotities("");
+  };
+
+  const submit = async () => {
+    if (!code.trim()) { toast.error("Code is verplicht"); return; }
+    const num = parseFloat(waarde);
+    if (isNaN(num) || num <= 0) { toast.error("Ongeldige korting"); return; }
+    try {
+      await createMutation.mutateAsync({
+        code: code.trim(),
+        kortings_type: type,
+        kortings_waarde: num,
+        geldig_tot: geldigTot || null,
+        max_gebruik: maxGebruik ? parseInt(maxGebruik, 10) : null,
+        organisatie_id: orgId || null,
+        notities: notities.trim() || null,
+      });
+      toast.success("Promocode aangemaakt");
+      reset();
+    } catch (e: any) {
+      toast.error(e.message || "Mislukt");
+    }
+  };
+
+  const orgNaamById = (id: string | null) => orgs.find((o) => o.id === id)?.naam ?? "Generiek";
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Tag className="w-4 h-4 text-primary" />
+            <p className="text-sm font-medium text-foreground">Nieuwe promocode</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Code</Label>
+              <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="WELKOM10" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Korting type</Label>
+              <Select value={type} onValueChange={(v) => setType(v as any)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="percent">Procent (%)</SelectItem>
+                  <SelectItem value="vast">Vast bedrag (€)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Waarde</Label>
+              <Input type="number" value={waarde} onChange={(e) => setWaarde(e.target.value)} min={0} step="0.01" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Geldig tot (optioneel)</Label>
+              <Input type="date" value={geldigTot} onChange={(e) => setGeldigTot(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Max gebruik (optioneel)</Label>
+              <Input type="number" value={maxGebruik} onChange={(e) => setMaxGebruik(e.target.value)} min={1} placeholder="onbeperkt" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Specifieke organisatie (optioneel)</Label>
+              <Select value={orgId || "_none"} onValueChange={(v) => setOrgId(v === "_none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="Generiek (alle)" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Generiek (alle)</SelectItem>
+                  {orgs.map((o) => <SelectItem key={o.id} value={o.id}>{o.naam}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Interne notitie (optioneel)</Label>
+            <Textarea value={notities} onChange={(e) => setNotities(e.target.value)} rows={2} placeholder="bijv. Afgesproken via mail met klant X" />
+          </div>
+          <Button onClick={submit} disabled={createMutation.isPending} className="w-full md:w-auto">
+            <Tag className="w-3.5 h-3.5 mr-1.5" /> Code aanmaken
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto" /></div>
+          ) : codes.length === 0 ? (
+            <div className="p-10 text-center text-sm text-muted-foreground">Nog geen promocodes</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Korting</TableHead>
+                  <TableHead>Geldig tot</TableHead>
+                  <TableHead>Gebruik</TableHead>
+                  <TableHead>Organisatie</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Acties</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {codes.map((c: PromocodeRow) => (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-mono text-sm">{c.code}</TableCell>
+                    <TableCell className="text-sm">
+                      {c.kortings_type === "percent"
+                        ? `${c.kortings_waarde}%`
+                        : `€ ${c.kortings_waarde.toFixed(2)}`}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {c.geldig_tot ? format(new Date(c.geldig_tot), "d MMM yyyy", { locale: nl }) : "geen limiet"}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {c.huidig_gebruik}{c.max_gebruik ? ` / ${c.max_gebruik}` : ""}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground truncate max-w-[160px]">
+                      {orgNaamById(c.organisatie_id)}
+                    </TableCell>
+                    <TableCell>
+                      {c.is_active
+                        ? <Badge variant="default">Actief</Badge>
+                        : <Badge variant="outline">Inactief</Badge>}
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button size="sm" variant="outline" onClick={async () => {
+                        try {
+                          await toggleMutation.mutateAsync({ id: c.id, is_active: !c.is_active });
+                          toast.success(c.is_active ? "Gedeactiveerd" : "Geactiveerd");
+                        } catch (e: any) { toast.error(e.message || "Mislukt"); }
+                      }}>
+                        {c.is_active ? "Pauzeer" : "Activeer"}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={async () => {
+                        if (!confirm(`Promocode ${c.code} verwijderen?`)) return;
+                        try {
+                          await deleteMutation.mutateAsync(c.id);
+                          toast.success("Verwijderd");
+                        } catch (e: any) { toast.error(e.message || "Mislukt"); }
+                      }}>
+                        <Trash2 className="w-3.5 h-3.5 text-destructive" />
                       </Button>
                     </TableCell>
                   </TableRow>

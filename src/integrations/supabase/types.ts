@@ -1380,6 +1380,7 @@ export type Database = {
           standaard_handtekening: string | null
           telefoon: string | null
           trial_ends_at: string | null
+          trial_warning_sent_at: string | null
         }
         Insert: {
           adres?: string | null
@@ -1405,6 +1406,7 @@ export type Database = {
           standaard_handtekening?: string | null
           telefoon?: string | null
           trial_ends_at?: string | null
+          trial_warning_sent_at?: string | null
         }
         Update: {
           adres?: string | null
@@ -1430,6 +1432,7 @@ export type Database = {
           standaard_handtekening?: string | null
           telefoon?: string | null
           trial_ends_at?: string | null
+          trial_warning_sent_at?: string | null
         }
         Relationships: []
       }
@@ -1587,6 +1590,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "portaal_domeinen_organisatie_id_fkey"
+            columns: ["organisatie_id"]
+            isOneToOne: false
+            referencedRelation: "organisaties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promocodes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          geldig_tot: string | null
+          huidig_gebruik: number
+          id: string
+          is_active: boolean
+          kortings_type: string
+          kortings_waarde: number
+          max_gebruik: number | null
+          notities: string | null
+          organisatie_id: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by?: string | null
+          geldig_tot?: string | null
+          huidig_gebruik?: number
+          id?: string
+          is_active?: boolean
+          kortings_type: string
+          kortings_waarde: number
+          max_gebruik?: number | null
+          notities?: string | null
+          organisatie_id?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          geldig_tot?: string | null
+          huidig_gebruik?: number
+          id?: string
+          is_active?: boolean
+          kortings_type?: string
+          kortings_waarde?: number
+          max_gebruik?: number | null
+          notities?: string | null
+          organisatie_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promocodes_organisatie_id_fkey"
             columns: ["organisatie_id"]
             isOneToOne: false
             referencedRelation: "organisaties"
@@ -2648,10 +2704,31 @@ export type Database = {
           role: Database["public"]["Enums"]["app_role"]
         }[]
       }
+      admin_bulk_extend_trial: {
+        Args: { _days: number; _org_ids: string[] }
+        Returns: number
+      }
+      admin_bulk_set_active: {
+        Args: { _is_active: boolean; _org_ids: string[] }
+        Returns: number
+      }
+      admin_create_promocode: {
+        Args: {
+          _code: string
+          _geldig_tot?: string
+          _kortings_type: string
+          _kortings_waarde: number
+          _max_gebruik?: number
+          _notities?: string
+          _organisatie_id?: string
+        }
+        Returns: string
+      }
       admin_delete_organisatie: {
         Args: { _org_id: string }
         Returns: undefined
       }
+      admin_delete_promocode: { Args: { _id: string }; Returns: undefined }
       admin_get_organisatie: { Args: { _org_id: string }; Returns: Json }
       admin_grant_platform_admin: {
         Args: { _user_email: string }
@@ -2693,6 +2770,33 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_list_promocodes: {
+        Args: never
+        Returns: {
+          code: string
+          created_at: string
+          created_by: string | null
+          geldig_tot: string | null
+          huidig_gebruik: number
+          id: string
+          is_active: boolean
+          kortings_type: string
+          kortings_waarde: number
+          max_gebruik: number | null
+          notities: string | null
+          organisatie_id: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "promocodes"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_mark_trial_warning_sent: {
+        Args: { _org_id: string }
+        Returns: undefined
+      }
       admin_remove_user_from_org: {
         Args: { _org_id: string; _user_id: string }
         Returns: undefined
@@ -2712,6 +2816,26 @@ export type Database = {
           _user_id: string
         }
         Returns: undefined
+      }
+      admin_signups_per_dag: {
+        Args: { _days?: number }
+        Returns: {
+          aantal: number
+          datum: string
+        }[]
+      }
+      admin_toggle_promocode: {
+        Args: { _id: string; _is_active: boolean }
+        Returns: undefined
+      }
+      admin_trial_warning_kandidaten: {
+        Args: never
+        Returns: {
+          eigenaar_email: string
+          id: string
+          naam: string
+          trial_ends_at: string
+        }[]
       }
       admin_update_organisatie: {
         Args: {
