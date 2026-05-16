@@ -322,8 +322,15 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
   const huidigeModus: ModuleModus =
     (detail?.organisatie?.module_modus as ModuleModus) ?? "autoverhuur";
 
+  // Gebruik altijd de meest recente waarden uit detail (na invalidate),
+  // zodat herhaald op "+7 dagen" klikken stapelt i.p.v. dezelfde datum oplevert.
+  const liveTrial: string | null =
+    detail?.organisatie?.trial_ends_at ?? org.trial_ends_at ?? null;
+  const liveActive: boolean = detail?.organisatie?.is_active ?? org.is_active;
+  const liveNaam: string = detail?.organisatie?.naam ?? org.naam;
+
   const currentNaam = editNaam || org.naam;
-  const currentTrial = editTrial || (org.trial_ends_at ? org.trial_ends_at.slice(0, 10) : "");
+  const currentTrial = editTrial || (liveTrial ? liveTrial.slice(0, 10) : "");
 
   const handleSave = async () => {
     try {
@@ -342,15 +349,15 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
 
   const handleToggleActive = async () => {
     try {
-      await updateMutation.mutateAsync({ org_id: org.id, is_active: !org.is_active });
-      toast.success(org.is_active ? "Omgeving gepauzeerd" : "Omgeving geactiveerd");
+      await updateMutation.mutateAsync({ org_id: org.id, is_active: !liveActive });
+      toast.success(liveActive ? "Omgeving gepauzeerd" : "Omgeving geactiveerd");
     } catch (e: any) {
       toast.error(e.message || "Mislukt");
     }
   };
 
   const extendTrial = async (days: number) => {
-    const base = org.trial_ends_at && new Date(org.trial_ends_at) > new Date() ? new Date(org.trial_ends_at) : new Date();
+    const base = liveTrial && new Date(liveTrial) > new Date() ? new Date(liveTrial) : new Date();
     const newDate = addDays(base, days);
     try {
       await updateMutation.mutateAsync({ org_id: org.id, trial_ends_at: newDate.toISOString() });
@@ -419,7 +426,7 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
                       {org.is_active ? "Gebruikers kunnen inloggen" : "Toegang gepauzeerd"}
                     </p>
                   </div>
-                  <Switch checked={org.is_active} onCheckedChange={handleToggleActive} />
+                   <Switch checked={liveActive} onCheckedChange={handleToggleActive} />
                 </div>
                 <div className="space-y-1.5 pt-2 border-t border-border">
                   <Label>Module-modus</Label>
