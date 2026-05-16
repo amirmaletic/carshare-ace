@@ -15,6 +15,14 @@ import {
   useAdminRevokePlatformAdmin,
   useAdminImpersonate,
   useAdminSetModuleModus,
+  useAdminBulkExtendTrial,
+  useAdminBulkSetActive,
+  useAdminSignupsPerDag,
+  useAdminPromocodes,
+  useAdminCreatePromocode,
+  useAdminTogglePromocode,
+  useAdminDeletePromocode,
+  type PromocodeRow,
   type ModuleModus,
   type AdminOrgRow,
 } from "@/hooks/usePlatformAdmin";
@@ -30,11 +38,15 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 import { format, formatDistanceToNow, addDays } from "date-fns";
 import { nl } from "date-fns/locale";
 import {
   Search, Building2, Users, Car, FileText, Activity, Calendar, Shield,
   AlertTriangle, CheckCircle2, XCircle, RefreshCw, Trash2, UserPlus, LogIn, UserMinus, ShieldOff,
+  Tag, TrendingUp, Pause, Play, X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,7 +61,11 @@ export default function AdminPlatform() {
   const [selectedOrg, setSelectedOrg] = useState<AdminOrgRow | null>(null);
   const [grantOpen, setGrantOpen] = useState(false);
   const [grantEmail, setGrantEmail] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const grantMutation = useGrantPlatformAdmin();
+  const bulkExtend = useAdminBulkExtendTrial();
+  const bulkSetActive = useAdminBulkSetActive();
+  const { data: signupsData = [] } = useAdminSignupsPerDag(30);
 
   if (authLoading || roleLoading) {
     return (
@@ -107,6 +123,39 @@ export default function AdminPlatform() {
   const totaalInTrial = orgs.filter((o) => o.trial_ends_at && new Date(o.trial_ends_at) > new Date()).length;
   const totaalVerlopen = orgs.filter((o) => o.trial_ends_at && new Date(o.trial_ends_at) <= new Date()).length;
 
+  const toggleId = (id: string) => {
+    setSelectedIds((s) => {
+      const next = new Set(s);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleAll = () => {
+    setSelectedIds((s) => {
+      if (filtered.every((o) => s.has(o.id))) return new Set();
+      return new Set(filtered.map((o) => o.id));
+    });
+  };
+  const clearSelection = () => setSelectedIds(new Set());
+  const selectedIdsArr = Array.from(selectedIds);
+  const runBulkExtend = async (days: number) => {
+    try {
+      const n = await bulkExtend.mutateAsync({ org_ids: selectedIdsArr, days });
+      toast.success(`${n} omgevingen verlengd met ${days} dagen`);
+    } catch (e: any) { toast.error(e.message || "Mislukt"); }
+  };
+  const runBulkActive = async (is_active: boolean) => {
+    try {
+      const n = await bulkSetActive.mutateAsync({ org_ids: selectedIdsArr, is_active });
+      toast.success(`${n} omgevingen ${is_active ? "geactiveerd" : "gepauzeerd"}`);
+    } catch (e: any) { toast.error(e.message || "Mislukt"); }
+  };
+
+  const chartData = signupsData.map((r) => ({
+    datum: format(new Date(r.datum), "d MMM", { locale: nl }),
+    aantal: Number(r.aantal),
+  }));
+
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
@@ -136,6 +185,7 @@ export default function AdminPlatform() {
         <Tabs defaultValue="organisaties">
           <TabsList>
             <TabsTrigger value="organisaties">Organisaties</TabsTrigger>
+            <TabsTrigger value="promocodes">Promocodes</TabsTrigger>
             <TabsTrigger value="admins">Platform admins</TabsTrigger>
           </TabsList>
 
@@ -160,6 +210,29 @@ export default function AdminPlatform() {
           </CardContent></Card>
         </div>
 
+        {/* Groei chart */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-medium text-foreground">Nieuwe signups (laatste 30 dagen)</h2>
+            </div>
+            <div className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData} margin={{ top: 8, right: 12, left: -16, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="datum" tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} interval="preserveStartEnd" />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }} />
+                  <Tooltip
+                    contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", fontSize: 12, borderRadius: 8 }}
+                  />
+                  <Line type="monotone" dataKey="aantal" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -170,6 +243,30 @@ export default function AdminPlatform() {
             className="pl-9"
           />
         </div>
+
+        {/* Bulk actions bar */}
+        {selectedIds.size > 0 && (
+          <Card className="border-primary/50 bg-primary/5">
+            <CardContent className="p-3 flex flex-wrap items-center gap-2">
+              <span className="text-sm font-medium text-foreground mr-2">
+                {selectedIds.size} geselecteerd
+              </span>
+              <Button size="sm" variant="outline" onClick={() => runBulkExtend(7)} disabled={bulkExtend.isPending}>+7 dagen</Button>
+              <Button size="sm" variant="outline" onClick={() => runBulkExtend(30)} disabled={bulkExtend.isPending}>+30 dagen</Button>
+              <Button size="sm" variant="outline" onClick={() => runBulkExtend(90)} disabled={bulkExtend.isPending}>+90 dagen</Button>
+              <div className="w-px h-5 bg-border mx-1" />
+              <Button size="sm" variant="outline" onClick={() => runBulkActive(true)} disabled={bulkSetActive.isPending}>
+                <Play className="w-3 h-3 mr-1" /> Activeren
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => runBulkActive(false)} disabled={bulkSetActive.isPending}>
+                <Pause className="w-3 h-3 mr-1" /> Pauzeren
+              </Button>
+              <Button size="sm" variant="ghost" className="ml-auto" onClick={clearSelection}>
+                <X className="w-3 h-3 mr-1" /> Wissen
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Table */}
         <Card>
@@ -182,6 +279,12 @@ export default function AdminPlatform() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-8">
+                      <Checkbox
+                        checked={filtered.length > 0 && filtered.every((o) => selectedIds.has(o.id))}
+                        onCheckedChange={toggleAll}
+                      />
+                    </TableHead>
                     <TableHead>Organisatie</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Trial einddatum</TableHead>
@@ -203,6 +306,12 @@ export default function AdminPlatform() {
                         className="cursor-pointer"
                         onClick={() => setSelectedOrg(o)}
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()} className="w-8">
+                          <Checkbox
+                            checked={selectedIds.has(o.id)}
+                            onCheckedChange={() => toggleId(o.id)}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Building2 className="w-4 h-4 text-muted-foreground" />
@@ -253,6 +362,10 @@ export default function AdminPlatform() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+
+          <TabsContent value="promocodes" className="mt-4">
+            <PromocodesTab orgs={orgs} />
           </TabsContent>
 
           <TabsContent value="admins" className="mt-4">
