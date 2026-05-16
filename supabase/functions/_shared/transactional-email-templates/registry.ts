@@ -17,6 +17,8 @@ import { template as contractVerloopt } from './contract-verloopt.tsx'
 import { template as contractAanvulverzoek } from './contract-aanvulverzoek.tsx'
 import { template as trialVerlengd } from './trial-verlengd.tsx'
 import { template as trialBijnaVerlopen } from './trial-bijna-verlopen.tsx'
+import { template as trialLaatsteDagen } from './trial-laatste-dagen.tsx'
+import { template as trialVerlopen } from './trial-verlopen.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'team-invite': teamInvite,
@@ -27,4 +29,6 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'contract-aanvulverzoek': contractAanvulverzoek,
   'trial-verlengd': trialVerlengd,
   'trial-bijna-verlopen': trialBijnaVerlopen,
+  'trial-laatste-dagen': trialLaatsteDagen,
+  'trial-verlopen': trialVerlopen,
 }
