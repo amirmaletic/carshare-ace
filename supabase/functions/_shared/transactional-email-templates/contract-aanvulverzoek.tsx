@@ -25,7 +25,7 @@ const ContractAanvulverzoekEmail = ({ klantNaam, organisatieNaam, contractNummer
     </Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt={SITE_NAME} width="120" height="40" style={logo} />
+        <Img src={LOGO_URL} alt={SITE_NAME} width="52" height="48" style={logo} />
         <Heading style={h1}>Vul je huurgegevens aan</Heading>
         <Text style={text}>Hallo {klantNaam ?? 'daar'},</Text>
         <Text style={text}>

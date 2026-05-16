@@ -21,7 +21,7 @@ const ContractVerlooptEmail = ({ klant_naam, contract_nummer, voertuig, eind_dat
     <Preview>Contract {contract_nummer ?? ''} verloopt over {dagen_resterend ?? ''} dagen</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt={SITE_NAME} width="120" height="40" style={logo} />
+        <Img src={LOGO_URL} alt={SITE_NAME} width="52" height="48" style={logo} />
         <Heading style={h1}>Je contract verloopt binnenkort</Heading>
         <Text style={text}>Hallo {klant_naam ?? 'daar'},</Text>
         <Text style={text}>

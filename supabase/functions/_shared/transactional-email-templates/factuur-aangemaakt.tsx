@@ -21,7 +21,7 @@ const FactuurAangemaaktEmail = ({ klant_naam, contract_nummer, bedrag, periode, 
     <Preview>Nieuwe factuur {contract_nummer ?? ''} | € {bedrag ?? ''}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt={SITE_NAME} width="120" height="40" style={logo} />
+        <Img src={LOGO_URL} alt={SITE_NAME} width="52" height="48" style={logo} />
         <Heading style={h1}>Nieuwe factuur klaar</Heading>
         <Text style={text}>Hallo {klant_naam ?? 'daar'},</Text>
         <Text style={text}>
