@@ -938,3 +938,172 @@ function PlatformAdminsTab({ currentUserId }: { currentUserId: string }) {
     </div>
   );
 }
+
+function PromocodesTab({ orgs }: { orgs: AdminOrgRow[] }) {
+  const { data: codes = [], isLoading } = useAdminPromocodes();
+  const createMutation = useAdminCreatePromocode();
+  const toggleMutation = useAdminTogglePromocode();
+  const deleteMutation = useAdminDeletePromocode();
+
+  const [code, setCode] = useState("");
+  const [type, setType] = useState<"percent" | "vast">("percent");
+  const [waarde, setWaarde] = useState("10");
+  const [geldigTot, setGeldigTot] = useState("");
+  const [maxGebruik, setMaxGebruik] = useState("");
+  const [orgId, setOrgId] = useState<string>("");
+  const [notities, setNotities] = useState("");
+
+  const reset = () => {
+    setCode(""); setWaarde("10"); setGeldigTot(""); setMaxGebruik(""); setOrgId(""); setNotities("");
+  };
+
+  const submit = async () => {
+    if (!code.trim()) { toast.error("Code is verplicht"); return; }
+    const num = parseFloat(waarde);
+    if (isNaN(num) || num <= 0) { toast.error("Ongeldige korting"); return; }
+    try {
+      await createMutation.mutateAsync({
+        code: code.trim(),
+        kortings_type: type,
+        kortings_waarde: num,
+        geldig_tot: geldigTot || null,
+        max_gebruik: maxGebruik ? parseInt(maxGebruik, 10) : null,
+        organisatie_id: orgId || null,
+        notities: notities.trim() || null,
+      });
+      toast.success("Promocode aangemaakt");
+      reset();
+    } catch (e: any) {
+      toast.error(e.message || "Mislukt");
+    }
+  };
+
+  const orgNaamById = (id: string | null) => orgs.find((o) => o.id === id)?.naam ?? "Generiek";
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Tag className="w-4 h-4 text-primary" />
+            <p className="text-sm font-medium text-foreground">Nieuwe promocode</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">Code</Label>
+              <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="WELKOM10" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Korting type</Label>
+              <Select value={type} onValueChange={(v) => setType(v as any)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="percent">Procent (%)</SelectItem>
+                  <SelectItem value="vast">Vast bedrag (€)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Waarde</Label>
+              <Input type="number" value={waarde} onChange={(e) => setWaarde(e.target.value)} min={0} step="0.01" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Geldig tot (optioneel)</Label>
+              <Input type="date" value={geldigTot} onChange={(e) => setGeldigTot(e.target.value)} />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Max gebruik (optioneel)</Label>
+              <Input type="number" value={maxGebruik} onChange={(e) => setMaxGebruik(e.target.value)} min={1} placeholder="onbeperkt" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Specifieke organisatie (optioneel)</Label>
+              <Select value={orgId || "_none"} onValueChange={(v) => setOrgId(v === "_none" ? "" : v)}>
+                <SelectTrigger><SelectValue placeholder="Generiek (alle)" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="_none">Generiek (alle)</SelectItem>
+                  {orgs.map((o) => <SelectItem key={o.id} value={o.id}>{o.naam}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs">Interne notitie (optioneel)</Label>
+            <Textarea value={notities} onChange={(e) => setNotities(e.target.value)} rows={2} placeholder="bijv. Afgesproken via mail met klant X" />
+          </div>
+          <Button onClick={submit} disabled={createMutation.isPending} className="w-full md:w-auto">
+            <Tag className="w-3.5 h-3.5 mr-1.5" /> Code aanmaken
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="p-6 text-center"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto" /></div>
+          ) : codes.length === 0 ? (
+            <div className="p-10 text-center text-sm text-muted-foreground">Nog geen promocodes</div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Code</TableHead>
+                  <TableHead>Korting</TableHead>
+                  <TableHead>Geldig tot</TableHead>
+                  <TableHead>Gebruik</TableHead>
+                  <TableHead>Organisatie</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Acties</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {codes.map((c: PromocodeRow) => (
+                  <TableRow key={c.id}>
+                    <TableCell className="font-mono text-sm">{c.code}</TableCell>
+                    <TableCell className="text-sm">
+                      {c.kortings_type === "percent"
+                        ? `${c.kortings_waarde}%`
+                        : `€ ${c.kortings_waarde.toFixed(2)}`}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {c.geldig_tot ? format(new Date(c.geldig_tot), "d MMM yyyy", { locale: nl }) : "geen limiet"}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {c.huidig_gebruik}{c.max_gebruik ? ` / ${c.max_gebruik}` : ""}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground truncate max-w-[160px]">
+                      {orgNaamById(c.organisatie_id)}
+                    </TableCell>
+                    <TableCell>
+                      {c.is_active
+                        ? <Badge variant="default">Actief</Badge>
+                        : <Badge variant="outline">Inactief</Badge>}
+                    </TableCell>
+                    <TableCell className="text-right space-x-1">
+                      <Button size="sm" variant="outline" onClick={async () => {
+                        try {
+                          await toggleMutation.mutateAsync({ id: c.id, is_active: !c.is_active });
+                          toast.success(c.is_active ? "Gedeactiveerd" : "Geactiveerd");
+                        } catch (e: any) { toast.error(e.message || "Mislukt"); }
+                      }}>
+                        {c.is_active ? "Pauzeer" : "Activeer"}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={async () => {
+                        if (!confirm(`Promocode ${c.code} verwijderen?`)) return;
+                        try {
+                          await deleteMutation.mutateAsync(c.id);
+                          toast.success("Verwijderd");
+                        } catch (e: any) { toast.error(e.message || "Mislukt"); }
+                      }}>
+                        <Trash2 className="w-3.5 h-3.5 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
