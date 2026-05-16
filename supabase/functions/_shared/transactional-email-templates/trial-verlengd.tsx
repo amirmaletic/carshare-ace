@@ -20,7 +20,7 @@ const TrialVerlengdEmail = ({ organisatieNaam, nieuweEinddatum, dagenToegevoegd 
     <Preview>Je proefperiode bij {SITE_NAME} is verlengd</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt={SITE_NAME} width="120" height="40" style={logo} />
+        <Img src={LOGO_URL} alt={SITE_NAME} width="52" height="48" style={logo} />
         <Heading style={h1}>Je proefperiode is verlengd</Heading>
         <Text style={text}>
           Goed nieuws! De proefperiode van <strong>{organisatieNaam ?? 'je organisatie'}</strong>{' '}

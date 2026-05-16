@@ -21,7 +21,7 @@ const TeamInviteEmail = ({ organisatieNaam, rolLabel, acceptUrl, uitgenodigdDoor
     <Preview>Je bent uitgenodigd voor {organisatieNaam ?? SITE_NAME}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Img src={LOGO_URL} alt={SITE_NAME} width="120" height="40" style={logo} />
+        <Img src={LOGO_URL} alt={SITE_NAME} width="52" height="48" style={logo} />
         <Heading style={h1}>Je bent uitgenodigd!</Heading>
         <Text style={text}>
           {uitgenodigdDoor ? `${uitgenodigdDoor} heeft je` : 'Je bent'} uitgenodigd om deel te nemen aan
