@@ -37,6 +37,7 @@ import {
   AlertTriangle, CheckCircle2, XCircle, RefreshCw, Trash2, UserPlus, LogIn, UserMinus, ShieldOff,
 } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const ORG_ROLES = ["beheerder", "leidinggevende", "medewerker", "chauffeur", "klant"] as const;
 
@@ -334,6 +335,8 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
 
   const handleSave = async () => {
     try {
+      const trialChanged =
+        currentTrial && (!liveTrial || currentTrial !== liveTrial.slice(0, 10));
       await updateMutation.mutateAsync({
         org_id: org.id,
         naam: currentNaam !== org.naam ? currentNaam : undefined,
@@ -342,6 +345,9 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
       toast.success("Opgeslagen");
       setEditNaam("");
       setEditTrial("");
+      if (trialChanged) {
+        await sendTrialVerlengdMail(new Date(currentTrial));
+      }
     } catch (e: any) {
       toast.error(e.message || "Mislukt");
     }
@@ -362,8 +368,35 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
     try {
       await updateMutation.mutateAsync({ org_id: org.id, trial_ends_at: newDate.toISOString() });
       toast.success(`Trial verlengd met ${days} dagen`);
+      await sendTrialVerlengdMail(newDate, days);
     } catch (e: any) {
       toast.error(e.message || "Mislukt");
+    }
+  };
+
+  const sendTrialVerlengdMail = async (nieuweEinddatum: Date, dagenToegevoegd?: number) => {
+    const eigenaarEmail = detail?.eigenaar_email || org.eigenaar_email;
+    if (!eigenaarEmail) {
+      toast.warning("Geen e-mailadres bekend voor eigenaar — mail niet verstuurd");
+      return;
+    }
+    try {
+      const { error } = await supabase.functions.invoke("send-transactional-email", {
+        body: {
+          templateName: "trial-verlengd",
+          recipientEmail: eigenaarEmail,
+          idempotencyKey: `trial-verlengd-${org.id}-${nieuweEinddatum.toISOString()}`,
+          templateData: {
+            organisatieNaam: liveNaam,
+            nieuweEinddatum: format(nieuweEinddatum, "d MMMM yyyy", { locale: nl }),
+            dagenToegevoegd,
+          },
+        },
+      });
+      if (error) throw error;
+      toast.success(`Bevestigingsmail verstuurd naar ${eigenaarEmail}`);
+    } catch (e: any) {
+      toast.error(`Mail niet verstuurd: ${e.message || "onbekende fout"}`);
     }
   };
 
