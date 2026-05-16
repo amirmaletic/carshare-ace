@@ -213,11 +213,6 @@ const App = () => (
           <Route path="/rapportages" element={<Navigate to="/dashboarding/rapportages" replace />} />
           <Route path="/dashboarding" element={<Navigate to="/dashboarding/operationeel" replace />} />
           <Route path="/dashboarding/:tab" element={<ProtectedRoute><PermissionGuard><AppLayout><Dashboarding /></AppLayout></PermissionGuard></ProtectedRoute>} />
-          {/* Legacy redirects */}
-          <Route path="/dashboards/operationeel" element={<Navigate to="/dashboarding/operationeel" replace />} />
-          <Route path="/dashboards/financieel" element={<Navigate to="/dashboarding/financieel" replace />} />
-          <Route path="/dashboards/vloot" element={<Navigate to="/dashboarding/vloot" replace />} />
-          <Route path="/dashboards/klanten" element={<Navigate to="/dashboarding/klanten" replace />} />
           <Route path="/kosten" element={<ProtectedRoute><PermissionGuard><AppLayout><Kosten /></AppLayout></PermissionGuard></ProtectedRoute>} />
           <Route path="/boekhouding-export" element={<ProtectedRoute><AppLayout><BoekhoudingExport /></AppLayout></ProtectedRoute>} />
           <Route path="/auto-facturatie" element={<ProtectedRoute><AppLayout><AutoFacturatie /></AppLayout></ProtectedRoute>} />
