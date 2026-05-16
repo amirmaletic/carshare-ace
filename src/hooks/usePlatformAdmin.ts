@@ -219,3 +219,128 @@ export function useAdminSetModuleModus() {
     },
   });
 }
+
+// ---------- Bulk ----------
+export function useAdminBulkExtendTrial() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { org_ids: string[]; days: number }) => {
+      const { data, error } = await supabase.rpc("admin_bulk_extend_trial" as any, {
+        _org_ids: input.org_ids,
+        _days: input.days,
+      });
+      if (error) throw error;
+      return data as number;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-organisaties"] });
+    },
+  });
+}
+
+export function useAdminBulkSetActive() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { org_ids: string[]; is_active: boolean }) => {
+      const { data, error } = await supabase.rpc("admin_bulk_set_active" as any, {
+        _org_ids: input.org_ids,
+        _is_active: input.is_active,
+      });
+      if (error) throw error;
+      return data as number;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["admin-organisaties"] });
+    },
+  });
+}
+
+// ---------- Signups per dag ----------
+export interface SignupsPerDagRow { datum: string; aantal: number }
+export function useAdminSignupsPerDag(days = 30) {
+  return useQuery({
+    queryKey: ["admin-signups-per-dag", days],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_signups_per_dag" as any, { _days: days });
+      if (error) throw error;
+      return (data ?? []) as SignupsPerDagRow[];
+    },
+  });
+}
+
+// ---------- Promocodes ----------
+export interface PromocodeRow {
+  id: string;
+  code: string;
+  kortings_type: "percent" | "vast";
+  kortings_waarde: number;
+  geldig_tot: string | null;
+  max_gebruik: number | null;
+  huidig_gebruik: number;
+  organisatie_id: string | null;
+  notities: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export function useAdminPromocodes() {
+  return useQuery({
+    queryKey: ["admin-promocodes"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_promocodes" as any);
+      if (error) throw error;
+      return (data ?? []) as PromocodeRow[];
+    },
+  });
+}
+
+export function useAdminCreatePromocode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: {
+      code: string;
+      kortings_type: "percent" | "vast";
+      kortings_waarde: number;
+      geldig_tot?: string | null;
+      max_gebruik?: number | null;
+      organisatie_id?: string | null;
+      notities?: string | null;
+    }) => {
+      const { error } = await supabase.rpc("admin_create_promocode" as any, {
+        _code: input.code,
+        _kortings_type: input.kortings_type,
+        _kortings_waarde: input.kortings_waarde,
+        _geldig_tot: input.geldig_tot ?? null,
+        _max_gebruik: input.max_gebruik ?? null,
+        _organisatie_id: input.organisatie_id ?? null,
+        _notities: input.notities ?? null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-promocodes"] }),
+  });
+}
+
+export function useAdminTogglePromocode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { id: string; is_active: boolean }) => {
+      const { error } = await supabase.rpc("admin_toggle_promocode" as any, {
+        _id: input.id, _is_active: input.is_active,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-promocodes"] }),
+  });
+}
+
+export function useAdminDeletePromocode() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.rpc("admin_delete_promocode" as any, { _id: id });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin-promocodes"] }),
+  });
+}
