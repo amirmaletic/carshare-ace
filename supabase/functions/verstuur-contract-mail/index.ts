@@ -46,7 +46,6 @@ function buildContractPdfBase64(input: {
 
   const ensureSpace = (needed: number) => {
     if (y + needed > pageHeight - 80) {
-      drawFooter()
       doc.addPage()
       y = 56
     }
