@@ -426,7 +426,7 @@ function OrgDetailDialog({ org, onClose }: { org: AdminOrgRow | null; onClose: (
                       {org.is_active ? "Gebruikers kunnen inloggen" : "Toegang gepauzeerd"}
                     </p>
                   </div>
-                  <Switch checked={org.is_active} onCheckedChange={handleToggleActive} />
+                   <Switch checked={liveActive} onCheckedChange={handleToggleActive} />
                 </div>
                 <div className="space-y-1.5 pt-2 border-t border-border">
                   <Label>Module-modus</Label>
