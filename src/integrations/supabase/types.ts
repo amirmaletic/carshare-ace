@@ -1380,6 +1380,8 @@ export type Database = {
           standaard_handtekening: string | null
           telefoon: string | null
           trial_ends_at: string | null
+          trial_expired_sent_at: string | null
+          trial_urgent_sent_at: string | null
           trial_warning_sent_at: string | null
         }
         Insert: {
@@ -1406,6 +1408,8 @@ export type Database = {
           standaard_handtekening?: string | null
           telefoon?: string | null
           trial_ends_at?: string | null
+          trial_expired_sent_at?: string | null
+          trial_urgent_sent_at?: string | null
           trial_warning_sent_at?: string | null
         }
         Update: {
@@ -1432,6 +1436,8 @@ export type Database = {
           standaard_handtekening?: string | null
           telefoon?: string | null
           trial_ends_at?: string | null
+          trial_expired_sent_at?: string | null
+          trial_urgent_sent_at?: string | null
           trial_warning_sent_at?: string | null
         }
         Relationships: []
@@ -2793,6 +2799,14 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_mark_trial_expired_sent: {
+        Args: { _org_id: string }
+        Returns: undefined
+      }
+      admin_mark_trial_urgent_sent: {
+        Args: { _org_id: string }
+        Returns: undefined
+      }
       admin_mark_trial_warning_sent: {
         Args: { _org_id: string }
         Returns: undefined
@@ -2827,6 +2841,24 @@ export type Database = {
       admin_toggle_promocode: {
         Args: { _id: string; _is_active: boolean }
         Returns: undefined
+      }
+      admin_trial_expired_kandidaten: {
+        Args: never
+        Returns: {
+          eigenaar_email: string
+          id: string
+          naam: string
+          trial_ends_at: string
+        }[]
+      }
+      admin_trial_urgent_kandidaten: {
+        Args: never
+        Returns: {
+          eigenaar_email: string
+          id: string
+          naam: string
+          trial_ends_at: string
+        }[]
       }
       admin_trial_warning_kandidaten: {
         Args: never
