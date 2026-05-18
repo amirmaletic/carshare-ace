@@ -1368,6 +1368,7 @@ export type Database = {
           kvk_nummer: string | null
           module_modus: string
           naam: string
+          onboarding_steps_completed: Json
           overdracht_kopie_email: string | null
           plaats: string | null
           portaal_actief: boolean
@@ -1396,6 +1397,7 @@ export type Database = {
           kvk_nummer?: string | null
           module_modus?: string
           naam?: string
+          onboarding_steps_completed?: Json
           overdracht_kopie_email?: string | null
           plaats?: string | null
           portaal_actief?: boolean
@@ -1424,6 +1426,7 @@ export type Database = {
           kvk_nummer?: string | null
           module_modus?: string
           naam?: string
+          onboarding_steps_completed?: Json
           overdracht_kopie_email?: string | null
           plaats?: string | null
           portaal_actief?: boolean
