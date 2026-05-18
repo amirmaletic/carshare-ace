@@ -9,11 +9,13 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import OnboardingWizard from "@/components/OnboardingWizard";
+import OnboardingChecklist from "@/components/OnboardingChecklist";
 import { useOrganisatie } from "@/hooks/useOrganisatie";
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const [showOnboarding, setShowOnboarding] = useState<boolean | null>(null);
+  const [resumeStep, setResumeStep] = useState<"bedrijf" | "voertuigen" | "team" | "modus" | undefined>(undefined);
   const { organisatieId, isLoading: organisatieLoading } = useOrganisatie();
 
   // Check if onboarding is needed — purely database-driven per organisation
@@ -55,7 +57,12 @@ export default function Dashboard() {
   }
 
   if (showOnboarding) {
-    return <OnboardingWizard onComplete={() => setShowOnboarding(false)} />;
+    return (
+      <OnboardingWizard
+        startAt={resumeStep}
+        onComplete={() => { setShowOnboarding(false); setResumeStep(undefined); }}
+      />
+    );
   }
 
   return (
@@ -64,6 +71,9 @@ export default function Dashboard() {
         <h1 className="text-3xl sm:text-5xl font-medium text-foreground tracking-tight">Overzicht</h1>
         <p className="text-muted-foreground mt-2 text-sm sm:text-base">Jouw werk voor vandaag: overdrachten, taken en agenda</p>
       </div>
+
+      {/* Setup checklist voor beheerders */}
+      <OnboardingChecklist onResume={(step) => { setResumeStep(step); setShowOnboarding(true); }} />
 
       {/* Quick actions */}
       <QuickActions />
