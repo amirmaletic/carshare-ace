@@ -204,6 +204,8 @@ export default function Pricing() {
         </div>
       </section>
 
+      <RoiCalculator />
+
       {/* Pakketten */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
