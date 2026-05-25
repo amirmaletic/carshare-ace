@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Seo from "@/components/Seo";
+import RoiCalculator from "@/components/marketing/RoiCalculator";
 
 type Pakket = {
   naam: string;
@@ -202,6 +203,8 @@ export default function Pricing() {
           <p className="text-xs text-muted-foreground mt-3">Bedragen zijn excl. btw.</p>
         </div>
       </section>
+
+      <RoiCalculator />
 
       {/* Pakketten */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
