@@ -10,6 +10,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import Seo from "@/components/Seo";
+import RoiCalculator from "@/components/marketing/RoiCalculator";
 
 type Pakket = {
   naam: string;
