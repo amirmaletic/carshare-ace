@@ -10,8 +10,8 @@ interface SeoProps {
   noindex?: boolean;
 }
 
-const SITE_URL = "https://www.fleeflo.nl";
-const DEFAULT_OG = "https://www.fleeflo.nl/og-image.png";
+const SITE_URL = "https://fleeflo.nl";
+const DEFAULT_OG = "https://fleeflo.nl/og-image.png";
 
 function setMeta(attr: "name" | "property", key: string, value: string) {
   let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`);
